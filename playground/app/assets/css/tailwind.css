@@ -1,0 +1,4 @@
+@import "tailwindcss" source("../../");
+
+@import "../../../.nuxt/witchcraft-ui.css";
+@import "../../../.nuxt/witchcraft-nuxt-auth.css";

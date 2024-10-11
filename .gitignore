@@ -1,0 +1,25 @@
+node_modules
+playground/node_modules
+*.log*
+
+dist
+.nuxt
+.output
+.data
+.build-*
+
+.env
+
+# Testing
+reports
+coverage
+*.lcov
+.nyc_output
+
+.direnv
+.env
+.devenv
+
+# why is it also building here :/
+src/runtime/createAuthSchema.mjs
+src/runtime/createAuthSchema.d.ts

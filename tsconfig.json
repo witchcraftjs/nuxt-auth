@@ -1,0 +1,13 @@
+{
+	"extends": [
+		"@alanscodelog/tsconfigs",
+		"./.nuxt/tsconfig.json"
+	],
+	"exclude": [
+		"*.mjs",
+		"build.config.ts",
+		"dist",
+		"node_modules",
+		"playground",
+	]
+}
