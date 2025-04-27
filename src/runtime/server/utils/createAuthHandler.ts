@@ -6,7 +6,6 @@ import { type SessionManager } from "./SessionManager.js"
 
 import github from "#auth/core/providers/github.js"
 import google from "#auth/core/providers/google.js"
-import { getSafeSecretsInfo } from "#auth/server/helpers/getSafeSecretsInfo.js"
 import {
 	createRouter,
 	useRuntimeConfig,
@@ -43,11 +42,5 @@ export function createAuthHandler(
 		},
 		rc as any,
 	)
-	logger.info({
-		ns: "auth:init",
-		enabledProviders: rc.public.auth.enabledProviders,
-		...getSafeSecretsInfo()
-	})
-
 	return auth.eventHandler
 }

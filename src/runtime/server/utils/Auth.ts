@@ -11,6 +11,7 @@ import { z } from "zod"
 
 import { type SessionManager } from "./SessionManager.js"
 
+import { getSafeSecretsInfo } from "#auth/server/helpers/getSafeSecretsInfo.js"
 import { logSafeRoute } from "#auth/server/helpers/logSafeRoute.js"
 import {
 	type AuthOptions,
