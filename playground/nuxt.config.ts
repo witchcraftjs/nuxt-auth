@@ -9,6 +9,17 @@ export default defineNuxtConfig({
 		}
 	},
 	devtools: { enabled: true },
+	hooks: {
+		// https://github.com/nuxt/nuxt/issues/30481
+		"nitro:config"(nitroConfig) {
+			nitroConfig.devStorage ??= {}
+			nitroConfig.devStorage.root = {
+				driver: "fs-lite",
+				readOnly: true,
+				base: nitroConfig.rootDir,
+			}
+		}
+	},
 	compatibilityDate: "2024-09-23",
 	future: {
 		compatibilityVersion: 4 as const
@@ -33,6 +44,10 @@ export default defineNuxtConfig({
 	],
 	postgres: {
 		devAutoGenerateMigrations: true,
+		additionalOptions: {
+			// temp
+			ssl: false
+		}
 	},
 	auth: {
 		authRoutes: {
