@@ -26,7 +26,8 @@ declare module "@witchcraft/nuxt-auth" {
 	}
 }
 const logger = useServerLogger()
-export default createAuthHandler(db, users, authAccounts, sessionManager, {
+
+export default createAuthHandler(db as any, users, authAccounts, sessionManager, {
 	onRegister: async (event: H3Event) => {
 		const user = event.context.user! // already asserted
 		const body = await readValidatedBody(event, registerBody.parse)
@@ -55,10 +56,11 @@ export default createAuthHandler(db, users, authAccounts, sessionManager, {
 		}
 	},
 	extendRouter: router => {
-		const usernameValidRoute = getAuthApiRoute("usernameValid")
+		const usernameValidRoute = useRuntimeConfig().public.auth.authApiRoutes.usernameValid
 		router.get(usernameValidRoute, defineEventHandler(async event => {
 			const username = event.context.params?.username
 			const isValid = defaultZodUsernameSchema.safeParse(username)
+			logger.info({ ns: "auth:usernameValid:satisfiesSchema", username, isValid })
 			if (!username || !isValid.success) return false
 			logger.trace({
 				ns: `auth:${usernameValidRoute}`,
@@ -71,6 +73,7 @@ export default createAuthHandler(db, users, authAccounts, sessionManager, {
 				)
 				.limit(1)
 
+			logger.info({ ns: "auth:usernameValid:exists", usernameExists })
 			return usernameExists.length === 0
 		}))
 	}
