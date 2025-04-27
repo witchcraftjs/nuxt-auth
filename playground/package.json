@@ -6,6 +6,7 @@
 		"dev": "nuxi dev",
 		"dev:nix": "devenv up",
 		"build": "nuxi build",
+		"db:regenerate": "rm -rf .devenv/state/postgres && rm -rf db/migrations && drizzle-kit generate",
 		"generate": "nuxi generate"
 	},
 	"dependencies": {
