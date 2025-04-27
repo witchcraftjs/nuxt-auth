@@ -6,13 +6,14 @@ export default defineNuxtConfig({
 		chokidar: {
 			ignoreInitial: true,
 			ignored: [".direnv", ".devenv"],
-		},
+		}
 	},
 	devtools: { enabled: true },
 	compatibilityDate: "2024-09-23",
 	future: {
 		compatibilityVersion: 4 as const
 	},
+
 	runtimeConfig: {
 		...genAuthSecretKeys(["google", "github"]),
 		public: {
