@@ -56,6 +56,11 @@ export default defineNuxtConfig({
 		// or manually
 		authGoogleClientSecret: "",
 		authGoogleClientId: "",
+		public: {
+			// this is set automatically (for production, it's always true, for dev it's true if nuxt.options.devServer.https is defined)
+			// this determines whether to use https in the auth callback url
+			// isSecure: ...
+		}
 	}
 })
 ```

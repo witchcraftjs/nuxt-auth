@@ -45,7 +45,7 @@ export const oauth2CallbackQuery = z.object({
 const rc = useRuntimeConfig()
 
 export const providerCookieOpts: CookieSerializeOptions = {
-	secure: import.meta.secure,
+	secure: useRuntimeConfig().public.auth.isSecure,
 	...rc.public.auth.providerCookieOpts
 }
 
@@ -143,7 +143,7 @@ export class Auth {
 			providerOptions,
 			enabledProviders,
 		} = {
-			baseUrl: import.meta.dev ? `${import.meta.secure ? "https" : "http"}://localhost:3000` : undefined,
+			baseUrl: import.meta.dev ? `${useRuntimeConfig().public.auth.isSecure ? "https" : "http"}://localhost:3000` : undefined,
 			...opts,
 		}
 		if (baseUrl === undefined) {
@@ -188,6 +188,9 @@ export class Auth {
 			ns: "auth:init",
 			enabledProviders,
 			registeredProviders: Object.keys(this.providers),
+			baseUrl,
+			isSecure: useRuntimeConfig().public.auth.isSecure,
+			...getSafeSecretsInfo()
 		})
 
 

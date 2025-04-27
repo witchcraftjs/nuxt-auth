@@ -13,7 +13,7 @@ export const sessionManager = new SessionManager(
 	{
 		sessionCookie: {
 			attributes: {
-				secure: import.meta.secure,
+				secure: useRuntimeConfig().public.auth.isSecure,
 			}
 		}
 	}

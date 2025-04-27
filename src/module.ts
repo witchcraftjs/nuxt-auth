@@ -11,10 +11,6 @@ import type { NuxtPage } from "@nuxt/schema"
 import { type useAuth } from "./runtime/composables/useAuth.js"
 
 declare global {
-	interface ImportMeta {
-		/** Whether the origin is secure (using https) or not. Takes into account that the devServer can be made to use https. */
-		secure: boolean
-	}
 }
 declare module "vue-router" {
 	interface RouteMeta {
@@ -45,6 +41,7 @@ declare module "@nuxt/schema" {
 		>> & {
 			authRoutes: Required<ModuleOptions["authRoutes"]>
 			authApiRoutes: Required<ModuleOptions["authApiRoutes"]>
+			isSecure: boolean
 		}
 	}
 }
@@ -57,7 +54,7 @@ export interface ModuleOptions {
 	/**
 	 * Options for the provider cookies.
 	 *
-	 * `secure` is not included in the options because it's determined by whether `import.meta.secure` was defined (which this module handles).
+	 * `secure` is not included in the options because it's determined by whether `useRuntimeConfig().public.auth.isSecure` was defined (which this module sets automatically).
 	 *
 	 * @default {
 	 * 	maxAge: 60 * 10, // 10 minutes
@@ -81,7 +78,7 @@ export interface ModuleOptions {
 	 *
 	 * Can also be overriden when creating the `SessionManager`.
 	 *
-	 * `secure` is not included in the options because it's determined by whether `import.meta.secure` was defined (which this module handles).
+	 * `secure` is not included in the options because it's determined by whether `useRuntimeConfig().public.auth.isSecure` was defined (which this module sets automatically).
 	 *
 	 * @default {
 	 * 	sameSite: "lax" as const,
@@ -231,11 +228,6 @@ export default defineNuxtModule<ModuleOptions>({
 		await installModule("@witchcraft/nuxt-logger", (nuxt.options as any).logger)
 		// await installModule("@witchcraft/nuxt-postgres", (nuxt.options as any).postgres)
 
-		nuxt.hook("vite:extendConfig", config => {
-			// spreading breaks the build! :/ wtf
-			config.define!["import.meta.secure"] = (!!nuxt.options.devServer.https || process.env.mode === "production") ? "true" : "false"
-		})
-
 		const { resolve } = createResolver(import.meta.url)
 		addComponentsDir({
 			path: resolve("runtime/components"),
@@ -250,6 +242,9 @@ export default defineNuxtModule<ModuleOptions>({
 		}
 		nuxt.options.runtimeConfig.public.auth = defu(
 			nuxt.options.runtimeConfig.public.auth as any,
+			{
+				isSecure: (!!nuxt.options.devServer.https || process.env.mode === "production")
+			},
 			options,
 		)
 		delete (nuxt.options.runtimeConfig.public.auth as any).useGlobalMiddleware
@@ -267,7 +262,7 @@ export default defineNuxtModule<ModuleOptions>({
 			}
 		])
 		for (const file of [
-			"runtime",
+			// "runtime",
 			"runtime/types", // why, if not transpiled import path is wrong :/
 			"runtime/server/utils/Auth",
 			"runtime/server/helpers/getSafeSecretsInfo",

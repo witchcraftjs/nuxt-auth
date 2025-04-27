@@ -48,7 +48,7 @@ export class SessionManager {
 				name: defaultSessionCookieName,
 				...options.sessionCookie,
 				attributes: {
-					secure: import.meta.secure,
+					secure: useRuntimeConfig().public.auth.isSecure,
 					...(useRuntimeConfig().public.auth.sessionCookieOpts ?? {}),
 					...options.sessionCookie?.attributes,
 				},
