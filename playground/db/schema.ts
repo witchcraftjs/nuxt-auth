@@ -11,7 +11,7 @@ import {
 export const users = pgTable("users", {
 	id: uuid("id").primaryKey().unique()
 		.notNull()
-		.default(sql`uuid_generate_v7()`),
+		.default(sql`gen_random_uuid()`),
 	username: varchar("username", { length: 256 }).unique(),
 	...authUserFields,
 })

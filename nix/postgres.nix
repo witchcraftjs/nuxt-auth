@@ -45,12 +45,11 @@ in
       }];
       # note that the init script doesn't seem to initialize them properly
       # the postgres nuxt module takes care of that
-      extensions = extensions: [ extensions.pg_uuidv7 ];
+      extensions = extensions: [ ];
       initialScript = ''
         CREATE USER "${cfg.user}" WITH ENCRYPTED PASSWORD '${builtins.getEnv cfg.passwordEnv}';
         ALTER USER "${cfg.user}" WITH SUPERUSER;
         ALTER DATABASE "${cfg.database}" OWNER TO "${cfg.user}";
-        CREATE EXTENSION pg_uuidv7;
       '';
       listen_addresses = cfg.host;
       port = cfg.port;
