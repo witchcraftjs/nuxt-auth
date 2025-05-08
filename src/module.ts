@@ -278,6 +278,7 @@ export default defineNuxtModule<ModuleOptions>({
 			nuxt.options.build.transpile.push(resolve(file))
 		}
 
+		await installModule("@witchcraft/nuxt-postgres", (nuxt.options as any).postgres)
 		await installModule("@witchcraft/ui/nuxt", (nuxt.options as any).witchcraftUi)
 		await installModule("unplugin-icons/nuxt")
 

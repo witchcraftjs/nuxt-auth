@@ -30,7 +30,7 @@
 	],
 	"scripts": {
 		"prepare": "husky && pnpm build",
-		"build": "nuxt-module-build prepare && nuxt-module-build build && cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true && pnpm nuxi build playground",
+		"build": "cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true 'nuxt-module-build prepare && nuxt-module-build build && pnpm nuxi build playground'",
 		"//": "drizzle requires we run from playground",
 		"dev:playground": "cd playground && pnpm dev",
 		"dev:prepare": "cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true 'pnpm nuxt-module-build build --stub && pnpm nuxt-module-build prepare && pnpm nuxi prepare playground'",
