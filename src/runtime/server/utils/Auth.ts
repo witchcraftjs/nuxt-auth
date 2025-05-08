@@ -7,6 +7,7 @@ import { type PgDatabase } from "drizzle-orm/pg-core"
 import type { EventHandler, H3Event, Router } from "h3"
 import { createError, defineEventHandler, getCookie, setCookie } from "h3"
 import { type JwtPayload } from "jsonwebtoken"
+import { type Logger } from "pino"
 import { z } from "zod"
 
 import { type SessionManager } from "./SessionManager.js"
@@ -36,7 +37,6 @@ export const zState = z.object({
 
 type State = z.infer<typeof zState>
 
-const logger = useServerLogger()
 
 export const oauth2CallbackQuery = z.object({
 	code: z.string(),
@@ -104,6 +104,8 @@ export class Auth {
 
 	router: Router
 
+	logger: Logger
+
 	constructor(
 		db: Auth["db"],
 		usersTable: Auth["usersTable"],
@@ -112,7 +114,9 @@ export class Auth {
 		router: Auth["router"],
 		opts: AuthOptions,
 		env: Record<`auth${string}${"ClientId" | "ClientSecret"}` | string, string>,
+		logger: Logger,
 	) {
+		this.logger = useServerLogger()
 		this.db = db
 		this.usersTable = usersTable
 		this.authAccountsTable = authAccountsTable
@@ -163,7 +167,7 @@ export class Auth {
 			const clientSecret = env[`auth${capitalized}ClientSecret`]
 
 			if (!clientId || !clientSecret) {
-				logger.warn({
+				this.logger.warn({
 					ns: "auth:init:missingSecrets",
 					env,
 					error: `Missing auth${capitalized}ClientId or auth${capitalized}ClientSecret for ${capitalized}. Disabling.` })
@@ -173,7 +177,7 @@ export class Auth {
 			const redirectUri = baseUrl + getAuthApiRoute("callback", { provider: provider.toLowerCase() })
 			const providerClass = this.handlers[provider]
 			if (!providerClass) {
-				logger.error({
+				this.logger.error({
 					ns: "auth:init",
 					provider,
 				})
@@ -185,7 +189,7 @@ export class Auth {
 			}
 			this.providers[provider] = new providerClass({ clientId, clientSecret, redirectUri }, options as any)
 		}
-		logger.info({
+		this.logger.info({
 			ns: "auth:init",
 			enabledProviders,
 			registeredProviders: Object.keys(this.providers),
@@ -202,7 +206,7 @@ export class Auth {
 		router.get(apiRoutes.usersInfo, defineEventHandler(event => {
 			const user = event.context.user!
 			const id = getCookie(event, "userId")
-			logger.debug({
+			this.logger.debug({
 				ns: "auth:users/info",
 				userExists: !!user,
 				redact: { user, id, authSession: getCookie(event, "authSession") }
@@ -225,7 +229,7 @@ export class Auth {
 			if (decoded instanceof Error) throw decoded
 
 			const res = await this.createSession(event, decoded.userId)
-			logger.debug({
+			this.logger.debug({
 				ns: "auth:callback:createdSession",
 				redact: { res, decoded }
 			})
@@ -241,7 +245,7 @@ export class Auth {
 			const id = event.context.user?.id
 			Auth.assertAuthorizedUserAndId(event.context.user, id)
 
-			logger.trace({
+			this.logger.trace({
 				ns: "auth:users/:id/account",
 			})
 
@@ -251,7 +255,7 @@ export class Auth {
 			return accounts
 		}))
 		router.post(apiRoutes.logout, defineEventHandler(async event => {
-			logger.trace({
+			this.logger.trace({
 				ns: "auth:users/logout",
 				session: event.context.session !== undefined,
 			})
@@ -289,7 +293,7 @@ export class Auth {
 			const encodedState = this.encodeState(state)
 			const info = this.getProvider(providerName).getLoginInfo(encodedState)
 
-			logger.debug({
+			this.logger.debug({
 				ns: "auth:login",
 				provider: providerName,
 				redact: {
@@ -308,7 +312,7 @@ export class Auth {
 					setCookie(event, `${providerName}_oauth_code_verifier`, info.codeVerifier, providerCookieOpts)
 				}
 			} catch (e) {
-				logger.error({
+				this.logger.error({
 					ns: "auth:login:setCookieError",
 					error: e instanceof Error ? e.message : "Not an error type.",
 					redact: {
@@ -353,7 +357,7 @@ export class Auth {
 				? mockUser
 				: await provider.getAccountInfo(tokens)
 					.catch((e: any) => {
-						logger.error({
+						this.logger.error({
 							ns: "auth:callback:getUserInfoError",
 							redact: {
 								error: e,
@@ -393,7 +397,7 @@ export class Auth {
 			bypassRegistration = bypassRegistration ? true : isRegistered
 			let sessionUserId: string | undefined = existingProviderAccount?.id ?? existingUserAccount?.id
 
-			logger.debug({
+			this.logger.debug({
 				ns: "auth:callback",
 				provider: providerName,
 				redact: {
@@ -414,7 +418,7 @@ export class Auth {
 
 
 			if (event.context.user && existingProviderAccount) {
-				logger.debug({
+				this.logger.debug({
 					ns: "auth:callback:existingProviderAccount"
 				})
 				// await this.createSession(event, sessionUserId!)
@@ -434,11 +438,11 @@ export class Auth {
 
 
 			if (existingProviderAccount) {
-				logger.debug({
+				this.logger.debug({
 					ns: "auth:callback:existingUser:existingAccount"
 				})
 			} else if (existingUserAccount) {
-				logger.debug({
+				this.logger.debug({
 					ns: "auth:callback:existingUser:newProvider",
 					isRegistered,
 				})
@@ -454,7 +458,7 @@ export class Auth {
 					})
 				})
 			} else {
-				logger.debug({
+				this.logger.debug({
 					ns: "auth:callback:newUser",
 					existingUserAccount,
 					existingProviderAccount,
@@ -481,7 +485,7 @@ export class Auth {
 				})
 
 				if (!userId) {
-					logger.error({
+					this.logger.error({
 						ns: "auth:callback:newUser:failed",
 					})
 					throw createError({
@@ -535,7 +539,7 @@ export class Auth {
 
 		opts.extendRouter?.(router)
 
-		logger.debug({
+		this.logger.debug({
 			ns: "auth:routes",
 			apiRoutes
 		})
@@ -544,7 +548,7 @@ export class Auth {
 		}
 		this.eventHandler = useBase(apiRoutes.base, event => {
 			const routePath = event.context.params?._
-			logger.debug({
+			this.logger.debug({
 				ns: "auth:route",
 				route: routePath && logSafeRoute(routePath),
 			})
@@ -556,7 +560,7 @@ export class Auth {
 
 	assertValidProvider(provider?: string): asserts provider is ProviderNames {
 		if(!provider || this.providers[provider] === undefined) {
-			logger.error({
+			this.logger.error({
 				ns: "auth:assertValidProvider",
 				provider,
 			})
@@ -608,7 +612,7 @@ export class Auth {
 		try {
 			return zState.parse(JSON.parse(decodeURIComponent(state)))
 		} catch (e) {
-			logger.error({
+			this.logger.error({
 				ns: "auth:decodeState",
 				redact: {
 					state,
@@ -673,7 +677,7 @@ export class Auth {
 	// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 	async handleMaybeTokenError(valid: boolean, tokens: OAuth2Tokens | OAuth2RequestError, redirectToLogin: Record<string, string> = {}) {
 		if (!valid || typeof tokens !== "object") {
-			logger.error({
+			this.logger.error({
 				ns: "auth:callback:oauth2RequestError",
 				redact: {
 					tokens,
@@ -697,7 +701,7 @@ export class Auth {
 		const session = await this.sessionManager.createSession(token, sessionUserId)
 
 		const sessionCookie = this.sessionManager.createSessionCookie(token)
-		logger.debug({
+		this.logger.debug({
 			ns: "auth:createSession",
 			redact: {
 				sessionCookie,
@@ -741,7 +745,7 @@ export class Auth {
 			)
 		}
 
-		logger.debug({
+		this.logger.debug({
 			ns: "auth:callback:createdSessionAndRedirecting",
 			modified,
 			deeplink,

@@ -15,7 +15,6 @@ import {
 import type { AuthAccountsTable,UserTable } from "../../../createAuthSchema.js"
 import type { AuthHandlerOptions } from "../../types.js"
 
-const logger = useServerLogger()
 export function createAuthHandler(
 	db: PgDatabase<any, any, any>,
 	usersTable: UserTable,
@@ -25,6 +24,7 @@ export function createAuthHandler(
 ): EventHandler {
 	const rc = useRuntimeConfig()
 	const router = createRouter()
+	const logger = useServerLogger()
 	const auth = new Auth(
 		db,
 		usersTable,
@@ -41,6 +41,7 @@ export function createAuthHandler(
 			}
 		},
 		rc as any,
+		logger
 	)
 	return auth.eventHandler
 }
