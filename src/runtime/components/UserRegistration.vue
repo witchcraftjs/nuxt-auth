@@ -89,21 +89,22 @@
 import { refDebounced } from "@vueuse/core"
 
 import { navigateTo, useAsyncData, useRuntimeConfig } from "#app"
-import { computed, type Ref, ref, useId,useRoute } from "#imports"
+import { computed, onPrehydrate, type Ref, ref, useId,useRoute } from "#imports"
 import IconInvalid from "~icons/fa-solid/times"
 import IconCheck from "~icons/fa6-solid/check"
 import IconSpinner from "~icons/gg/spinner"
 
 import { useAuth } from "../composables/useAuth.js"
 import { AUTH_ERROR } from "../types.js"
-import { type Auth } from "../server/utils/Auth.js"
 import { getAuthApiRoute } from "../utils/getAuthApiRoute.js"
+import { defaultZodUsernameSchema } from "../types.js"
 
 const query = useRoute().query
 const submitId = useId()
 const props = withDefaults(defineProps<{
 	debounce?: number
-	isValidUsernameRoute?: (username: string) => string
+	/** Can throw to indicate the username is invalid (before a request to properly check it is even made. The default throws if the default username schema isn't met. */
+	getValidUsernameRoute?: (username: string) => string
 	onSubmitRegistration?: (
 		event: Event,
 		username: string,
@@ -111,15 +112,22 @@ const props = withDefaults(defineProps<{
 		redirectUrl: string,
 		deeplink?: string
 	) => void
+	id?: string
 }>(), {
-	debounce: 1000, isValidUsernameRoute: (username: string) => getAuthApiRoute("usernameValid", { username }), onSubmitRegistration: async (
+	debounce: 1000,
+	getValidUsernameRoute: (username: string) => {
+		const res = defaultZodUsernameSchema.safeParse(username)
+		if (!res.success) throw new Error(res.error.format()._errors.join("\n"))
+		return getAuthApiRoute("usernameValid", { username })
+	},
+	onSubmitRegistration: async (
 		_event: Event,
 		username: string,
 		error: Ref<string>,
 		redirectUrl: string,
 		deeplink?: string
 	) => {
-		const res = await $fetch<true | {redirectUrl:string}>(`${getAuthApiRoute("register")}${deeplink ? `?deeplink=${deeplink}` : ""}`, {
+		const res = await $fetch<true | { redirectUrl: string }>(`${getAuthApiRoute("register")}${deeplink ? `?deeplink=${deeplink}` : ""}`, {
 			cache: "no-store",
 			method: "post",
 			body: {
@@ -138,15 +146,14 @@ const props = withDefaults(defineProps<{
 		}
 	}
 })
-
-const usernameId = useId()
+const usernameId = props.id ?? useId()
 const username = ref("")
 const debouncedUsername = refDebounced(username, props.debounce)
 const registrationError = ref("")
 
 const { data: isValidUsername, status, error } = await useAsyncData(
 	"auth:username:valid",
-	() => $fetch<boolean>(props.isValidUsernameRoute(debouncedUsername.value)),
+	() => $fetch<boolean>(props.getValidUsernameRoute(debouncedUsername.value)),
 	{
 		watch: [ debouncedUsername ],
 		immediate: false,
@@ -161,7 +168,6 @@ const deeplink = typeof query.deeplink === "string" ? query.deeplink : undefined
 const redirect = deeplink
 	? useRuntimeConfig().public.auth.authRoutes.externalCode
 	: useRuntimeConfig().public.auth.authRoutes.register
-
 function handleSubmit(event: Event) {
 	props.onSubmitRegistration(
 		event,
@@ -171,5 +177,4 @@ function handleSubmit(event: Event) {
 		deeplink,
 	)
 }
-
 </script>
