@@ -5,7 +5,7 @@
 	"scripts": {
 		"dev": "nuxi dev",
 		"dev:nix": "devenv up",
-		"build": "nuxi build",
+		"build": "cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true 'nuxi build'",
 		"db:regenerate": "rm -rf .devenv/state/postgres && rm -rf db/migrations && drizzle-kit generate",
 		"generate": "nuxi generate"
 	},
