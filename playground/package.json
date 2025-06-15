@@ -9,19 +9,28 @@
 		"db:regenerate": "rm -rf .devenv/state/postgres && rm -rf db/migrations && drizzle-kit generate",
 		"generate": "nuxi generate"
 	},
+	"@comments": {
+		"dependencies": {
+			"tsx": "This is because of https://github.com/drizzle-team/drizzle-orm/issues/2705",
+			"@witchcraft/*(except self)": "TODO remove and properly install before publishing."
+		}
+	},
 	"dependencies": {
-		"@witchcraft/nuxt-auth": "^0.0.0",
-		"@witchcraft/nuxt-postgres": "^0.0.0",
-		"@witchcraft/nuxt-utils": "^0.0.1",
-		"@witchcraft/ui": "^0.0.1",
+		"@witchcraft/nuxt-auth": "link:../",
+		"@witchcraft/nuxt-postgres": "link:../../nuxt-postgres",
+		"@witchcraft/nuxt-utils": "^0.1.0",
+		"@witchcraft/ui": "~0.1.0",
 		"arctic": "^1.9.2",
 		"cookie-es": "^1.2.2",
-		"drizzle-orm": "^0.43.1",
-		"nuxt": "^3.16.2",
+		"drizzle-orm": "^0.44.3",
+		"nuxt": "^4.0.1",
 		"pino": "^9.4.0",
 		"pino-pretty": "^11.2.2",
-		"unplugin-icons": "^0.19.3",
+		"unplugin-icons": "^22.1.0",
 		"unplugin-vue-components": "^0.27.4",
-		"zod": "^3.23.8"
+		"zod": "^4.0.0"
+	},
+	"devDependencies": {
+		"tsx": "^4.20.3"
 	}
 }

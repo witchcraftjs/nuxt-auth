@@ -12,7 +12,7 @@
 				{{ authUrl }}
 			</NuxtLink>
 		</div>
-		<WInput
+		<WInputDeprecated
 			placeholder="Paste Code Here"
 			v-model="accessToken"
 			@update:model-value="error=undefined"

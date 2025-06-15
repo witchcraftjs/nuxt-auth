@@ -19,7 +19,7 @@
 			Username
 		</WLabel>
 		<div>
-			<WInput
+			<WInputDeprecated
 				:id="usernameId"
 				name="username"
 				class="w-0"
@@ -54,7 +54,7 @@
 						</slot>
 					</WIcon>
 				</template>
-			</WInput>
+			</WInputDeprecated>
 		</div>
 	</div>
 	<slot/>
