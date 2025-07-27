@@ -10,12 +10,17 @@ import {
 import { getAuthApiRoute } from "../utils/getAuthApiRoute.js"
 
 export default defineNuxtRouteMiddleware(async (_to, _from) => {
-	const logger = useLogger()
 	const doFetch = useState("auth:_fetch",() => true)
 	const userData = useState("auth:user",() => null)
 	const semiAuthed = useState("auth:semiAuthed",() => false)
 
-	logger.info({ ns: "auth:middleware:authGlobal", doFetch: doFetch.value, userData: userData.value })
+	if (import.meta.client) {
+		// this used to work without issues in nuxt ~3.14, not sure what happened
+		// logger appears empty, composable looses initialized state, useServerLogger doesn't work either
+		const logger = useLogger()
+		logger.info({ ns: "auth:middleware:authGlobal", doFetch: doFetch.value, userData: userData.value })
+	}
+
 	if (!doFetch.value) return
 	const res = await useFetch<any>(getAuthApiRoute("usersInfo"))
 	doFetch.value = false
@@ -27,9 +32,13 @@ export default defineNuxtRouteMiddleware(async (_to, _from) => {
 			userData.value = user.value as any
 		}
 	}
-	logger.info({
-		ns: "auth:middleware:authGlobal:fetched",
-		userData: userData.value,
-		semiAuthed: semiAuthed.value,
-	})
+
+	if (import.meta.client) {
+		const logger = useLogger()
+		logger.info({
+			ns: "auth:middleware:authGlobal:fetched",
+			userData: userData.value,
+			semiAuthed: semiAuthed.value,
+		})
+	}
 })

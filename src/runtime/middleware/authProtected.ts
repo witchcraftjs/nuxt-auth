@@ -6,7 +6,6 @@ import type { RouteMeta } from "vue-router"
 import { defineNuxtRouteMiddleware, navigateTo, useAuth, useLogger,useRuntimeConfig } from "#imports"
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
-	const logger = useLogger()
 	const rc = useRuntimeConfig()
 	const config = rc.public.auth
 	const auth = useAuth()
@@ -15,7 +14,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
 	const isRegistered = auth.user.value?.isRegistered ?? false
 	const isAuthenticated = !!auth.user.value
-	const isSemiAuthed = auth.isSemiAuthed.value
+	// const isSemiAuthed = auth.isSemiAuthed.value
 
 	const fallbackRedirectPath =
 		isAuthenticated && isRegistered
@@ -66,15 +65,20 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		|| (meta.only === "unauthenticated" && !isAuthenticated)
 
 	const doRedirect = !matchesCondition && to.path !== redirectTo
-	logger.info({
-		ns: "auth:middleware:authProtected",
-		willRedirect: doRedirect,
-		isRegistered,
-		isAuthenticated,
-		meta,
-		matchesCondition,
-		redirectTo,
-	})
+
+	// see note in ./authGlobal.ts
+	if (import.meta.client) {
+		useLogger().info({
+			ns: "auth:middleware:authProtected",
+			willRedirect: doRedirect,
+			isRegistered,
+			isAuthenticated,
+			meta,
+			matchesCondition,
+			redirectTo,
+		})
+	}
+
 	if (doRedirect) {
 		if (meta.handleRedirect) {
 			return meta.handleRedirect(redirectTo)
