@@ -95,9 +95,8 @@ import IconCheck from "~icons/fa6-solid/check"
 import IconSpinner from "~icons/gg/spinner"
 
 import { useAuth } from "../composables/useAuth.js"
-import { AUTH_ERROR } from "../types.js"
+import { AUTH_ERROR , defaultZodUsernameSchema } from "../types.js"
 import { getAuthApiRoute } from "../utils/getAuthApiRoute.js"
-import { defaultZodUsernameSchema } from "../types.js"
 
 const query = useRoute().query
 const submitId = useId()

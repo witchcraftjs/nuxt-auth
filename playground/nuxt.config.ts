@@ -1,4 +1,4 @@
-import { genAuthSecretKeys } from "@witchcraft/nuxt-auth/build/genAuthSecretKeys.js"
+import { genAuthSecretKeys } from "@witchcraft/nuxt-auth/build/genAuthSecretKeys"
 
 export default defineNuxtConfig({
 	ignore: [".direnv/**", ".devenv/**"],

@@ -86,7 +86,7 @@ function defaultUsernameLink(user: AuthUser) {
 }
 const props = withDefaults(defineProps<{
 	/** The link to the user's profile. Links to `/users/:username` (note this is not provided by the module). */
-	// eslint-disable-next-line no-shadow
+	 
 	usernameLink?: (user: AuthUser) => string
 }>(), {
 	usernameLink: undefined

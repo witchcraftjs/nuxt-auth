@@ -10,6 +10,7 @@ import { type JwtPayload } from "jsonwebtoken"
 import { type Logger } from "pino"
 import { z } from "zod"
 
+import { type AuthAccountsTable,type UserTable } from "./createAuthSchema.js"
 import { type SessionManager } from "./SessionManager.js"
 
 import { getSafeSecretsInfo } from "#auth/server/helpers/getSafeSecretsInfo.js"
@@ -23,8 +24,8 @@ import {
 	type ProviderNames,
 } from "#auth/types"
 import { AUTH_ERROR } from "#auth/types"
+import { useRuntimeConfig, useServerLogger } from "#imports"
 
-import { type AuthAccountsTable,type UserTable } from "../../server/utils/createAuthSchema.js"
 import { getAuthApiRoute } from "../../utils/getAuthApiRoute.js"
 import { signJwt } from "../helpers/signJwt.js"
 import { verifyJwt as jwtVerify } from "../helpers/verifyJwt.js"

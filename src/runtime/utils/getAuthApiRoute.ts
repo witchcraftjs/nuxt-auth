@@ -1,8 +1,6 @@
 import { keys } from "@alanscodelog/utils/keys.js"
 import type { PublicRuntimeConfig } from "@nuxt/schema"
 
-import { useRuntimeConfig } from "#imports"
-
 import type { ApiRoutesParams } from "../../module.js"
 
 export function getAuthApiRoute<
@@ -16,6 +14,7 @@ export function getAuthApiRoute<
 ): string {
 	// electron needs to be able to import this file
 	// it provides it's own runtime config so that useRuntimeConfig is never called
+	// @ts-expect-error this should work fine in nuxt without the import from #imports
 	rc ??= useRuntimeConfig().public
 	const routes = rc.auth.authApiRoutes
 	let finalRoute: string = routes[route]

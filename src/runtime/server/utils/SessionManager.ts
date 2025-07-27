@@ -8,7 +8,8 @@ import { type PgDatabase } from "drizzle-orm/pg-core"
 import {
 	type AuthSessionsTable,
 	type AuthUsersTable,
-} from "../../server/utils/createAuthSchema.js"
+} from "./createAuthSchema.js"
+
 import {
 	type AuthSession,
 	type SessionCookie,
@@ -26,6 +27,7 @@ export class SessionManager {
 			attributes: Omit<SessionCookieOptions, "maxAge">
 		}
 	}
+
 	db: PgDatabase<any, any, any>
 
 	sessionTable: AuthSessionsTable

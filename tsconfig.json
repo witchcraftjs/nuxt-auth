@@ -8,6 +8,7 @@
 		"build.config.ts",
 		"dist",
 		"node_modules",
-		"playground",
-	]
+		"playground"
+	],
+
 }

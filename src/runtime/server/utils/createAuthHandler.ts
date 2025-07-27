@@ -2,6 +2,7 @@ import type { PgDatabase } from "drizzle-orm/pg-core"
 import type { EventHandler } from "h3"
 
 import { Auth } from "./Auth.js"
+import type { AuthAccountsTable,UserTable } from "./createAuthSchema.js"
 import { type SessionManager } from "./SessionManager.js"
 
 import github from "#auth/core/providers/github.js"
@@ -12,7 +13,6 @@ import {
 	useServerLogger,
 } from "#imports"
 
-import type { AuthAccountsTable,UserTable } from "../../server/utils/createAuthSchema.js"
 import type { AuthHandlerOptions } from "../../types.js"
 
 export function createAuthHandler(

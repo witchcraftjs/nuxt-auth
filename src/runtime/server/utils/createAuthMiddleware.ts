@@ -1,7 +1,6 @@
-import { isValidRequestOrigin } from "./isValidRequestOrigin.js"
-import { type SessionManager } from "./SessionManager.js"
 import { defineEventHandler, getCookie, setCookie, useServerLogger } from "h3"
 
+import { type SessionManager } from "./SessionManager.js"
 
 import { type AuthSession, type AuthUser } from "../../types.js"
 

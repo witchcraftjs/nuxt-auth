@@ -1,7 +1,7 @@
 import { type EnumLike } from "@alanscodelog/utils"
 import { enumFromArray } from "@alanscodelog/utils/enumFromArray.js"
 import { type OAuth2Tokens } from "arctic"
-import { type H3Event, type Router } from "h3"
+import type { H3Event, Router } from "h3"
 import type { StringValue } from "ms"
 import type { InjectionKey } from "vue"
 import { z } from "zod"

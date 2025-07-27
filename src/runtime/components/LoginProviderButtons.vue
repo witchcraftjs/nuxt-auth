@@ -32,6 +32,7 @@
 </template>
 <script setup lang="ts">
 import { capitalize } from "@alanscodelog/utils/capitalize.js"
+import { useInjectedDarkMode } from "@witchcraft/ui/composables/useInjectedDarkMode.js"
 import defu from "defu"
 
 import { useRuntimeConfig } from "#app"
@@ -40,7 +41,6 @@ import { computed, inject, ref, useId } from "#imports"
 import { useAuth } from "../composables/useAuth.js"
 import { providerStyles as baseProviderStyles } from "../core/providerStyles.js"
 import { type FullProviderStyles, type ProviderNames, type ProviderStyle, type UseAuthComposableOptions, } from "../types.js"
-import { useInjectedDarkMode } from "@witchcraft/ui/composables/useInjectedDarkMode.js"
 
 
 const rc = useRuntimeConfig()
