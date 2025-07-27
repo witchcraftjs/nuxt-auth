@@ -10,10 +10,10 @@ import type {
 	AuthAccount,
 	AuthSession as DbAuthSession,
 	AuthUserFields as DbAuthUser,
-} from "../createAuthSchema.js"
+} from "./server/utils/createAuthSchema.js"
 
 
-export type * from "../createAuthSchema.js"
+export type * from "./server/utils/createAuthSchema.js"
 
 /**
 	* This is the minimum information providers need to return.

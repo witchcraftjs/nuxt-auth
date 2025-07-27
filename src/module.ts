@@ -5,7 +5,7 @@ import { defu } from "defu"
 
 import type { AdditionalApiRoutes, ProviderNames, Secrets, SessionCookieOptions } from "./runtime/types"
 export type * from "./runtime/types"
-export type * from "./createAuthSchema.js"
+export type * from "./runtime/server/utils/createAuthSchema.js"
 import type { NuxtPage } from "@nuxt/schema"
 
 import { type useAuth } from "./runtime/composables/useAuth.js"
@@ -269,11 +269,11 @@ export default defineNuxtModule<ModuleOptions>({
 			"runtime/server/helpers/logSafeRoute",
 			"runtime/server/utils/createAuthHandler",
 			"runtime/server/utils/createAuthMiddleware",
+			"runtime/server/utils/createAuthSchema",
 			"runtime/utils/getAuthApiRoute",
 			"runtime/core/providers/google",
 			"runtime/core/providers/github",
 			"runtime/utils/createExternalAuthHandler",
-			// careful, no need to add createAuthSchema as that needs to be importable as is by drizzle via a regular import
 		]) {
 			nuxt.options.build.transpile.push(resolve(file))
 		}

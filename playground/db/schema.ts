@@ -1,5 +1,5 @@
 // careful, we can't use nuxt paths or .js file endings because of drizzle
-import { authUserFields, createAuthSchema } from "@witchcraft/nuxt-auth/createAuthSchema.js"
+import { authUserFields, createAuthSchema } from "@witchcraft/nuxt-auth/server/utils/createAuthSchema.js"
 import { sql } from "drizzle-orm"
 import {
 	pgTable,

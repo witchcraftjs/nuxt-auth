@@ -8,7 +8,7 @@ import { type PgDatabase } from "drizzle-orm/pg-core"
 import {
 	type AuthSessionsTable,
 	type AuthUsersTable,
-} from "../../../createAuthSchema.js"
+} from "../../server/utils/createAuthSchema.js"
 import {
 	type AuthSession,
 	type SessionCookie,

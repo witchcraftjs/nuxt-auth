@@ -4,7 +4,7 @@
 import { boolean, jsonb, type PgColumn, pgTable, type PgTableWithColumns, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm/relations"
 
-import type { AdditionalAccountInfo } from "./runtime/types.js"
+import type { AdditionalAccountInfo } from "../../types.js"
 
 export const authUserFields = {
 	email: text("email").notNull().unique(),

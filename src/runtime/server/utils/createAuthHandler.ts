@@ -12,7 +12,7 @@ import {
 	useServerLogger,
 } from "#imports"
 
-import type { AuthAccountsTable,UserTable } from "../../../createAuthSchema.js"
+import type { AuthAccountsTable,UserTable } from "../../server/utils/createAuthSchema.js"
 import type { AuthHandlerOptions } from "../../types.js"
 
 export function createAuthHandler(

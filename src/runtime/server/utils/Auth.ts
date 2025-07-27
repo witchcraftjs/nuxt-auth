@@ -24,7 +24,7 @@ import {
 } from "#auth/types"
 import { AUTH_ERROR } from "#auth/types"
 
-import { type AuthAccountsTable,type UserTable } from "../../../createAuthSchema.js"
+import { type AuthAccountsTable,type UserTable } from "../../server/utils/createAuthSchema.js"
 import { getAuthApiRoute } from "../../utils/getAuthApiRoute.js"
 import { signJwt } from "../helpers/signJwt.js"
 import { verifyJwt as jwtVerify } from "../helpers/verifyJwt.js"
