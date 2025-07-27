@@ -24,7 +24,7 @@
 		"dist"
 	],
 	"scripts": {
-		"prepare": "husky && pnpm build",
+		"prepare": "husky && cd playground && pnpm i",
 		"build": "cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true 'nuxt-module-build prepare && nuxt-module-build build && pnpm nuxi build playground'",
 		"//": "drizzle requires we run from playground",
 		"dev:playground": "cd playground && pnpm dev",
