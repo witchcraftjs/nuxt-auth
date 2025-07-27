@@ -1,15 +1,15 @@
 <template>
 <div class="flex flex-col gap-4">
-	<template v-if="authUrl">
+	<template v-if="authUri">
 		<div class="text-xl text-center">Authorize</div>
 		<div class="text-lg text-center">
 			If you are not redirected automatically, open following URL and paste the code given:
 			<NuxtLink
 				class="link-like underline"
-				:href="authUrl"
+				:href="authUri"
 				target="_blank"
 			>
-				{{ authUrl }}
+				{{ authUri }}
 			</NuxtLink>
 		</div>
 		<WInputDeprecated
@@ -56,11 +56,11 @@ const rc = useRuntimeConfig()
 const query = useRoute().query
 
 const initialAccessToken = query.access_token
-if (typeof initialAccessToken !== "string") {
-	throw new Error("access_token parameter is not a string.")
+const authUri = decodeQueryUri(query.authUri)
+if (!authUri && typeof initialAccessToken !== "string") {
+	throw new Error(`access_token parameter is not a string, got query: ${JSON.stringify(query)}`)
 }
-const authUrl = decodeQueryUri(query.authUri)
-if (!authUrl && !initialAccessToken) {
+if (!authUri && !initialAccessToken) {
 	unreachable("Server should have passed authUri or access_token.")
 }
 
