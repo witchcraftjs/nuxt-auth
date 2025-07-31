@@ -3,7 +3,7 @@ import { addComponentsDir, addImportsDir, addRouteMiddleware, addServerImports, 
 import { type CookieSerializeOptions } from "cookie-es"
 import { defu } from "defu"
 
-import type { AdditionalApiRoutes, ProviderNames, Secrets, SessionCookieOptions } from "./runtime/types"
+import type { AdditionalApiRoutes, AuthMiddlewareExclusion, ProviderNames, Secrets, SessionCookieOptions } from "./runtime/types"
 export type * from "./runtime/types"
 export type * from "./runtime/server/utils/createAuthSchema.js"
 import type { NuxtPage } from "@nuxt/schema"
@@ -280,6 +280,7 @@ export default defineNuxtModule<ModuleOptions>({
 
 		await installModule("@witchcraft/nuxt-postgres", (nuxt.options as any).postgres)
 		await installModule("@witchcraft/ui/nuxt", (nuxt.options as any).witchcraftUi)
+		await installModule("nuxt-security", (nuxt.options as any).security)
 		await installModule("unplugin-icons/nuxt")
 
 		addTemplate({

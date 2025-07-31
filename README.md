@@ -61,6 +61,14 @@ export default defineNuxtConfig({
 			// this determines whether to use https in the auth callback url
 			// isSecure: ...
 		}
+	},
+	auth: {
+		allowedOrigins: [
+			...(process.env.NODE_ENV === "development" ? ["http://localhost:3000"] : []),
+			"https://your-app-site.com",
+			],
+		// see also allowedMiddlewareExclusions for external hosts 
+		// that should only be allowed access for certain requests
 	}
 })
 ```
@@ -129,16 +137,17 @@ export default createAuthHandler(
 ```
 
 This creates the middleware that sets the user/session on the request context.
+
+**IMPORTANT: The middleware by itself DOES NOT validate the origin and does not have any CSRF protection. The nuxt-security is installed by the module to handle this. DO NOT disable it.**
+
 ```ts
 // server/middleware/auth.ts
 
 import { createAuthMiddleware } from "#imports"
 
 import { sessionManager } from "[PATH TO YOUR SESSION MANAGER INSTANCE]"
-export default createAuthMiddleware(sessionManager, {
-})
+export default createAuthMiddleware(sessionManager)
 ```
-
 
 ### Create the Pages
 
@@ -600,7 +609,7 @@ describe("server/db/users", async () => {
 })
 ```
 
-Note that you will need to add the origin header to non-GET requests since the middleware guards in part against CRSF by checking the origin header:
+Note that you will need to add the origin header to non-GET requests since nuxt-security guards in part against CRSF by checking the origin header:
 ```ts 
 test("put works", async () => {
 	await $fetch(`/api/some/api`, {

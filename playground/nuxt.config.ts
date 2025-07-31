@@ -53,6 +53,10 @@ export default defineNuxtConfig({
 		authRoutes: {
 			postRegisteredLogin: "/authed"
 		},
+		allowedOrigins: [
+			...(process.env.NODE_ENV !== "production" ? ["http://localhost:3000"] : []),
+			"http://localhost:3000", // in a real app this would be the domain of your app
+		],
 	}
 })
 
