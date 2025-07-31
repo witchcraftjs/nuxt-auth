@@ -116,7 +116,16 @@ import { authAccounts, users } from "~~/db/schema.js"
 import { db } from "[PATH TO YOUR DRIZZLE DB]"
 import { sessionManager } from "[PATH TO YOUR SESSION MANAGER INSTANCE]"
 
-export default createAuthHandler(db, users, authAccounts, sessionManager)
+export default createAuthHandler(
+	db,
+	users,
+	authAccounts,
+	sessionManager, {
+		onRegister: (event, route, deeplink) => {
+			// handle user registration, deeplink is for when using external auth handlers (see below)
+		}
+	}
+)
 ```
 
 This creates the middleware that sets the user/session on the request context.
@@ -127,12 +136,9 @@ import { createAuthMiddleware } from "#imports"
 
 import { sessionManager } from "[PATH TO YOUR SESSION MANAGER INSTANCE]"
 export default createAuthMiddleware(sessionManager, {
-	onRegister: (event, route, deeplink) => {
-		//...
-	}
 })
 ```
-You will need to define an `onRegister` handler when creating the auth handler. This is because the api route is already created to handle redirecting and deeplink query param forwarding by defualt (see [External Auth Handlers](#external-auth-handlers)).  You can override this by returning something from the handler. 
+
 
 ### Create the Pages
 
@@ -423,7 +429,7 @@ This way, only a short lived token is exposed. The app can then safely exchange 
 
 # Semi-Auth
 
-In desktop apps (but this applies online) we usually want the login session to persist for as long as possible. The module offers an alternative to making the session longer, it just pretends the user is logged in.
+In desktop apps (but this can apply online) we usually want the login session to persist for as long as possible. The module offers an alternative to making the session longer, it just pretends the user is logged in.
 
 Since the auth check is done against `useState("auth:user")`, if we set it, the user is considered authenticated on the client side even if they don't have the right cookies to send with requests because they've expired.
 
@@ -431,7 +437,7 @@ This is safe because **you should always check authentication on the server side
 
 The default `authGlobal` middleware will look for a `localStorage` item called `auth:user` and if it's set, set the user to that. It will additionally set `useState("auth:semiAuthed")` to true. This can be used in components and is used in the `SessionStatus` to indicate that while the user is considered logged in, api requests will fail. 
 
-You can then ask for re-authentication when they trigger an action (e.g. sync) that requires it.By defualt, clicking on the username in `SessionStatus` will redirect them to the login page instead of `/users/{username}`.
+You can then ask for re-authentication when they trigger an action (e.g. sync) that requires it. By defualt, clicking on the username in `SessionStatus` will redirect them to the login page instead of `/users/{username}`.
 
 If using this feature, you will probably want to set a custom condition on the login page to allow semi-authed users on it:
 ```ts
