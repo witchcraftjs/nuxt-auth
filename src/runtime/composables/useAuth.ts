@@ -38,7 +38,7 @@ export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 		devBypass?: boolean
 	} = {}): Promise<void> {
 		setFetchUserOnNavigation()
-		const loginRoute = getAuthApiRoute("login", { provider: provider.toLowerCase() }, undefined, { devBypass })
+		const loginRoute = getAuthApiRoute(useRuntimeConfig().public,"login", { provider: provider.toLowerCase() }, { devBypass })
 		const external = provider ? true : undefined
 		let handled = handleActions?.("login",loginRoute, provider)
 		if (handled instanceof Promise) handled = await handled
@@ -52,9 +52,9 @@ export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 		userData.value = null
 
 		await Promise.allSettled(hooks.beforeLogout.map(listener => listener()))
-		const handled = handleActions?.("logout", getAuthApiRoute("logout"))
+		const handled = handleActions?.("logout", getAuthApiRoute(useRuntimeConfig().public,"logout"))
 		if (!handled) {
-			const res = await $fetch(getAuthApiRoute("logout"), {
+			const res = await $fetch(getAuthApiRoute(useRuntimeConfig().public,"logout"), {
 				cache: "no-store",
 				method: "post",
 			})

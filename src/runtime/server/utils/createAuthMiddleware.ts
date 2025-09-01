@@ -3,6 +3,7 @@ import { defineEventHandler, getCookie, setCookie } from "h3"
 import { type SessionManager } from "./SessionManager.js"
 
 import { useServerLogger } from "#imports"
+
 import { type AuthSession, type AuthUser } from "../../types.js"
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

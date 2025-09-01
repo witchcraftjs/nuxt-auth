@@ -28,24 +28,6 @@ declare module "vue-router" {
 	}
 }
 
-declare module "@nuxt/schema" {
-	interface RuntimeConfig extends Secrets {
-		authSecret: string
-	}
-	interface PublicRuntimeConfig {
-		auth: Required<Omit<
-			ModuleOptions,
-			| "useGlobalMiddleware"
-			| "authRoutes"
-			| "authApiRoutes"
-		>> & {
-			authRoutes: Required<ModuleOptions["authRoutes"]>
-			authApiRoutes: Required<ModuleOptions["authApiRoutes"]>
-			isSecure: boolean
-		}
-	}
-}
-
 
 export interface ModuleOptions {
 	enabledProviders: ProviderNames[]
@@ -176,6 +158,26 @@ export interface ModuleOptions {
 	/** Additional "magic" paths that can be used for the `auth.redirectTo` page meta property when using the `authProtected` middleware. */
 	additionalMiddlewarePaths?: Record<string, string>
 }
+export interface ModulePublicRuntimeConfig {
+	auth: Required<Omit<
+		ModuleOptions,
+			| "useGlobalMiddleware"
+			| "authRoutes"
+			| "authApiRoutes"
+	>> & {
+		authRoutes: Required<ModuleOptions>["authRoutes"]
+		authApiRoutes: Required<ModuleOptions["authApiRoutes"]>
+		isSecure: boolean
+	}
+}
+
+declare module "@nuxt/schema" {
+	interface RuntimeConfig extends Secrets {
+		authSecret: string
+	}
+	interface PublicRuntimeConfig extends ModulePublicRuntimeConfig {}
+}
+
 export default defineNuxtModule<ModuleOptions>({
 	meta: {
 		name: "auth",

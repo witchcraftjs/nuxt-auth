@@ -31,7 +31,7 @@ export default createAuthHandler(db as any, users, authAccounts, sessionManager,
 	onRegister: async (event: H3Event) => {
 		const user = event.context.user! // already asserted
 		const body = await readValidatedBody(event, registerBody.parse)
-		const usernameIsValid = await $fetch(getAuthApiRoute("usernameValid", { username: body.username }))
+		const usernameIsValid = await $fetch(getAuthApiRoute(useRuntimeConfig().public, "usernameValid", { username: body.username }))
 		if (!usernameIsValid) {
 			throw createError({
 				status: 400,

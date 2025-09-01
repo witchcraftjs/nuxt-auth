@@ -12,6 +12,8 @@ import type {
 	AuthUserFields as DbAuthUser,
 } from "./server/utils/createAuthSchema.js"
 
+import type { ModulePublicRuntimeConfig } from "../module.js"
+
 
 export type * from "./server/utils/createAuthSchema.js"
 
@@ -186,6 +188,9 @@ TProviderAccountInfo extends ProviderAccountInfo[TProviderName] = ProviderAccoun
 }
 
 export type AuthOptions = {
+	/** The base url for the site (e.g. http:/localhost:3000 during dev), required for the redirectUri. */
+	baseUrl?: string
+	runtimeConfig: ModulePublicRuntimeConfig
 	handlers: {
 		[k in ProviderNames]: ProviderHandlerClass<k>
 	}
@@ -294,7 +299,7 @@ export type ProviderStyle = {
 	}
 }
 
-export const providerStylesInjectionKey = Symbol("providerStyles") as InjectionKey< Partial<Record<ProviderNames, Partial<ProviderStyle>>>>
+export const providerStylesInjectionKey =  Symbol("providerStyles") as InjectionKey< Partial<Record<ProviderNames, Partial<ProviderStyle>>>>
 
 export type FullProviderStyles = Record<"github" | "google", ProviderStyle> & Record<ProviderNames, Partial<ProviderStyle>>
 

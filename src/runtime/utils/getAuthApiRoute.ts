@@ -7,15 +7,13 @@ export function getAuthApiRoute<
 	T extends keyof PublicRuntimeConfig["auth"]["authApiRoutes"],
 	TParams extends T extends keyof ApiRoutesParams ? ApiRoutesParams[T] : never
 >(
+	rc: PublicRuntimeConfig,
 	route: T,
 	params?: TParams,
-	rc?: PublicRuntimeConfig,
 	queryParams?: Record<string, any>
 ): string {
 	// electron needs to be able to import this file
 	// it provides it's own runtime config so that useRuntimeConfig is never called
-	// @ts-expect-error this should work fine in nuxt without the import from #imports
-	rc ??= useRuntimeConfig().public
 	const routes = rc.auth.authApiRoutes
 	let finalRoute: string = routes[route]
 	if (!finalRoute) throw new Error(`Invalid route: ${route as any}`)

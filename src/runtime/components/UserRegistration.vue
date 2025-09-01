@@ -117,7 +117,7 @@ const props = withDefaults(defineProps<{
 	getValidUsernameRoute: (username: string) => {
 		const res = defaultZodUsernameSchema.safeParse(username)
 		if (!res.success) throw new Error(res.error.format()._errors.join("\n"))
-		return getAuthApiRoute("usernameValid", { username })
+		return getAuthApiRoute(useRuntimeConfig().public, "usernameValid", { username })
 	},
 	onSubmitRegistration: async (
 		_event: Event,
@@ -126,7 +126,7 @@ const props = withDefaults(defineProps<{
 		redirectUrl: string,
 		deeplink?: string
 	) => {
-		const res = await $fetch<true | { redirectUrl: string }>(`${getAuthApiRoute("register")}${deeplink ? `?deeplink=${deeplink}` : ""}`, {
+		const res = await $fetch<true | { redirectUrl: string }>(`${getAuthApiRoute(useRuntimeConfig().public, "register")}${deeplink ? `?deeplink=${deeplink}` : ""}`, {
 			cache: "no-store",
 			method: "post",
 			body: {

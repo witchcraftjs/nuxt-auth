@@ -30,7 +30,7 @@ if (!provider || typeof provider !== "string") throw new Error("Missing provider
 async function submit() {
 	const query = useRoute().query
 	delete query.provider
-	const route = getAuthApiRoute("callback", { provider: provider as string }, undefined, {
+	const route = getAuthApiRoute(useRuntimeConfig().public, "callback", { provider: provider as string }, {
 		devBypass: true,
 		username: username.value,
 		devBypassRegistration: bypassRegistration.value,

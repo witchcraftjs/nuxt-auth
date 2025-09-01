@@ -37,6 +37,11 @@ export const zState = z.object({
 	deeplink: z.string().optional(),
 })
 
+const zLoginQuery = z.object({
+	devBypass: z.enum(["true", "false"]).optional(),
+	deeplink: z.string().optional(),
+})
+
 type State = z.infer<typeof zState>
 
 
@@ -45,12 +50,6 @@ export const oauth2CallbackQuery = z.object({
 	state: z.string(),
 })
 
-const rc = useRuntimeConfig()
-
-export const providerCookieOpts: CookieSerializeOptions = {
-	secure: useRuntimeConfig().public.auth.isSecure,
-	...rc.public.auth.providerCookieOpts
-}
 
 export class Auth {
 	validRoutes: string[] = []
@@ -106,9 +105,14 @@ export class Auth {
 
 	router: Router
 
-	logger: Logger
+	logger: BaseLogger
+
+	rc: RuntimeConfig
+
+	providerCookieOpts: CookieSerializeOptions
 
 	constructor(
+		runtimeConfig: RuntimeConfig,
 		db: Auth["db"],
 		usersTable: Auth["usersTable"],
 		authAccountsTable: Auth["authAccountsTable"],
@@ -118,6 +122,11 @@ export class Auth {
 		env: Record<`auth${string}${"ClientId" | "ClientSecret"}` | string, string>,
 		logger: Logger,
 	) {
+		this.rc = runtimeConfig
+		this.providerCookieOpts = {
+			secure: this.rc.public.auth.isSecure,
+			...this.rc.public.auth.providerCookieOpts,
+		} as CookieSerializeOptions
 		this.logger = useServerLogger()
 		this.db = db
 		this.usersTable = usersTable
@@ -128,7 +137,7 @@ export class Auth {
 		if (opts.additionalState) {
 			this.getAdditionalState = opts.additionalState
 		}
-		if (opts.devBypassAuth) this.devBypassAuth = opts.devBypassAuth
+		if (opts.devBypassAuth) this.devBypassAuth = opts.devBypassAuth && import.meta.dev
 		this.generateUser = opts.generateUser
 		this.createMockUser = opts.createMockUser ?? Auth.defaultCreateMockUser
 
@@ -150,13 +159,12 @@ export class Auth {
 			providerOptions,
 			enabledProviders,
 		} = {
-			baseUrl: import.meta.dev ? `${useRuntimeConfig().public.auth.isSecure ? "https" : "http"}://localhost:3000` : undefined,
 			...opts,
 		}
 		if (baseUrl === undefined) {
 			throw createError({
 				status: 500,
-				statusMessage: "No baseurl defined.",
+				statusMessage: "No baseUrl defined.",
 			})
 		}
 
@@ -176,7 +184,7 @@ export class Auth {
 				continue
 			}
 			const options = providerOptions?.[provider]
-			const redirectUri = baseUrl + getAuthApiRoute("callback", { provider: provider.toLowerCase() })
+			const redirectUri = baseUrl + getAuthApiRoute(useRuntimeConfig().public,"callback", { provider: provider.toLowerCase() })
 			const providerClass = this.handlers[provider]
 			if (!providerClass) {
 				this.logger.error({
@@ -201,8 +209,8 @@ export class Auth {
 		})
 
 
-		const apiRoutes = rc.public.auth.authApiRoutes
-		const authRoutes = rc.public.auth.authRoutes
+		const apiRoutes = this.rc.public.auth.authApiRoutes
+		const authRoutes = this.rc.public.auth.authRoutes
 
 
 		router.get(apiRoutes.usersInfo, defineEventHandler(event => {
@@ -279,9 +287,9 @@ export class Auth {
 			const providerName = event.context.params!.provider
 			this.assertValidProvider(providerName)
 
-			const query = getQuery(event)
+			const query = zLoginQuery.parse(getQuery(event))
 			const devBypassAuth = query.devBypass === "true" && this.devBypassAuth === true
-			const deeplink = getQuery(event).deeplink
+			const deeplink = query.deeplink
 
 			if (devBypassAuth) {
 				return sendRedirect(event, `${authRoutes.mockAuth}?provider=${providerName}${deeplink ? `&deeplink=${deeplink}` : ""}`)
@@ -308,10 +316,10 @@ export class Auth {
 			})
 			try {
 				if (info.type === "oauth2" || info.type === "oauth2_pcke") {
-					setCookie(event, `${providerName}_oauth_state`, state.oauthState, providerCookieOpts)
+					setCookie(event, `${providerName}_oauth_state`, state.oauthState, this.providerCookieOpts)
 				}
 				if (info.type === "oauth2_pcke") {
-					setCookie(event, `${providerName}_oauth_code_verifier`, info.codeVerifier, providerCookieOpts)
+					setCookie(event, `${providerName}_oauth_code_verifier`, info.codeVerifier, this.providerCookieOpts)
 				}
 			} catch (e) {
 				this.logger.error({
@@ -319,9 +327,9 @@ export class Auth {
 					error: e instanceof Error ? e.message : "Not an error type.",
 					redact: {
 						error: e,
-						oauth2: [event, `${providerName}_oauth_state`, state.oauthState, providerCookieOpts],
+						oauth2: [event, `${providerName}_oauth_state`, state.oauthState, this.providerCookieOpts],
 						// eslint-disable-next-line camelcase
-						oauth2_pcke: [ event, `_oauth_code_verifier ${providerName}`, info.type === "oauth2_pcke" ? info.codeVerifier : undefined, providerCookieOpts ],
+						oauth2_pcke: [ event, `_oauth_code_verifier ${providerName}`, info.type === "oauth2_pcke" ? info.codeVerifier : undefined, this.providerCookieOpts ],
 					}
 
 				})
@@ -333,7 +341,14 @@ export class Auth {
 			this.assertValidProvider(providerName)
 			const provider = this.getProvider(providerName)
 
-			const redirectToLogin = { redirect: rc.public.auth.authRoutes.login }
+			if (!this.rc.public.auth.authRoutes.login) {
+				throw createError({
+					status: 500,
+					statusMessage: "No login route defined.",
+					data: { code: AUTH_ERROR.INTERNAL_ERROR },
+				})
+			}
+			const redirectToLogin = { redirect: this.rc.public.auth.authRoutes.login }
 			const query = getQuery(event)
 
 			const devBypassAuth = this.devBypassAuth && query.devBypass === "true"
@@ -453,10 +468,16 @@ export class Auth {
 					...userInfo,
 					...(isRegistered ? {} : { info: userInfo!.info })
 				}).catch(e => {
+					const data = { ...redirectToLogin, code: AUTH_ERROR.FAILED_TO_ADD_PROVIDER_ACCOUNT }
+					logger.error({
+						ns: "auth:callback:existingUser:newProvider:failed",
+						error: e instanceof Error ? e.message : e,
+						data
+					})
 					throw createError({
-						statusMessage: `Failed to add provider account ${provider.name}: ${e.message}`,
+						statusMessage: `Failed to add provider account ${provider.name}`,
 						status: 500,
-						data: { ...redirectToLogin, code: AUTH_ERROR.FAILED_TO_ADD_PROVIDER_ACCOUNT },
+						data
 					})
 				})
 			} else {
@@ -524,10 +545,16 @@ export class Auth {
 			deeplink = typeof deeplink === "string" ? deeplink : undefined
 
 			const route = deeplink
-				? rc.public.auth.authRoutes.externalCode
-				: rc.public.auth.authRoutes.postRegisteredLogin
+				? this.rc.public.auth.authRoutes.externalCode
+				: this.rc.public.auth.authRoutes.postRegisteredLogin
 
-
+			if (!route) {
+				throw createError({
+					status: 500,
+					statusMessage: "No postRegisteredLogin/externalCode route defined.",
+					data: { code: AUTH_ERROR.INTERNAL_ERROR },
+				})
+			}
 			const res = await this.onRegister(event, route, deeplink)
 
 			if (res === undefined || !res) {
@@ -724,8 +751,15 @@ export class Auth {
 		deeplink?: string
 	) {
 		let redirect = isRegistered
-			? rc.public.auth.authRoutes.postRegisteredLogin
-			: rc.public.auth.authRoutes.register
+			? this.rc.public.auth.authRoutes.postRegisteredLogin
+			: this.rc.public.auth.authRoutes.register
+		if (!redirect) {
+			throw createError({
+				status: 500,
+				statusMessage: "No register/postRegisteredLogin route defined.",
+				data: { code: AUTH_ERROR.INTERNAL_ERROR },
+			})
+		}
 
 		const modified = this.modifyCallbackRedirect?.(
 			event,
@@ -776,7 +810,7 @@ export class Auth {
 			access_token: accessToken,
 		})}`
 
-		return `${rc.public.auth.authRoutes.externalCode}?${new URLSearchParams({
+		return `${this.rc.public.auth.authRoutes.externalCode}?${new URLSearchParams({
 			// eslint-disable-next-line camelcase
 			access_token: accessToken,
 			deeplinkUri,
@@ -789,11 +823,11 @@ export class Auth {
 			statusMessage: `Invalid deeplink ${deeplink}. Please specify the "deeplinkSchemes" option when creating the auth handler.`,
 			data: { code: AUTH_ERROR.INVALID_DEEPLINK },
 		})}
-		return `${scheme}${rc.public.auth.authRoutes.deeplink}`
+		return `${scheme}${this.rc.public.auth.authRoutes.deeplink}`
 	}
 
 	async verifyAccessToken(accessToken?: string): Promise<JwtPayload & { userId: string }> {
-		return jwtVerify<JwtPayload & { userId: string }>(accessToken, rc.authSecret, {})
+		return jwtVerify<JwtPayload & { userId: string }>(accessToken, this.rc.authSecret, {})
 			.catch(err => {
 				throw createError({
 					status: 400,
@@ -804,7 +838,7 @@ export class Auth {
 	}
 
 	async createAccessToken(userId: string, payload: Record<string, any> = {}): Promise<string> {
-		return signJwt({ ...payload, userId }, rc.authSecret, {
+		return signJwt({ ...payload, userId }, this.rc.authSecret, {
 			expiresIn: this.externalAccessTokenExpiresIn,
 		})
 	}

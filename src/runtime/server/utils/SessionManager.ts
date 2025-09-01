@@ -35,6 +35,7 @@ export class SessionManager {
 	userTable: AuthUsersTable
 
 	constructor(
+		rc: RuntimeConfig,
 		db: SessionManager["db"],
 		sessionTable: SessionManager["sessionTable"],
 		userTable: SessionManager["userTable"],
@@ -44,14 +45,14 @@ export class SessionManager {
 		this.sessionTable = sessionTable
 		this.userTable = userTable
 		this.options = {
-			expiresAt: useRuntimeConfig().public.auth.sessionExpiresAt,
+			expiresAt: rc.public.auth.sessionExpiresAt,
 			...options,
 			sessionCookie: {
 				name: defaultSessionCookieName,
 				...options.sessionCookie,
 				attributes: {
-					secure: useRuntimeConfig().public.auth.isSecure,
-					...(useRuntimeConfig().public.auth.sessionCookieOpts ?? {}),
+					secure: rc.public.auth.isSecure,
+					...(rc.public.auth.sessionCookieOpts ?? {}),
 					...options.sessionCookie?.attributes,
 				},
 			},

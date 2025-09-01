@@ -13,16 +13,17 @@ import { createRouter, useServerLogger } from "#imports"
 import type { AuthHandlerOptions } from "../../types.js"
 
 export function createAuthHandler(
+	rc: RuntimeConfig,
 	db: PgDatabase<any, any, any>,
 	usersTable: UserTable,
 	authAccountsTable: AuthAccountsTable,
 	sessionManager: SessionManager,
 	opts: Partial<AuthHandlerOptions> = {}
 ): EventHandler {
-	const rc = useRuntimeConfig()
 	const router = createRouter()
 	const logger = useServerLogger()
 	const auth = new Auth(
+		rc,
 		db,
 		usersTable,
 		authAccountsTable,
@@ -37,7 +38,7 @@ export function createAuthHandler(
 				...(opts.customProviders ?? {}),
 			}
 		},
-		rc as any,
+		rc as any, // for the env vars
 		logger
 	)
 	return auth.eventHandler

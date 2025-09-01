@@ -125,6 +125,7 @@ import { db } from "[PATH TO YOUR DRIZZLE DB]"
 import { sessionManager } from "[PATH TO YOUR SESSION MANAGER INSTANCE]"
 
 export default createAuthHandler(
+	useRuntimeConfig(),
 	db,
 	users,
 	authAccounts,
@@ -172,8 +173,8 @@ There is also a `createExternalAuthHandler` helper and related utils, see [Exter
 While not recommended, you can change the routes used by the module by setting the `authApiRoutes` and `authRoutes` options. In the case of the api routes, you will probably want to access them using the getAuthApiRoute helper:
 
 ```ts
-getAuthApiRoute("usersInfo")
-getAuthApiRoute("usersIdAccounts", id)
+getAuthApiRoute(useRuntimeConfig().public, "usersInfo")
+getAuthApiRoute(useRuntimeConfig().public, "usersIdAccounts", id)
 ```
 
 #### Middleware
@@ -296,7 +297,7 @@ Then create a class that implements `ProviderHandler<type, PROVIDER_NAME>` which
 See the included providers for examples. They're quite simple to write with the help of the `arctic` library.
 
 ```ts
-export default createAuthHandler(db, users, authAccounts, sessionManager, {
+export default createAuthHandler(useRuntimeConfig(), db, users, authAccounts, sessionManager, {
 	customProviders: {
 		name: class CustomProvider implements ProviderHandler<"oauth2", "customProvider"> {
 			//...
@@ -417,7 +418,7 @@ Once the access token is transferred to the app (either via the deeplink or manu
 The module provides a helper class for handling this in electron, but the basic premise is you make a fetch request to `api/auth/external/exchange` with your accessToken to exchange it for the real sessionToken:
 
 ```ts
-const sessionToken = await fetch(`${this.publicServerUrl}${getAuthApiRoute("externalExchange")}`, {
+const sessionToken = await fetch(`${this.publicServerUrl}${getAuthApiRoute(useRuntimeConfig().public, "externalExchange")}`, {
 	method: "GET",
 	headers: {
 		Authorization: `Bearer ${accessToken}`,

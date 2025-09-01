@@ -1,6 +1,6 @@
-import { isArray } from "@alanscodelog/utils/isArray.js"
-import { keys } from "@alanscodelog/utils/keys.js"
-import { pick } from "@alanscodelog/utils/pick.js"
+import { isArray } from "@alanscodelog/utils/isArray"
+import { keys } from "@alanscodelog/utils/keys"
+import { pick } from "@alanscodelog/utils/pick"
 import type { RouteMeta } from "vue-router"
 
 import { defineNuxtRouteMiddleware, navigateTo, useAuth, useLogger,useRuntimeConfig } from "#imports"
@@ -67,8 +67,10 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 	const doRedirect = !matchesCondition && to.path !== redirectTo
 
 	// see note in ./authGlobal.ts
-	if (import.meta.client) {
-		useLogger().info({
+	if (import.meta.client && import.meta.dev) {
+		// useLogger().info({
+		// eslint-disable-next-line no-console
+		console.log({
 			ns: "auth:middleware:authProtected",
 			willRedirect: doRedirect,
 			isRegistered,
