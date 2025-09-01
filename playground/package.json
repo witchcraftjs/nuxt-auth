@@ -7,7 +7,8 @@
 		"dev:nix": "devenv up",
 		"build": "cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true 'nuxi build'",
 		"db:regenerate": "rm -rf .devenv/state/postgres && rm -rf db/migrations && drizzle-kit generate",
-		"generate": "nuxi generate"
+		"generate": "nuxi generate",
+		"update-dep": "cd ../ && pnpm build:only && cd playground && pnpm update @witchcraft/nuxt-auth && pnpm update @witchcraft/nuxt-postgres"
 	},
 	"@comments": {
 		"dependencies": {
@@ -16,10 +17,10 @@
 		}
 	},
 	"dependencies": {
-		"@witchcraft/nuxt-auth": "link:../",
-		"@witchcraft/nuxt-postgres": "link:../../nuxt-postgres",
-		"@witchcraft/nuxt-utils": "^0.1.0",
-		"@witchcraft/ui": "~0.1.0",
+		"@witchcraft/nuxt-auth": "file:../",
+		"@witchcraft/nuxt-postgres": "file:../../nuxt-postgres",
+		"@witchcraft/nuxt-utils": "^0.2.1",
+		"@witchcraft/ui": "^0.2.0",
 		"arctic": "^1.9.2",
 		"cookie-es": "^1.2.2",
 		"drizzle-orm": "^0.44.3",

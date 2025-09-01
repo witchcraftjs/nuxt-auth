@@ -39,12 +39,13 @@ export default defineNuxtConfig({
 		"@witchcraft/ui/nuxt",
 		"@witchcraft/nuxt-logger",
 		"@witchcraft/nuxt-postgres",
-		// "@witchcraft/nuxt-auth",
 		"../src/module",
+		// the below also works, just remember to run the update-dep script and uncomment ../src/module above before attempting to use the file: linked module
+		// "@witchcraft/nuxt-auth",
 	],
 	postgres: {
 		devAutoGenerateMigrations: true,
-		additionalOptions: {
+		connectionOptions: {
 			// temp
 			ssl: false
 		}
