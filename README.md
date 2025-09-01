@@ -85,7 +85,7 @@ The module provides a `createAuthSchema` helper and a list of `authUserFields` i
 ```ts
 // path/to/schema.ts
 // careful not to use nuxt paths, or drizzle won't be able to import them when when generating migrations, etc
-import { authUserFields,createAuthSchema } from "@witchcraft/nuxt-auth/server/utils/createAuthSchema.js"
+import { authUserFields,createAuthSchema } from "@witchcraft/nuxt-utils/server/utils/createAuthSchema"
 export const users = pgTable("users", {
 	id: uuid("id").primaryKey().unique()
 		.notNull()
@@ -93,11 +93,12 @@ export const users = pgTable("users", {
 	...authUserFields
 })
 
-const auth = createAuthSchema(users)
-export const authSessions = auth.authSessions
-export const authAccounts = auth.authAccounts
-export const authProvidersRelations = auth.authProvidersRelations
-export const authSessionRelations = auth.authSessionRelations
+export const {
+	authAccounts,
+	authSessions,
+	authProvidersRelations,
+	authSessionRelations
+} = createAuthSchema(users)
 ```
 
 #### SessionManager and Routes
