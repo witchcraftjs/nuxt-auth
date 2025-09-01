@@ -31,8 +31,8 @@
 </div>
 </template>
 <script setup lang="ts">
-import { capitalize } from "@alanscodelog/utils/capitalize.js"
-import { useInjectedDarkMode } from "@witchcraft/ui/composables/useInjectedDarkMode.js"
+import { capitalize } from "@alanscodelog/utils/capitalize"
+import { useInjectedDarkMode } from "@witchcraft/ui/composables/useInjectedDarkMode"
 import defu from "defu"
 
 import { useRuntimeConfig } from "#app"

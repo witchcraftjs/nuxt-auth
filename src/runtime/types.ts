@@ -1,5 +1,5 @@
 import { type EnumLike } from "@alanscodelog/utils"
-import { enumFromArray } from "@alanscodelog/utils/enumFromArray.js"
+import { enumFromArray } from "@alanscodelog/utils/enumFromArray"
 import { type OAuth2Tokens } from "arctic"
 import type { H3Event, Router } from "h3"
 import type { StringValue } from "ms"

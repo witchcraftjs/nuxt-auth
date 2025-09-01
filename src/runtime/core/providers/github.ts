@@ -70,7 +70,7 @@ type GithubEmails = {
 
 /* eslint-enable @typescript-eslint/naming-convention */
 
-import { unreachable } from "@alanscodelog/utils/unreachable.js"
+import { unreachable } from "@alanscodelog/utils/unreachable"
 import {
 	GitHub,
 	type OAuth2Tokens,

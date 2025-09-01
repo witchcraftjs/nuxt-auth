@@ -1,5 +1,6 @@
 import type { PgDatabase } from "drizzle-orm/pg-core"
 import type { EventHandler } from "h3"
+import { type RuntimeConfig } from "nuxt/schema"
 
 import { Auth } from "./Auth.js"
 import type { AuthAccountsTable,UserTable } from "./createAuthSchema.js"
@@ -7,11 +8,7 @@ import { type SessionManager } from "./SessionManager.js"
 
 import github from "#auth/core/providers/github.js"
 import google from "#auth/core/providers/google.js"
-import {
-	createRouter,
-	useRuntimeConfig,
-	useServerLogger,
-} from "#imports"
+import { createRouter, useServerLogger } from "#imports"
 
 import type { AuthHandlerOptions } from "../../types.js"
 

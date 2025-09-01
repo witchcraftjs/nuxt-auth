@@ -1,12 +1,13 @@
-import { capitalize } from "@alanscodelog/utils/capitalize.js"
-import { unreachable } from "@alanscodelog/utils/unreachable.js"
+import { capitalize } from "@alanscodelog/utils/capitalize"
+import { unreachable } from "@alanscodelog/utils/unreachable"
+import { type BaseLogger } from "@witchcraft/nuxt-logger/createUseLogger"
 import { generateState, type OAuth2RequestError, type OAuth2Tokens, } from "arctic"
 import { type CookieSerializeOptions } from "cookie-es"
 import { and,eq } from "drizzle-orm"
 import { type PgDatabase } from "drizzle-orm/pg-core"
 import type { EventHandler, H3Event, Router } from "h3"
-import { createError, defineEventHandler, getCookie, setCookie } from "h3"
 import { type JwtPayload } from "jsonwebtoken"
+import { type RuntimeConfig } from "nuxt/schema"
 import { type Logger } from "pino"
 import { z } from "zod"
 
@@ -24,7 +25,7 @@ import {
 	type ProviderNames,
 } from "#auth/types"
 import { AUTH_ERROR } from "#auth/types"
-import { useRuntimeConfig, useServerLogger } from "#imports"
+import { createError, defineEventHandler, deleteCookie, getCookie, getQuery, getRequestHeader, getValidatedQuery, sendRedirect, setCookie , useBase, useRuntimeConfig, useServerLogger } from "#imports"
 
 import { getAuthApiRoute } from "../../utils/getAuthApiRoute.js"
 import { signJwt } from "../helpers/signJwt.js"

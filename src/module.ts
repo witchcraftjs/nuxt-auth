@@ -1,4 +1,4 @@
-import { crop } from "@alanscodelog/utils/crop.js"
+import { crop } from "@alanscodelog/utils/crop"
 import { addComponentsDir, addImportsDir, addRouteMiddleware, addServerImports, addServerImportsDir, addServerScanDir, addTemplate, createResolver, defineNuxtModule, installModule, useLogger } from "@nuxt/kit"
 import { type CookieSerializeOptions } from "cookie-es"
 import { defu } from "defu"

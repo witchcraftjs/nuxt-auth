@@ -1,9 +1,9 @@
-import { jsonSafeParse } from "@alanscodelog/utils/jsonSafeParse.js"
+import { jsonSafeParse } from "@alanscodelog/utils/jsonSafeParse"
 
 import {
 	defineNuxtRouteMiddleware,
 	useFetch,
-	useLogger,
+	useRuntimeConfig,
 	useState,
 } from "#imports"
 

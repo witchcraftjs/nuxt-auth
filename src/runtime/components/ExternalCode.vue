@@ -44,8 +44,8 @@
 </div>
 </template>
 <script lang="ts" setup>
-import { unreachable } from "@alanscodelog/utils/unreachable.js"
-import { copy } from "@witchcraft/ui/helpers/copy.js"
+import { unreachable } from "@alanscodelog/utils/unreachable"
+import { copy } from "@witchcraft/ui/helpers/copy"
 
 import {
 	navigateTo,

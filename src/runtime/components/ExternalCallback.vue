@@ -35,7 +35,7 @@
 </div>
 </template>
 <script lang="ts" setup>
-import { unreachable } from "@alanscodelog/utils/unreachable.js"
+import { unreachable } from "@alanscodelog/utils/unreachable"
 
 import { useRuntimeConfig } from "#app"
 import {

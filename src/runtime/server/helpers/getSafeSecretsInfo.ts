@@ -1,5 +1,5 @@
-import { capitalize } from "@alanscodelog/utils/capitalize.js"
-import { isBlank } from "@alanscodelog/utils/isBlank.js"
+import { capitalize } from "@alanscodelog/utils/capitalize"
+import { isBlank } from "@alanscodelog/utils/isBlank"
 
 import { useRuntimeConfig } from "#imports"
 

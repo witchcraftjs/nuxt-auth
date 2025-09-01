@@ -1,9 +1,9 @@
 import { type DeepPartial } from "@alanscodelog/utils"
 import { sha256 } from "@oslojs/crypto/sha2"
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from "@oslojs/encoding"
-import defu from "defu"
 import { eq } from "drizzle-orm"
 import { type PgDatabase } from "drizzle-orm/pg-core"
+import { type RuntimeConfig } from "nuxt/schema"
 
 import {
 	type AuthSessionsTable,
