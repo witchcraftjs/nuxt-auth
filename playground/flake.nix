@@ -31,7 +31,7 @@
             imports = [
               "${utils}/helpers/killAllPorts.nix"
               "${utils}/baseEnvs/webDevConfig.nix"
-              ../nix/postgres.nix
+              ./nix/postgres.nix
             ];
             postgresConfig = { enable = true; };
             webDevConfig = {

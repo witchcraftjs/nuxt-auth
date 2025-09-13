@@ -1,7 +1,7 @@
 { lib, pkgs, config, ... }:
 let
   cfg = config.postgresConfig;
-  hbaConfEntry = import ./hbaConfEntry.nix;
+  hbaConfEntry = e: builtins.concatStringsSep " " e;
 in
 {
   options.postgresConfig = {
@@ -30,8 +30,6 @@ in
   };
   config = lib.mkIf cfg.enable {
     packages = [
-      # beekeeper-studio is nicer but awaiting https://github.com/beekeeper-studio/beekeeper-studio/issues/361
-      pkgs.bun
     ];
     env.POSTGRES_HOST = cfg.host;
     env.POSTGRES_PORT = cfg.port;

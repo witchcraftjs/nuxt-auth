@@ -8,7 +8,7 @@
 
 VERY WIP wrapper module following the guide by [lucia auth](https://lucia-auth.com/) with postgres and drizzle db.
 
-I am not an auth expert, **use at your own risk**. The module's auth code is very short, read 
+I am not an auth expert, **use at your own risk**. The module's auth code is not that long, read 
 [src/runtime/server/utils/SessionManager.ts](https://github.com/witchcraftjs/nuxt-auth/blob/src/runtime/server/utils/SessionManager.ts) (based on lucia) and
 [`src/runtime/server/utils/Auth.ts`](https://github.com/witchcraftjs/nuxt-auth/blob/src/runtime/server/utils/Auth.ts) which contains all the logic.
 
@@ -48,7 +48,7 @@ The following env variables are needed:
 Set the ones you need in the nuxt config. There is a helper function for doing this:
 
 ```ts
-import { genAuthSecretKeys } from "@witchcraft/nuxt-auth/build/genAuthSecretKeys.js"
+import { genAuthSecretKeys } from "@witchcraft/nuxt-auth/build/genAuthSecretKeys"
 // nuxt.config.ts
 export default defineNuxtConfig({
 	runtimeConfig: {
@@ -496,7 +496,7 @@ The server by default will mock the getting of the user's info from the provider
 	info: null
 }
 ```
-If no usename is passed either, but an id is passed instead (e.g. for testing unregistered users), the username will be `username-${id}`.
+If no username is passed either, but an id is passed instead (e.g. for testing unregistered users), the username will be `username-${id}`.
 
 You can change this by specifying a custom `createMockUser` function when creating the auth handler.
 
