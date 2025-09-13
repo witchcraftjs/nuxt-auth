@@ -31,6 +31,5 @@ import type { ProviderStyle } from "../types.js"
 
 export const providerStyles: Record<string, ProviderStyle> = {
 	github: githubProviderStyle,
-	google: googleProviderStyle,
+	google: googleProviderStyle
 }
-

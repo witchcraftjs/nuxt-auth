@@ -5,13 +5,13 @@ import { capitalize } from "@alanscodelog/utils/capitalize"
  *
  * Also generates the authSecret key.
  */
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+
 export function genAuthSecretKeys(providers: string[]) {
 	return {
 		authSecret: "",
 		...Object.fromEntries(providers.map(provider => [
 			[`auth${capitalize(provider)}ClientId`, ""],
-			[`auth${capitalize(provider)}ClientSecret`, ""],
+			[`auth${capitalize(provider)}ClientSecret`, ""]
 		]).flat())
 	}
 }

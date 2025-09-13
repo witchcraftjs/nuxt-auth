@@ -1,5 +1,6 @@
 <template>
-<div class="
+<div
+	class="
 	flex
 	flex-wrap
 	items-center
@@ -15,7 +16,8 @@
 			<div class="font-serif text-7xl text-center">
 				{{ appName }}
 			</div>
-			<div v-if="appSubName"
+			<div
+				v-if="appSubName"
 				class="
 				text-2xl
 				text-neutral-600
@@ -28,13 +30,13 @@
 		</div>
 	</div>
 	<div class="flex-1 whitespace-nowrap">
-		<AuthLoginProviderButtons :use-auth-options="{handleActions}"/>
+		<AuthLoginProviderButtons :use-auth-options="{ handleActions }"/>
 	</div>
 </div>
 </template>
-<script setup lang="ts">
 
-import { type ActionHandler } from "#auth/types.js"
+<script setup lang="ts">
+import type { ActionHandler } from "#auth/types.js"
 import { useRuntimeConfig } from "#imports"
 
 const appInfo = useRuntimeConfig().public.appInfo
@@ -44,18 +46,15 @@ const appSubName = appInfo.subName
 definePageMeta({
 	middleware: ["authProtected"],
 	auth: {
-		only: "unauthenticated",
+		only: "unauthenticated"
 	}
 })
 
-// eslint-disable-next-line arrow-body-style
-const handleActions: ActionHandler = (action, url) => {
+const handleActions: ActionHandler = (_action, _url) => {
 	// if (doCustomAction) {
 	// 	...
 	// 	return true
 	// }
 	return false
 }
-
-
 </script>

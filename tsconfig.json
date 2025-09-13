@@ -3,6 +3,11 @@
 		"@alanscodelog/tsconfigs",
 		"./.nuxt/tsconfig.json"
 	],
+	"compilerOptions": {
+		"types": [
+			"unplugin-icons/types/vue3",
+		]
+	},
 	"exclude": [
 		"*.mjs",
 		"build.config.ts",

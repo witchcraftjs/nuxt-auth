@@ -34,9 +34,8 @@ async function submit() {
 		devBypass: true,
 		username: username.value,
 		devBypassRegistration: bypassRegistration.value,
-		...query,
+		...query
 	})
 	await navigateTo(route, { external: true })
 }
-
 </script>

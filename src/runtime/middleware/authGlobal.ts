@@ -4,15 +4,15 @@ import {
 	defineNuxtRouteMiddleware,
 	useFetch,
 	useRuntimeConfig,
-	useState,
+	useState
 } from "#imports"
 
 import { getAuthApiRoute } from "../utils/getAuthApiRoute.js"
 
 export default defineNuxtRouteMiddleware(async (_to, _from) => {
-	const doFetch = useState("auth:_fetch",() => true)
-	const userData = useState("auth:user",() => null)
-	const semiAuthed = useState("auth:semiAuthed",() => false)
+	const doFetch = useState("auth:_fetch", () => true)
+	const userData = useState("auth:user", () => null)
+	const semiAuthed = useState("auth:semiAuthed", () => false)
 
 	if (import.meta.client && import.meta.dev) {
 		// this used to work without issues in nuxt ~3.14, not sure what happened
@@ -24,7 +24,7 @@ export default defineNuxtRouteMiddleware(async (_to, _from) => {
 	}
 
 	if (!doFetch.value) return
-	const res = await useFetch<any>(getAuthApiRoute(useRuntimeConfig().public,"usersInfo"))
+	const res = await useFetch<any>(getAuthApiRoute(useRuntimeConfig().public, "usersInfo"))
 	doFetch.value = false
 	userData.value = res.data.value
 	if (import.meta.client && !userData.value) {
@@ -41,7 +41,7 @@ export default defineNuxtRouteMiddleware(async (_to, _from) => {
 		console.log({
 			ns: "auth:middleware:authGlobal:fetched",
 			userData: userData.value,
-			semiAuthed: semiAuthed.value,
+			semiAuthed: semiAuthed.value
 		})
 	}
 })

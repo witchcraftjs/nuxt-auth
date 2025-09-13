@@ -8,9 +8,8 @@ import type { AdditionalAccountInfo } from "../../types.js"
 
 export const authUserFields = {
 	email: text("email").notNull().unique(),
-	isRegistered: boolean("isRegistered").default(false).notNull(),
+	isRegistered: boolean("isRegistered").default(false).notNull()
 }
-
 
 export type AuthUserFields = {
 	id: string
@@ -18,8 +17,6 @@ export type AuthUserFields = {
 	isRegistered: boolean
 }
 
-
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function createAuthSchema(users: AuthUsersTable) {
 	const authSessions = pgTable("authSessions", {
 		id: text("id").primaryKey(),
@@ -31,12 +28,11 @@ export function createAuthSchema(users: AuthUsersTable) {
 		}).notNull()
 	})
 
-
 	const authSessionRelations = relations(authSessions, ({ one }) => ({
 		user: one(users, {
 			fields: [authSessions.userId],
-			references: [users.id],
-		}),
+			references: [users.id]
+		})
 	}))
 
 	const authAccounts = pgTable("authAccounts", {
@@ -48,23 +44,22 @@ export function createAuthSchema(users: AuthUsersTable) {
 		provider: text("provider").notNull(),
 		name: text("name").notNull(),
 		info: jsonb("info").default({}).$type<AdditionalAccountInfo>()
-	},t => ({
-		id: primaryKey({ columns: [t.provider,t.providerId]}),
+	}, t => ({
+		id: primaryKey({ columns: [t.provider, t.providerId] })
 	}))
 	const authProvidersRelations = relations(authAccounts, ({ one }) => ({
 		user: one(users, {
 			fields: [authAccounts.userId],
-			references: [users.id],
-		}),
+			references: [users.id]
+		})
 	}))
 	return {
 		authSessions,
 		authSessionRelations,
 		authAccounts,
-		authProvidersRelations,
+		authProvidersRelations
 	}
 }
-
 
 export type AuthAccountsTable = ReturnType<typeof createAuthSchema>["authAccounts"]
 export type AuthSessionsTable = ReturnType<typeof createAuthSchema>["authSessions"]
@@ -98,7 +93,7 @@ export type UserTable = PgTableWithColumns<{
 			hasDefault: boolean
 			dataType: "string"
 			data: string
-		} & Omit<BaseColumn,"hasDefault">>
+		} & Omit<BaseColumn, "hasDefault">>
 		username: PgColumn<{
 			notNull: false
 			hasDefault: false
@@ -142,4 +137,3 @@ export type AuthUsersTable = PgTableWithColumns<{
 	schema: any
 	name: any
 }>
-

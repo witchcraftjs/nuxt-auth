@@ -1,20 +1,20 @@
-import { type DeepPartial } from "@alanscodelog/utils"
+import type { DeepPartial } from "@alanscodelog/utils"
 import { sha256 } from "@oslojs/crypto/sha2"
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from "@oslojs/encoding"
 import { eq } from "drizzle-orm"
-import { type PgDatabase } from "drizzle-orm/pg-core"
-import { type RuntimeConfig } from "nuxt/schema"
+import type { PgDatabase } from "drizzle-orm/pg-core"
+import type { RuntimeConfig } from "nuxt/schema"
 
-import {
-	type AuthSessionsTable,
-	type AuthUsersTable,
+import type {
+	AuthSessionsTable,
+	AuthUsersTable
 } from "./createAuthSchema.js"
 
-import {
-	type AuthSession,
-	type SessionCookie,
-	type SessionCookieOptions,
-	type SessionValidationResult,
+import type {
+	AuthSession,
+	SessionCookie,
+	SessionCookieOptions,
+	SessionValidationResult
 } from "../../types.js"
 
 export const defaultSessionCookieName = "authSession"
@@ -53,9 +53,9 @@ export class SessionManager {
 				attributes: {
 					secure: rc.public.auth.isSecure,
 					...(rc.public.auth.sessionCookieOpts ?? {}),
-					...options.sessionCookie?.attributes,
-				},
-			},
+					...options.sessionCookie?.attributes
+				}
+			}
 		}
 	}
 
@@ -74,12 +74,11 @@ export class SessionManager {
 		const session: AuthSession = {
 			id: hashedSessionId,
 			userId: userId as any,
-			expiresAt: new Date(Date.now() + this.options.expiresAt),
+			expiresAt: new Date(Date.now() + this.options.expiresAt)
 		}
 		await this.db.insert(this.sessionTable).values(session)
 		return session
 	}
-
 
 	createSessionCookie(sessionId: string): SessionCookie {
 		return {
@@ -87,8 +86,8 @@ export class SessionManager {
 			value: sessionId,
 			attributes: {
 				...this.options.sessionCookie.attributes,
-				maxAge: new Date().getTime() + this.options.expiresAt,
-			},
+				maxAge: new Date().getTime() + this.options.expiresAt
+			}
 		}
 	}
 
@@ -98,8 +97,8 @@ export class SessionManager {
 			value: "",
 			attributes: {
 				...this.options.sessionCookie.attributes,
-				maxAge: 0,
-			},
+				maxAge: 0
+			}
 		}
 	}
 
@@ -116,7 +115,6 @@ export class SessionManager {
 		}
 
 		const { user, session } = result[0]
-
 
 		const expired = Date.now() >= session.expiresAt.getTime()
 		if (expired) {
@@ -139,7 +137,7 @@ export class SessionManager {
 		return {
 			session,
 			user: user as any, // cast because it contains extra attributes
-			fresh: canBeExtended,
+			fresh: canBeExtended
 		}
 	}
 
@@ -148,4 +146,3 @@ export class SessionManager {
 			.where(eq(this.sessionTable.id, sessionId))
 	}
 }
-

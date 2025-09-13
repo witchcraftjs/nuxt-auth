@@ -35,7 +35,7 @@ export function createExternalAuthHandler(
 	 *
 	 * @default runctimeConfig().public.auth.authRoutes.deeplink
 	 */
-	deeplinkCallbackPath: string = useRuntimeConfig().public.auth.authRoutes.deeplink,
+	deeplinkCallbackPath: string = useRuntimeConfig().public.auth.authRoutes.deeplink
 
 ) {
 	return async (_action: "login" | "logout", url: string) => {
@@ -44,13 +44,12 @@ export function createExternalAuthHandler(
 			ns: "auth:createExternalAuthHandler",
 			name,
 			serverUrl,
-			callbackPath: deeplinkCallbackPath,
+			callbackPath: deeplinkCallbackPath
 		})
 		if (!isExternal()) return false
 
 		if (!serverUrl) throw new Error("createExternalAuthHandler: serverUrl cannot be undefined when isExternal returns true. See docs for more info.")
 		if (!open) throw new Error("createExternalAuthHandler: open cannot be undefined when isExternal returns true. See docs for more info.")
-
 
 		let origin = typeof serverUrl === "function" ? serverUrl() : serverUrl
 		if (origin instanceof Promise) {

@@ -1,6 +1,8 @@
 <template>
 <div class="flex flex-col justify-center gap-4">
-	<div class="text-lg text-center">{{ promptText }}</div>
+	<div class="text-lg text-center">
+		{{ promptText }}
+	</div>
 
 	<NuxtLink
 		class="
@@ -43,6 +45,7 @@
 	</WButton>
 </div>
 </template>
+
 <script lang="ts" setup>
 import { unreachable } from "@alanscodelog/utils/unreachable"
 import { copy } from "@witchcraft/ui/helpers/copy"
@@ -50,9 +53,7 @@ import { copy } from "@witchcraft/ui/helpers/copy"
 import {
 	navigateTo,
 	onMounted,
-	useCookie,
-	useRoute,
-	useRuntimeConfig,
+	useRoute
 } from "#imports"
 
 import { decodeQueryUri } from "../utils/decodeQueryUri.js"
@@ -66,14 +67,14 @@ const deepLinkUrl = decodeQueryUri(query.deeplinkUri)
 if (!deepLinkUrl) {
 	unreachable("No deeplinkUrl could be decoded.")
 }
-const props = withDefaults(defineProps<{
+/* const props =  */withDefaults(defineProps<{
 	openAppText?: string
 	promptText?: string
 	copyTitle?: string
 }>(), {
 	openAppText: "Open App and Authorize",
 	promptText: "If you are not prompted to open the app, try clicking below or copy this token into the app:",
-	copyTitle: "Click to Copy",
+	copyTitle: "Click to Copy"
 })
 onMounted(() => {
 	if (accessToken) {

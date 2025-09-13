@@ -1,7 +1,7 @@
 import {
 	navigateTo,
 	useRuntimeConfig,
-	useState,
+	useState
 } from "#app"
 import type { AuthUser, ProviderNames, UseAuthComposableOptions } from "#auth/types.js"
 import { computed } from "#imports"
@@ -11,10 +11,9 @@ import { getAuthApiRoute } from "../utils/getAuthApiRoute.js"
 type AuthListenerHook = () => void
 type AuthListenerHooks = "beforeLogout"
 const hooks: Record<AuthListenerHooks, AuthListenerHook[]> = {
-	beforeLogout: [],
+	beforeLogout: []
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 	const config = useRuntimeConfig().public.auth
 	const doFetch = useState("auth:_fetch")
@@ -24,7 +23,7 @@ export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 	const isRegistered = computed(() => !!userData.value?.isRegistered)
 	const authRoutes = {
 		...config.authRoutes,
-		login: config.authRoutes.login,
+		login: config.authRoutes.login
 	}
 
 	function setFetchUserOnNavigation(value: boolean = true): void {
@@ -32,15 +31,15 @@ export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 	}
 
 	async function login(provider: ProviderNames, {
-		devBypass = false,
+		devBypass = false
 	}: {
 		/** Send the request with the devBypass query param (This will only actually bypass auth if the server permits it). */
 		devBypass?: boolean
 	} = {}): Promise<void> {
 		setFetchUserOnNavigation()
-		const loginRoute = getAuthApiRoute(useRuntimeConfig().public,"login", { provider: provider.toLowerCase() }, { devBypass })
+		const loginRoute = getAuthApiRoute(useRuntimeConfig().public, "login", { provider: provider.toLowerCase() }, { devBypass })
 		const external = provider ? true : undefined
-		let handled = handleActions?.("login",loginRoute, provider)
+		let handled = handleActions?.("login", loginRoute, provider)
 		if (handled instanceof Promise) handled = await handled
 
 		if (!handled) {
@@ -52,11 +51,11 @@ export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 		userData.value = null
 
 		await Promise.allSettled(hooks.beforeLogout.map(listener => listener()))
-		const handled = handleActions?.("logout", getAuthApiRoute(useRuntimeConfig().public,"logout"))
+		const handled = handleActions?.("logout", getAuthApiRoute(useRuntimeConfig().public, "logout"))
 		if (!handled) {
-			const res = await $fetch(getAuthApiRoute(useRuntimeConfig().public,"logout"), {
+			const res = await $fetch(getAuthApiRoute(useRuntimeConfig().public, "logout"), {
 				cache: "no-store",
-				method: "post",
+				method: "post"
 			})
 			if (res) {
 				// using external so it forces a reload to clear any state (e.g. indexeddb doesn't properly close until reload sometimes)
@@ -85,7 +84,6 @@ export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 		authRoutes,
 		isAuthenticated,
 		isRegistered,
-		isSemiAuthed,
+		isSemiAuthed
 	}
 }
-

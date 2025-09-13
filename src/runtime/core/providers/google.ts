@@ -1,4 +1,19 @@
+import {
+	generateCodeVerifier,
+	Google,
+	type OAuth2Tokens
+} from "arctic"
+
 import GoogleLogo from "~icons/logos/google-icon"
+
+import type { BaseProviderAccountInfo, ProviderHandler, ProviderHandlerOptions, ProviderOptions } from "../../types"
+
+declare module "../../types.js" {
+	interface InternalProviders {
+		google: GoogleUser
+	}
+}
+
 
 // https://developers.google.com/identity/openid-connect/openid-connect#an-id-tokens-payload
 export interface GoogleUser {
@@ -36,20 +51,6 @@ export interface GoogleUser {
 /* eslint-enable @typescript-eslint/naming-convention */
 }
 
-
-import {
-	generateCodeVerifier,
-	Google,
-	type OAuth2Tokens
-} from "arctic"
-
-import type { BaseProviderAccountInfo, ProviderHandler, ProviderHandlerOptions, ProviderOptions } from "../../types"
-
-declare module "../../types.js" {
-	interface InternalProviders {
-		google: GoogleUser
-	}
-}
 export default class GoogleProvider implements ProviderHandler<"oauth2_pcke", "google", Google> {
 	name = "google" as const
 
@@ -74,15 +75,13 @@ export default class GoogleProvider implements ProviderHandler<"oauth2_pcke", "g
 		)
 	}
 
-	// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 	getLoginInfo(state: string) {
 		const codeVerifier = generateCodeVerifier()
-		const url = this.provider.createAuthorizationURL(state, codeVerifier, ["profile", "email"],)
+		const url = this.provider.createAuthorizationURL(state, codeVerifier, ["profile", "email"])
 
 		return { type: "oauth2_pcke" as const, url, codeVerifier }
 	}
 
-	// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 	async getAccountInfo(tokens: OAuth2Tokens) {
 		const user = await $fetch<any>("https://openidconnect.googleapis.com/v1/userinfo", {
 			headers: {
@@ -99,7 +98,7 @@ export default class GoogleProvider implements ProviderHandler<"oauth2_pcke", "g
 		}
 		return {
 			...baseInfo,
-			info: (await this.options.getAdditionalAccountInfo?.(user)) ?? null,
+			info: (await this.options.getAdditionalAccountInfo?.(user)) ?? null
 		}
 	}
 }
@@ -111,6 +110,5 @@ export const googleProviderStyle = {
 		bgDark: "#000",
 		text: "#000",
 		textDark: "#fff"
-	},
+	}
 }
-

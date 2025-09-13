@@ -66,8 +66,13 @@
 	>
 		Register
 	</WButton>
-	<slot v-if="anyError" name="error" v-bind="{ error, registrationError }">
-		<div class="
+	<slot
+		v-if="anyError"
+		name="error"
+		v-bind="{ error, registrationError }"
+	>
+		<div
+			class="
 		border
 		border-red-500
 		rounded-md
@@ -89,13 +94,13 @@
 import { refDebounced } from "@vueuse/core"
 
 import { navigateTo, useAsyncData, useRuntimeConfig } from "#app"
-import { computed, onPrehydrate, type Ref, ref, useId,useRoute } from "#imports"
+import { computed, type Ref, ref, useId, useRoute } from "#imports"
 import IconInvalid from "~icons/fa-solid/times"
 import IconCheck from "~icons/fa6-solid/check"
 import IconSpinner from "~icons/gg/spinner"
 
 import { useAuth } from "../composables/useAuth.js"
-import { AUTH_ERROR , defaultZodUsernameSchema } from "../types.js"
+import { AUTH_ERROR, defaultZodUsernameSchema } from "../types.js"
 import { getAuthApiRoute } from "../utils/getAuthApiRoute.js"
 
 const query = useRoute().query
@@ -130,8 +135,8 @@ const props = withDefaults(defineProps<{
 			cache: "no-store",
 			method: "post",
 			body: {
-				username,
-			},
+				username
+			}
 		}).catch(e => {
 			if (e?.data?.code === AUTH_ERROR.USER_ALREADY_REGISTERED) {
 				useAuth().setFetchUserOnNavigation(true)
@@ -154,9 +159,9 @@ const { data: isValidUsername, status, error } = await useAsyncData(
 	"auth:username:valid",
 	() => $fetch<boolean>(props.getValidUsernameRoute(debouncedUsername.value)),
 	{
-		watch: [ debouncedUsername ],
+		watch: [debouncedUsername],
 		immediate: false,
-		default: () => false,
+		default: () => false
 	}
 )
 
@@ -173,7 +178,7 @@ function handleSubmit(event: Event) {
 		username.value,
 		registrationError,
 		redirect,
-		deeplink,
+		deeplink
 	)
 }
 </script>

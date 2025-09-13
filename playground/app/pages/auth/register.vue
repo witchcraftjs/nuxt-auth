@@ -5,11 +5,10 @@
 </template>
 
 <script lang="ts" setup>
-
 definePageMeta({
 	middleware: ["authProtected"],
 	auth: {
-		only: "authenticated-unregistered",
+		only: "authenticated-unregistered"
 	}
 })
 </script>

@@ -73,7 +73,7 @@ type GithubEmails = {
 import { unreachable } from "@alanscodelog/utils/unreachable"
 import {
 	GitHub,
-	type OAuth2Tokens,
+	type OAuth2Tokens
 } from "arctic"
 
 import type { BaseProviderAccountInfo, ProviderHandler, ProviderHandlerOptions, ProviderOptions } from "../../types"
@@ -103,13 +103,11 @@ export default class GithubProvider implements ProviderHandler<"oauth2", "github
 		)
 	}
 
-	// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 	getLoginInfo(state: string) {
 		const url = this.provider.createAuthorizationURL(state, ["user:email"])
 		return { type: "oauth2" as const, url }
 	}
 
-	// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 	async getAccountInfo(tokens: OAuth2Tokens) {
 		const user = await $fetch<any>("https://api.github.com/user", {
 			headers: {
@@ -134,7 +132,7 @@ export default class GithubProvider implements ProviderHandler<"oauth2", "github
 
 		return {
 			...baseInfo,
-			info: (await this.options.getAdditionalAccountInfo?.(user)) ?? null,
+			info: (await this.options.getAdditionalAccountInfo?.(user)) ?? null
 		}
 	}
 }
@@ -146,5 +144,5 @@ export const githubProviderStyle = {
 		bgDark: "#000",
 		text: "#000",
 		textDark: "#fff"
-	},
+	}
 }

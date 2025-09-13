@@ -1,7 +1,9 @@
 <template>
 <div class="flex flex-col gap-4">
 	<template v-if="authUri">
-		<div class="text-xl text-center">Authorize</div>
+		<div class="text-xl text-center">
+			Authorize
+		</div>
 		<div class="text-lg text-center">
 			If you are not redirected automatically, open following URL and paste the code given:
 			<NuxtLink
@@ -17,7 +19,10 @@
 			v-model="accessToken"
 			@update:model-value="error=undefined"
 		/>
-		<div v-if="error" class="border-2 border-red-500 bg-red-100 dark:bg-red-900 rounded-md p-2">
+		<div
+			v-if="error"
+			class="border-2 border-red-500 bg-red-100 dark:bg-red-900 rounded-md p-2"
+		>
 			{{ error }}
 		</div>
 		<WButton
@@ -26,14 +31,21 @@
 		>
 			Submit
 		</WButton>
-		<WButton @click="cancel">Cancel</WButton>
+		<WButton @click="cancel">
+			Cancel
+		</WButton>
 	</template>
 	<template v-else>
-		<div class="text-xl text-center">Authorizing...</div>
-		<WButton @click="authorize(initialAccessToken)">Retry</WButton>
+		<div class="text-xl text-center">
+			Authorizing...
+		</div>
+		<WButton @click="authorize(initialAccessToken)">
+			Retry
+		</WButton>
 	</template>
 </div>
 </template>
+
 <script lang="ts" setup>
 import { unreachable } from "@alanscodelog/utils/unreachable"
 
@@ -50,7 +62,6 @@ const props = defineProps<{
 	successPath?: string
 	cancelPath?: string
 }>()
-
 
 const rc = useRuntimeConfig()
 const query = useRoute().query
@@ -93,5 +104,4 @@ async function authorize(
 async function cancel() {
 	await navigateTo(props.cancelPath ?? rc.public.auth.authRoutes.login)
 }
-
 </script>

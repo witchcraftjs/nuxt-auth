@@ -7,8 +7,12 @@
 		:auth-routes="authRoutes"
 	>
 		<div class="flex gap-4">
-			<slot name="user" :user="user">
-				<NuxtLink :class="`
+			<slot
+				name="user"
+				:user="user"
+			>
+				<NuxtLink
+					:class="`
 					text-underline
 					text-l
 					${isSemiAuthed ? 'text-red-500' : ''}
@@ -50,7 +54,10 @@
 	</slot>
 </div>
 <div v-else>
-	<slot name="unauthenticated" :auth-routes="authRoutes">
+	<slot
+		name="unauthenticated"
+		:auth-routes="authRoutes"
+	>
 		<NuxtLink
 			:to="authRoutes.login"
 		>
@@ -59,37 +66,31 @@
 	</slot>
 </div>
 </template>
+
 <script lang="ts" setup>
-
-import { useRuntimeConfig } from "#imports"
-
 import { useAuth } from "../composables/useAuth"
 import type { AuthUser } from "../types.js"
-import { getAuthApiRoute } from "../utils/getAuthApiRoute.js"
 
 const {
 	logout,
-	login,
 	user,
 	authRoutes,
 	isAuthenticated,
-	isRegistered,
-	isSemiAuthed,
+	isSemiAuthed
 } = useAuth()
 
 // doing it this way, otherwise we can't reference local variables
-// eslint-disable-next-line no-shadow
+
 function defaultUsernameLink(user: AuthUser) {
 	return isSemiAuthed.value
 		? useAuth().authRoutes.login
 		: `/users/${"username" in user ? user.username : ""}`
 }
-const props = withDefaults(defineProps<{
+/* const props =  */withDefaults(defineProps<{
 	/** The link to the user's profile. Links to `/users/:username` (note this is not provided by the module). */
-	 
+
 	usernameLink?: (user: AuthUser) => string
 }>(), {
 	usernameLink: undefined
 })
 </script>
-

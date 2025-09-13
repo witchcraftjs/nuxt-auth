@@ -1,14 +1,11 @@
-import { defineEventHandler, getCookie, setCookie } from "h3"
+import type { SessionManager } from "./SessionManager.js"
 
-import { type SessionManager } from "./SessionManager.js"
+import { defineEventHandler, getCookie, setCookie, useServerLogger } from "#imports"
 
-import { useServerLogger } from "#imports"
+import type { AuthSession, AuthUser } from "../../types.js"
 
-import { type AuthSession, type AuthUser } from "../../types.js"
-
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function createAuthMiddleware(
-	sessionManager: SessionManager,
+	sessionManager: SessionManager
 ) {
 	return defineEventHandler(async event => {
 		const logger = useServerLogger()
@@ -25,7 +22,7 @@ export function createAuthMiddleware(
 			ns: "auth:middleware:session",
 			user,
 			fresh,
-			redact: { sessionId , session }
+			redact: { sessionId, session }
 		})
 		if (fresh) {
 			const cookie = sessionManager.createSessionCookie(session.id)

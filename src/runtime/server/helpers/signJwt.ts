@@ -1,11 +1,11 @@
+import type { SignOptions } from "jsonwebtoken"
 import jwt from "jsonwebtoken"
-import { type SignOptions } from "jsonwebtoken"
 
 /** Promisified version of jsonwebtoken.sign. */
 export async function signJwt(
 	payload: any,
 	secret: string,
-	opts: Partial<SignOptions | { algorithm: "none" }> = {},
+	opts: Partial<SignOptions | { algorithm: "none" }> = {}
 ): Promise<string> {
 	return new Promise((resolve, reject) => {
 		jwt.sign(payload, secret, opts, (err, token) => {

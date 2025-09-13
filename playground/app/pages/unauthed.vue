@@ -3,6 +3,7 @@
 	Unauthenticated Only
 </div>
 </template>
+
 <script lang="ts" setup>
 definePageMeta({
 	middleware: ["authProtected"],

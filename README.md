@@ -316,6 +316,7 @@ This is useful for adding custom endpoints like `/api/auth/public/users/:usernam
 
 The full auth flow is as follows:
 
+TODO
 ![Auth Flow](todo)
 
 ### External Auth Handlers

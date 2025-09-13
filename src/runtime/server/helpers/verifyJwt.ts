@@ -1,8 +1,8 @@
-import jwt from "jsonwebtoken"
-import {
-	type JwtPayload,
-	type VerifyOptions,
+import type {
+	JwtPayload,
+	VerifyOptions
 } from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 
 /** Promisified version of jsonwebtoken.verify. */
 export async function verifyJwt<T extends Record<string, any>>(

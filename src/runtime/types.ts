@@ -1,19 +1,20 @@
-import { type EnumLike } from "@alanscodelog/utils"
+import type { EnumLike } from "@alanscodelog/utils"
 import { enumFromArray } from "@alanscodelog/utils/enumFromArray"
-import { type OAuth2Tokens } from "arctic"
+import type { OAuth2Tokens } from "arctic"
 import type { H3Event, Router } from "h3"
 import type { StringValue } from "ms"
 import type { InjectionKey } from "vue"
 import { z } from "zod"
 
+import type { GithubUser } from "./core/providers/github.js"
+import type { GoogleUser } from "./core/providers/google.js"
 import type {
 	AuthAccount,
 	AuthSession as DbAuthSession,
-	AuthUserFields as DbAuthUser,
+	AuthUserFields as DbAuthUser
 } from "./server/utils/createAuthSchema.js"
 
 import type { ModulePublicRuntimeConfig } from "../module.js"
-
 
 export type * from "./server/utils/createAuthSchema.js"
 
@@ -30,7 +31,6 @@ export type InitialAccountInfo = {
 	isVerified: boolean
 }
 
-
 /** @internal */
 export type ProviderHandlerClass<TProviderName extends ProviderNames = ProviderNames> = new (
 	providerOptions: ProviderHandlerOptions,
@@ -46,11 +46,13 @@ export type ProviderHandlerOptions = {
 
 // arctic no longer exports these, and the code has been rewritten not to depend on them as much
 // but we still use them to check the TProvider type
+// eslint-disable-next-line @typescript-eslint/naming-convention
 interface OAuth2Provider {
 	createAuthorizationURL(state: string, scopes: string[]): URL
 	validateAuthorizationCode(code: string): Promise<OAuth2Tokens>
 	refreshAccessToken?(refreshToken: string): Promise<OAuth2Tokens>
 }
+// eslint-disable-next-line @typescript-eslint/naming-convention
 interface OAuth2ProviderWithPKCE {
 	createAuthorizationURL(state: string, codeVerifier: string, scopes: string[]): URL
 	validateAuthorizationCode(code: string, codeVerifier: string): Promise<OAuth2Tokens>
@@ -61,19 +63,18 @@ export interface ProviderHandler<
 	TType extends "oauth2" | "oauth2_pcke" = "oauth2" | "oauth2_pcke",
 	TProviderName extends ProviderNames = ProviderNames,
 	TProvider extends
-		TType extends "oauth2" ? OAuth2Provider : TType extends "oauth2_pcke" ? OAuth2ProviderWithPKCE : never =
-		TType extends "oauth2" ? OAuth2Provider : TType extends "oauth2_pcke" ? OAuth2ProviderWithPKCE : never,
+	TType extends "oauth2" ? OAuth2Provider : TType extends "oauth2_pcke" ? OAuth2ProviderWithPKCE : never = TType extends "oauth2" ? OAuth2Provider : TType extends "oauth2_pcke" ? OAuth2ProviderWithPKCE : never
 > {
 	provider: TProvider
 	type: TType
 	name: TProviderName
 	getAccountInfo: (tokens: OAuth2Tokens) => Promise<Omit<BaseProviderAccountInfo, "userId">>
 	getLoginInfo: (state: string) =>
-		TType extends "oauth2"
+	TType extends "oauth2"
 		? OAuth2AuthUrl
 		: TType extends "oauth2_pcke"
-		? OAuth2PkceAuthUrl
-		: never
+			? OAuth2PkceAuthUrl
+			: never
 
 }
 
@@ -92,9 +93,10 @@ export type OAuth2PkceAuthUrl = {
 export interface Register {
 }
 
-declare module "./types.js" {
-	export interface InternalProviders {
-	}
+// am having issues doing this via declaration merging :/
+export interface InternalProviders {
+	// google: GoogleUser
+	// github: GithubUser
 }
 
 type InternalProviderObject = {
@@ -102,8 +104,8 @@ type InternalProviderObject = {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-type AdditionalProviders = Register extends { AdditionalProviders: infer T } ?
-	T extends Record<string, any>
+type AdditionalProviders = Register extends { AdditionalProviders: infer T }
+	? T extends Record<string, any>
 		? T
 		: never
 	: never
@@ -112,17 +114,21 @@ type AdditionalProviders = Register extends { AdditionalProviders: infer T } ?
 export type AdditionalAccountInfo = Register extends { AdditionalAccountInfo: infer T } ? T : never
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export type AdditionalApiRoutes = (Register extends { ApiRoutes: infer T } ?
-	T extends Record<string, any>
+export type AdditionalApiRoutes = (Register extends { ApiRoutes: infer T }
+	? T extends Record<string, any>
 		? T
+		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 		: {}
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	: {})
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export type ApiRoutesParams = (Register extends { ApiRoutesParams: infer T } ?
-	T extends Record<string, any>
+export type ApiRoutesParams = (Register extends { ApiRoutesParams: infer T }
+	? T extends Record<string, any>
 		? T
+		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 		: {}
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	: {}) & {
 		userIdAccounts: Record<"id", string>
 		login: Record<"provider", string>
@@ -131,23 +137,26 @@ export type ApiRoutesParams = (Register extends { ApiRoutesParams: infer T } ?
 	}
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export type AuthSession = (Register extends { AuthSession: infer T } ?
-	T extends Record<string, any>
+export type AuthSession = (Register extends { AuthSession: infer T }
+	? T extends Record<string, any>
 		? T
+		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 		: {}
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	: {}) & DbAuthSession
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export type AuthUser = (Register extends { AuthUser: infer T } ?
-	T extends Record<string, any>
+export type AuthUser = (Register extends { AuthUser: infer T }
+	? T extends Record<string, any>
 		? T
+		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 		: {}
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	: {}) & DbAuthUser
 
-export type SessionValidationResult =
-	| { session: AuthSession, user: AuthUser, fresh: boolean }
-	| { session: null, user: null, fresh: false }
-
+export type SessionValidationResult
+	= | { session: AuthSession, user: AuthUser, fresh: boolean }
+		| { session: null, user: null, fresh: false }
 
 export type SessionCookieOptions = {
 	secure?: boolean
@@ -170,8 +179,8 @@ export type ProviderAccountInfo = InternalProviderObject | AdditionalProviders
 export type MockUser = Partial<Omit<BaseProviderAccountInfo, "userId">>
 
 export type ProviderOptions<
-TProviderName extends ProviderNames = ProviderNames,
-TProviderAccountInfo extends ProviderAccountInfo[TProviderName] = ProviderAccountInfo[TProviderName]
+	TProviderName extends ProviderNames = ProviderNames,
+	TProviderAccountInfo extends ProviderAccountInfo[TProviderName] = ProviderAccountInfo[TProviderName]
 > = {
 	/**
 	 * This determines what additional account information the provider should return and save to the *accounts* table under the `info` field.
@@ -221,7 +230,7 @@ export type AuthHandlerOptions<T = any> = {
 		isRegistered: boolean,
 		additionalState: T,
 		deeplink?: string
-	) => string | undefined | void
+	) => string | undefined
 
 	/**
 	 * Store additional state in the callback url.
@@ -263,8 +272,8 @@ export type AuthHandlerOptions<T = any> = {
 	 *
 	 * Any missing fields will be filled in with the defualt generator. Same thing if you return undefined.
 	 */
-	createMockUser?: (username: string | undefined,id: string | undefined, provider: string) => MockUser | Promise<MockUser> | undefined | Promise<undefined>
-	/** Should return any additional fields non-nullable fields without defaults that are needed to be able to add a user.*/
+	createMockUser?: (username: string | undefined, id: string | undefined, provider: string) => MockUser | Promise<MockUser> | undefined | Promise<undefined>
+	/** Should return any additional fields non-nullable fields without defaults that are needed to be able to add a user. */
 	generateUser?: () => any
 }
 
@@ -274,10 +283,9 @@ export type AuthHandlerOptions<T = any> = {
 export const defaultZodUsernameSchema = z.string()
 	.min(3)
 	.max(32)
-	.regex(/^[a-zA-Z0-9_.]+$/, "Username can only contain letters, numbers, underscores, and periods.")
+	.regex(/^[\w.]+$/, "Username can only contain letters, numbers, underscores, and periods.")
 
 export type ProviderNames = keyof InternalProviders | (AdditionalProviders extends never ? never : keyof AdditionalProviders)
-
 
 export type Secrets = Partial<
 	Record<`auth${Capitalize<ProviderNames>}ClientId`, string>
@@ -299,10 +307,9 @@ export type ProviderStyle = {
 	}
 }
 
-export const providerStylesInjectionKey =  Symbol("providerStyles") as InjectionKey< Partial<Record<ProviderNames, Partial<ProviderStyle>>>>
+export const providerStylesInjectionKey = Symbol("providerStyles") as InjectionKey<Partial<Record<ProviderNames, Partial<ProviderStyle>>>>
 
 export type FullProviderStyles = Record<"github" | "google", ProviderStyle> & Record<ProviderNames, Partial<ProviderStyle>>
-
 
 export type UseAuthComposableOptions = {
 	/**
@@ -315,10 +322,9 @@ export type UseAuthComposableOptions = {
 /**
  * See {@link UseAuthComposableOptions.handleActions}
  */
-export type ActionHandler =
- ((action: "login" , url: string, provider: ProviderNames) => any | false)
-& ((action: "logout", url: string) => any | false)
-
+export type ActionHandler
+	= ((action: "login", url: string, provider: ProviderNames) => any | false)
+		& ((action: "logout", url: string) => any | false)
 
 export const AUTH_ERROR = enumFromArray([
 	"USER_ALREADY_REGISTERED",
@@ -329,8 +335,7 @@ export const AUTH_ERROR = enumFromArray([
 	"INVALID_AUTH_CALLBACK",
 	"INTERNAL_ERROR",
 	"INVALID_DEEPLINK",
-	"INVALID_ACCESS_TOKEN",
+	"INVALID_ACCESS_TOKEN"
 ], "AUTH.")
 
 export type AuthError = EnumLike<typeof AUTH_ERROR>
-

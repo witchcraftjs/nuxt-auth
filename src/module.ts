@@ -1,14 +1,15 @@
 import { crop } from "@alanscodelog/utils/crop"
 import { addComponentsDir, addImportsDir, addRouteMiddleware, addServerImports, addServerImportsDir, addServerScanDir, addTemplate, createResolver, defineNuxtModule, installModule, useLogger } from "@nuxt/kit"
-import { type CookieSerializeOptions } from "cookie-es"
+import type { CookieSerializeOptions } from "cookie-es"
 import { defu } from "defu"
 
-import type { AdditionalApiRoutes, AuthMiddlewareExclusion, ProviderNames, Secrets, SessionCookieOptions } from "./runtime/types"
+import type { AdditionalApiRoutes, ProviderNames, Secrets, SessionCookieOptions } from "./runtime/types"
+
 export type * from "./runtime/types"
 export type * from "./runtime/server/utils/createAuthSchema.js"
 import type { NuxtPage } from "@nuxt/schema"
 
-import { type useAuth } from "./runtime/composables/useAuth.js"
+import type { useAuth } from "./runtime/composables/useAuth.js"
 
 declare global {
 }
@@ -27,7 +28,6 @@ declare module "vue-router" {
 		}
 	}
 }
-
 
 export interface ModuleOptions {
 	enabledProviders: ProviderNames[]
@@ -161,9 +161,9 @@ export interface ModuleOptions {
 export interface ModulePublicRuntimeConfig {
 	auth: Required<Omit<
 		ModuleOptions,
-			| "useGlobalMiddleware"
-			| "authRoutes"
-			| "authApiRoutes"
+		| "useGlobalMiddleware"
+		| "authRoutes"
+		| "authApiRoutes"
 	>> & {
 		authRoutes: Required<ModuleOptions>["authRoutes"]
 		authApiRoutes: Required<ModuleOptions["authApiRoutes"]>
@@ -181,7 +181,7 @@ declare module "@nuxt/schema" {
 export default defineNuxtModule<ModuleOptions>({
 	meta: {
 		name: "auth",
-		configKey: "auth",
+		configKey: "auth"
 	},
 	defaults: {
 		useGlobalMiddleware: true,
@@ -195,11 +195,11 @@ export default defineNuxtModule<ModuleOptions>({
 		sessionCookieOpts: {
 			sameSite: "lax" as const,
 			httpOnly: true,
-			path: "/",
+			path: "/"
 		},
 		enabledProviders: [
 			"google",
-			"github",
+			"github"
 		] as ProviderNames[],
 		authRoutes: {
 			login: "/auth/login",
@@ -208,7 +208,7 @@ export default defineNuxtModule<ModuleOptions>({
 			postRegisteredLogin: "/",
 			externalCode: "/auth/code",
 			deeplink: "/auth/external/callback",
-			mockAuth: "/auth/mock",
+			mockAuth: "/auth/mock"
 		},
 		authApiRoutes: {
 			base: "/api/auth",
@@ -219,10 +219,10 @@ export default defineNuxtModule<ModuleOptions>({
 			login: "/login/:provider",
 			callback: "/callback/:provider",
 			register: "/register",
-			usernameValid: "/public/users/:username/valid",
+			usernameValid: "/public/users/:username/valid"
 		} satisfies Required<ModuleOptions["authApiRoutes"]> as any,
 		onlySaveUnregisteredUserAccountInfo: false,
-		additionalMiddlewarePaths: {},
+		additionalMiddlewarePaths: {}
 	} satisfies Required<ModuleOptions>,
 	async setup(options, nuxt) {
 		const moduleName = "@witchcraft/nuxt-auth"
@@ -234,7 +234,7 @@ export default defineNuxtModule<ModuleOptions>({
 		addComponentsDir({
 			path: resolve("runtime/components"),
 			prefix: "Auth",
-			global: true,
+			global: true
 		})
 		if (!process.env.NUXT_AUTH_SECRET) {
 			logger.error("Missing $NUXT_AUTH_SECRET.")
@@ -247,7 +247,7 @@ export default defineNuxtModule<ModuleOptions>({
 			{
 				isSecure: (!!nuxt.options.devServer.https || process.env.mode === "production")
 			},
-			options,
+			options
 		)
 		delete (nuxt.options.runtimeConfig.public.auth as any).useGlobalMiddleware
 
@@ -260,7 +260,7 @@ export default defineNuxtModule<ModuleOptions>({
 		addServerImports([
 			{
 				name: "getAuthApiRoute",
-				from: resolve("runtime/utils/getAuthApiRoute"),
+				from: resolve("runtime/utils/getAuthApiRoute")
 			}
 		])
 		for (const file of [
@@ -275,7 +275,7 @@ export default defineNuxtModule<ModuleOptions>({
 			"runtime/utils/getAuthApiRoute",
 			"runtime/core/providers/google",
 			"runtime/core/providers/github",
-			"runtime/utils/createExternalAuthHandler",
+			"runtime/utils/createExternalAuthHandler"
 		]) {
 			nuxt.options.build.transpile.push(resolve(file))
 		}
@@ -304,13 +304,12 @@ export default defineNuxtModule<ModuleOptions>({
 		addRouteMiddleware({
 			name: "authProtected",
 			path: resolve("runtime/middleware/authProtected"),
-			global: false,
+			global: false
 		})
 		addRouteMiddleware({
 			name: "authGlobal",
 			path: resolve("runtime/middleware/authGlobal"),
-			global: options.useGlobalMiddleware,
+			global: options.useGlobalMiddleware
 		})
-	},
+	}
 })
-

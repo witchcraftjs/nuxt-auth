@@ -1,10 +1,10 @@
 import type { PgDatabase } from "drizzle-orm/pg-core"
 import type { EventHandler } from "h3"
-import { type RuntimeConfig } from "nuxt/schema"
+import type { RuntimeConfig } from "nuxt/schema"
 
 import { Auth } from "./Auth.js"
-import type { AuthAccountsTable,UserTable } from "./createAuthSchema.js"
-import { type SessionManager } from "./SessionManager.js"
+import type { AuthAccountsTable, UserTable } from "./createAuthSchema.js"
+import type { SessionManager } from "./SessionManager.js"
 
 import github from "#auth/core/providers/github.js"
 import google from "#auth/core/providers/google.js"
@@ -35,7 +35,7 @@ export function createAuthHandler(
 			handlers: {
 				github,
 				google,
-				...(opts.customProviders ?? {}),
+				...(opts.customProviders ?? {})
 			}
 		},
 		rc as any, // for the env vars
