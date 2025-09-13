@@ -18,9 +18,9 @@
 	},
 	"dependencies": {
 		"@witchcraft/nuxt-auth": "file:../",
-		"@witchcraft/nuxt-postgres": "file:../../nuxt-postgres",
+		"@witchcraft/nuxt-postgres": "^0.0.1",
 		"@witchcraft/nuxt-utils": "^0.2.1",
-		"@witchcraft/ui": "^0.2.0",
+		"@witchcraft/ui": "^0.2.1",
 		"arctic": "^1.9.2",
 		"cookie-es": "^1.2.2",
 		"drizzle-orm": "^0.44.3",
