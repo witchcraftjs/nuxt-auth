@@ -162,17 +162,17 @@ export class Auth {
 		}
 
 		const {
-			baseUrl,
+			appUrl,
 			handlers,
 			providerOptions,
 			enabledProviders
 		} = {
 			...opts
 		}
-		if (baseUrl === undefined) {
+		if (appUrl === undefined) {
 			throw createError({
 				status: 500,
-				statusMessage: "No baseUrl defined."
+				statusMessage: "No appUrl defined."
 			})
 		}
 
@@ -192,7 +192,7 @@ export class Auth {
 				continue
 			}
 			const options = providerOptions?.[provider]
-			const redirectUri = baseUrl + getAuthApiRoute(useRuntimeConfig().public, "callback", { provider: provider.toLowerCase() })
+			const redirectUri = appUrl + getAuthApiRoute(useRuntimeConfig().public, "callback", { provider: provider.toLowerCase() })
 			const providerClass = this.handlers[provider]
 			if (!providerClass) {
 				this.logger.error({
@@ -211,7 +211,7 @@ export class Auth {
 			ns: "auth:init",
 			enabledProviders,
 			registeredProviders: Object.keys(this.providers),
-			baseUrl,
+			appUrl,
 			isSecure: useRuntimeConfig().public.auth.isSecure,
 			...getSafeSecretsInfo()
 		})

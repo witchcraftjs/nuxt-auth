@@ -197,8 +197,8 @@ export type ProviderOptions<
 }
 
 export type AuthOptions = {
-	/** The base url for the site (e.g. http:/localhost:3000 during dev), required for the redirectUri. */
-	baseUrl?: string
+	/** The url for the site (e.g. http:/localhost:3000 during dev), required for the redirectUri. */
+	appUrl?: string
 	runtimeConfig: ModulePublicRuntimeConfig
 	handlers: {
 		[k in ProviderNames]: ProviderHandlerClass<k>
@@ -244,7 +244,7 @@ export type AuthHandlerOptions<T = any> = {
 	providerOptions?: {
 		[k in ProviderNames]: ProviderOptions<k>
 	}
-	baseUrl: string
+	appUrl: string
 	/**
 	 * Is called on user registration. User is guaranteed to be authenticated and not already registered.
 	 *
