@@ -8,7 +8,7 @@
 		"build": "cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true 'nuxi build'",
 		"db:regenerate": "rm -rf .devenv/state/postgres && rm -rf db/migrations && drizzle-kit generate",
 		"generate": "nuxi generate",
-		"update-dep": "cd ../ && pnpm build:only && cd playground && pnpm update @witchcraft/nuxt-auth && pnpm update @witchcraft/nuxt-postgres"
+		"update-dep": "cd ../ && pnpm build:only && cd playground && pnpm update @witchcraft/nuxt-auth"
 	},
 	"@comments": {
 		"dependencies": {

@@ -1,4 +1,4 @@
-import { navigateTo, useLogger, useRuntimeConfig } from "#imports"
+import { navigateTo, useRuntimeConfig } from "#imports"
 
 /**
  * Creates an external (e.g. desktop) auth handler.
@@ -35,18 +35,14 @@ export function createExternalAuthHandler(
 	 *
 	 * @default runctimeConfig().public.auth.authRoutes.deeplink
 	 */
-	deeplinkCallbackPath: string = useRuntimeConfig().public.auth.authRoutes.deeplink
+	deeplinkCallbackPath: string = useRuntimeConfig().public.auth.authRoutes.deeplink!
 
 ) {
 	return async (_action: "login" | "logout", url: string) => {
-		const logger = useLogger()
-		logger.debug({
-			ns: "auth:createExternalAuthHandler",
-			name,
-			serverUrl,
-			callbackPath: deeplinkCallbackPath
-		})
 		if (!isExternal()) return false
+		if (deeplinkCallbackPath === undefined) {
+			throw new Error("createExternalAuthHandler: deeplinkCallbackPath cannot be undefined. See docs for more info.")
+		}
 
 		if (!serverUrl) throw new Error("createExternalAuthHandler: serverUrl cannot be undefined when isExternal returns true. See docs for more info.")
 		if (!open) throw new Error("createExternalAuthHandler: open cannot be undefined when isExternal returns true. See docs for more info.")

@@ -66,9 +66,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
 	const doRedirect = !matchesCondition && to.path !== redirectTo
 
-	// see note in ./authGlobal.ts
 	if (import.meta.client && import.meta.dev) {
-		// useLogger().info({
 		// eslint-disable-next-line no-console
 		console.log({
 			ns: "auth:middleware:authProtected",

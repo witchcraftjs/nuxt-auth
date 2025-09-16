@@ -1,15 +1,16 @@
+import type { BaseLogger } from "@witchcraft/nuxt-logger/createUseLogger"
+
 import type { SessionManager } from "./SessionManager.js"
 
-import { defineEventHandler, getCookie, setCookie, useServerLogger } from "#imports"
+import { defineEventHandler, getCookie, setCookie } from "#imports"
 
 import type { AuthSession, AuthUser } from "../../types.js"
 
 export function createAuthMiddleware(
-	sessionManager: SessionManager
+	sessionManager: SessionManager,
+	logger: BaseLogger = console
 ) {
 	return defineEventHandler(async event => {
-		const logger = useServerLogger()
-
 		const sessionId = getCookie(event, sessionManager.options.sessionCookie.name) ?? null
 		if (!sessionId) {
 			event.context.session = null

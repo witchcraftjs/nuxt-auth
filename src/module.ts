@@ -237,18 +237,14 @@ export default defineNuxtModule<ModuleOptions>({
 		onlySaveUnregisteredUserAccountInfo: false,
 		additionalMiddlewarePaths: {}
 	} satisfies Required<ModuleOptions>,
-	metadataDependencies: {
-		"@witchcraft/nuxt-logger": {
-			version: pkg.dependencies["@witchcraft/nuxt-logger"]
-		},
-		"@witchcraft/nuxt-postgres": {
-			version: pkg.dependencies["@witchcraft/nuxt-postgres"]
+	moduleDependencies: {
+		"@witchcraft/ui": {
+			version: pkg.dependencies["@witchcraft/ui"],
+			optional: true
 		},
 		"nuxt-security": {
-			version: pkg.dependencies["nuxt-security"]
-		},
-		"unplugin-icons/nuxt": {
-			version: pkg.dependencies["unplugin-icons/nuxt"]
+			version: pkg.dependencies["nuxt-security"],
+			optional: true
 		}
 	},
 	async setup(options, nuxt) {

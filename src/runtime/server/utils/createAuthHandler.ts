@@ -1,3 +1,4 @@
+import type { BaseLogger } from "@witchcraft/nuxt-logger/createUseLogger"
 import type { PgDatabase } from "drizzle-orm/pg-core"
 import type { EventHandler } from "h3"
 import type { RuntimeConfig } from "nuxt/schema"
@@ -8,7 +9,7 @@ import type { SessionManager } from "./SessionManager.js"
 
 import github from "#auth/core/providers/github.js"
 import google from "#auth/core/providers/google.js"
-import { createRouter, useServerLogger } from "#imports"
+import { createRouter } from "#imports"
 
 import type { AuthHandlerOptions } from "../../types.js"
 
@@ -18,10 +19,10 @@ export function createAuthHandler(
 	usersTable: UserTable,
 	authAccountsTable: AuthAccountsTable,
 	sessionManager: SessionManager,
-	opts: Partial<AuthHandlerOptions> = {}
+	opts: Partial<AuthHandlerOptions> = {},
+	logger: BaseLogger = console
 ): EventHandler {
 	const router = createRouter()
-	const logger = useServerLogger()
 	const auth = new Auth(
 		rc,
 		db,
@@ -36,7 +37,8 @@ export function createAuthHandler(
 				github,
 				google,
 				...(opts.customProviders ?? {})
-			}
+			},
+			runtimeConfig: rc.public as any
 		},
 		rc as any, // for the env vars
 		logger

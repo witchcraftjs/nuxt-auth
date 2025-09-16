@@ -19,7 +19,6 @@ import {
 } from "h3"
 import type { JwtPayload } from "jsonwebtoken"
 import type { RuntimeConfig } from "nuxt/schema"
-import type { Logger } from "pino"
 import { z } from "zod"
 
 import type { AuthAccountsTable, UserTable } from "./createAuthSchema.js"
@@ -129,14 +128,14 @@ export class Auth {
 		router: Auth["router"],
 		opts: AuthOptions,
 		env: Record<`auth${string}${"ClientId" | "ClientSecret"}` | string, string>,
-		logger: Logger
+		logger: BaseLogger
 	) {
 		this.rc = runtimeConfig
 		this.providerCookieOpts = {
 			secure: this.rc.public.auth.isSecure,
 			...this.rc.public.auth.providerCookieOpts
 		} as CookieSerializeOptions
-		this.logger = useServerLogger()
+		this.logger = logger ?? console
 		this.db = db
 		this.usersTable = usersTable
 		this.authAccountsTable = authAccountsTable

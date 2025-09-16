@@ -9,8 +9,8 @@
 VERY WIP wrapper module following the guide by [lucia auth](https://lucia-auth.com/) with postgres and drizzle db.
 
 I am not an auth expert, **use at your own risk**. The module's auth code is not that long, read 
-[src/runtime/server/utils/SessionManager.ts](https://github.com/witchcraftjs/nuxt-auth/blob/src/runtime/server/utils/SessionManager.ts) (based on lucia) and
-[`src/runtime/server/utils/Auth.ts`](https://github.com/witchcraftjs/nuxt-auth/blob/src/runtime/server/utils/Auth.ts) which contains all the logic.
+[src/runtime/server/utils/SessionManager.ts](https://github.com/witchcraftjs/nuxt-auth/blob/master/src/runtime/server/utils/SessionManager.ts) (based on lucia) and
+[`src/runtime/server/utils/Auth.ts`](https://github.com/witchcraftjs/nuxt-auth/blob/master/src/runtime/server/utils/Auth.ts) which contains all the logic.
 
 
 ## Playground
@@ -29,11 +29,17 @@ The following providers are included (using the `arctic` library), custom provid
 
 ## Install
 
-The module requires the `@witchcraft/nuxt-logger` module to be installed.
+It is highly recommended you install the nuxt-security module (or something similar) as this module does NOT add middleware to guard against CSRF.
+
 ```bash
-pnpx nuxi module add @witchcraft/nuxt-auth
-pnpm nuxi module add @witchcraft/nuxt-logger
+pnpx nuxi module add nuxt-security
 ```
+
+The module requires the `@witchcraft/ui` module for ui components but is otherwise optional.
+```bash
+pnpx nuxi module add @witchcraft/ui
+```
+
 
 ## Usage
 
@@ -85,7 +91,7 @@ The module provides a `createAuthSchema` helper and a list of `authUserFields` i
 ```ts
 // path/to/schema.ts
 // careful not to use nuxt paths, or drizzle won't be able to import them when when generating migrations, etc
-import { authUserFields,createAuthSchema } from "@witchcraft/nuxt-utils/server/utils/createAuthSchema"
+import { authUserFields,createAuthSchema } from "@witchcraft/nuxt-auth/server/utils/createAuthSchema"
 export const users = pgTable("users", {
 	id: uuid("id").primaryKey().unique()
 		.notNull()
