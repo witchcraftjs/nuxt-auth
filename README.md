@@ -91,7 +91,7 @@ The module provides a `createAuthSchema` helper and a list of `authUserFields` i
 ```ts
 // path/to/schema.ts
 // careful not to use nuxt paths, or drizzle won't be able to import them when when generating migrations, etc
-import { authUserFields,createAuthSchema } from "@witchcraft/nuxt-auth/server/utils/createAuthSchema"
+import { authUserFields, createAuthSchema } from "@witchcraft/nuxt-auth/server/utils/createAuthSchema"
 export const users = pgTable("users", {
 	id: uuid("id").primaryKey().unique()
 		.notNull()
@@ -322,12 +322,61 @@ This is useful for adding custom endpoints like `/api/auth/public/users/:usernam
 
 The full auth flow is as follows:
 
-TODO
-![Auth Flow](todo)
+```mermaid
+sequenceDiagram
+    participant User
+    participant Browser
+    participant Nuxt Server
+    participant OAuth Provider
+    participant Electron App
+
+    User->>Browser: Clicks login button
+
+    alt Normal Web Auth
+        Browser->>Nuxt Server: GET /api/auth/login/{provider}
+        Nuxt Server->>Browser: Redirect to OAuth Provider
+        Browser->>OAuth Provider: User authenticates
+        OAuth Provider->>Browser: Redirect to /api/auth/callback/{provider}
+        Browser->>Nuxt Server: GET /api/auth/callback/{provider}
+        Nuxt Server->>Nuxt Server: Creates User & Session
+        
+        alt New User Registration
+            Nuxt Server->>Browser: Redirect to /register
+            User->>Browser: Fills out username
+            Browser->>Nuxt Server: POST /api/auth/register (with username)
+            Nuxt Server->>Nuxt Server: Updates user with username
+            Nuxt Server->>Browser: Sets session token as cookie
+        else Existing User
+            Nuxt Server->>Browser: Sets session token as cookie
+        end
+
+    else External Auth (Electron)
+        User->>Electron App: Clicks login button in Electron
+        rect rgba(255, 0, 0, 0.1)
+            Electron App->>Browser: Opens /api/auth/login/{provider}?deeplink=electron
+            Browser->>Nuxt Server: GET /api/auth/login/{provider}?deeplink=electron
+            Nuxt Server->>Browser: Redirect to OAuth Provider (with deeplink in state)
+            Browser->>OAuth Provider: User authenticates
+            OAuth Provider->>Browser: Redirect to /api/auth/callback/{provider}
+            Browser->>Nuxt Server: GET /api/auth/callback/{provider}
+            Nuxt Server->>Nuxt Server: Decodes state, retrieves "deeplink" option
+            Nuxt Server->>Nuxt Server: Creates User & Session
+        end
+
+        rect rgba(255, 255, 0, 0.1)
+            Nuxt Server->>Browser: Redirect to /auth/code with short-lived access token
+            Browser->>User: Displays short-lived access token, attempts to directly open electron app with it.
+            User->>Electron App: Pastes short-lived access token (if app doesn't open)
+            Electron App->>Nuxt Server: GET /api/auth/external/exchange with short-lived access token
+        end
+        Nuxt Server->>Electron App: Returns session token
+        Electron App->>Electron App: Saves session token, sets it as a cookie on the window session
+    end
+```
 
 ### External Auth Handlers
 
-An external auth handler refers to auth flows handled in part external, such as by a desktop app. These require a more complicated auth flow (see above). There are various ways to handle them, this is just one. 
+An external auth handler refers to auth flows handled externally in part, such as by a desktop app. These require a more complicated auth flow (see above). There are various ways to handle them, this is just one. 
 
 For example, using electron:
 
@@ -348,7 +397,7 @@ definePageMeta({
 
 ```
 
-Then in the login page, we can use the `createExternalAuthHandler` to intercept the action of the `LoginProviderButtons` only when the user is on x platform.
+Then in the login page, we can use the `createExternalAuthHandler` to intercept the action of the `LoginProviderButtons` only when the user is on electron.
 
 
 ```vue [pages/auth/login.vue]
@@ -364,7 +413,7 @@ const rc = useRuntimeConfig()
 const handleActions: ActionHandler = (action, url) =>
 createExternalAuthHandler(
 	"electron", // for the query param
-	isElectron,
+	isElectron, // platform check
 	publicServerUrl, // you must define this somehow
 	window?.electron?.api.open,
 	"auth/code", // the default
@@ -401,7 +450,7 @@ async function saveSession(token: string) {
 </script>
 ```
 
-This query param will be forwarded throughout (follow the red lines).
+This query param will be forwarded throughout (see the red area).
 
 For the login action, the app will open `/api/auth/login/{provider}?deeplink=electron` which will open the provider page, saving the deeplink query param in the state passed to it.
 
@@ -419,7 +468,7 @@ A component, `AuthExternalCode` is provided for this purpose.
 
 If they aren't registered, they are redirected to `auth/register?deeplink=electron` first and once `api/auth/register?deeplink=electron` is called, it will redirect to `auth/code` with the access token and the deeplinkUri.
 
-Paths that contain the access token are shown in yellow.
+Paths that contain the access token are in the yellow area.
 
 Once the access token is transferred to the app (either via the deeplink or manually on the `auth/external/callback` page), the app can exchange it for a proper session token behind the scenes. 
 
@@ -455,7 +504,7 @@ This is safe because **you should always check authentication on the server side
 
 The default `authGlobal` middleware will look for a `localStorage` item called `auth:user` and if it's set, set the user to that. It will additionally set `useState("auth:semiAuthed")` to true. This can be used in components and is used in the `SessionStatus` to indicate that while the user is considered logged in, api requests will fail. 
 
-You can then ask for re-authentication when they trigger an action (e.g. sync) that requires it. By defualt, clicking on the username in `SessionStatus` will redirect them to the login page instead of `/users/{username}`.
+You can then ask for re-authentication when they trigger an action (e.g. sync) that requires it. By default, clicking on the username in `SessionStatus` will redirect them to the login page instead of `/users/{username}`.
 
 If using this feature, you will probably want to set a custom condition on the login page to allow semi-authed users on it:
 ```ts
