@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { eq } from "drizzle-orm"
 import type { H3Event } from "h3"
 import { z } from "zod"
@@ -10,7 +11,7 @@ import { authAccounts, users } from "../../../db/schema.js"
 import { sessionManager } from "../../auth.js"
 
 export const registerBody = z.object({
-	username: z.string(),
+	username: z.string()
 })
 
 declare module "@witchcraft/nuxt-auth" {
@@ -25,9 +26,9 @@ declare module "@witchcraft/nuxt-auth" {
 		}
 	}
 }
-const logger = useServerLogger()
 
-export default createAuthHandler(db as any, users, authAccounts, sessionManager, {
+export default createAuthHandler(useRuntimeConfig(), db as any, users, authAccounts, sessionManager, {
+	appUrl: "http://localhost:3000",
 	onRegister: async (event: H3Event) => {
 		const user = event.context.user! // already asserted
 		const body = await readValidatedBody(event, registerBody.parse)
@@ -37,21 +38,21 @@ export default createAuthHandler(db as any, users, authAccounts, sessionManager,
 				status: 400,
 				statusMessage: "Username already taken.",
 				data: {
-					usernameIsValid,
+					usernameIsValid
 				}
 			})
 		}
 		const res = await db.update(users)
-			.set({ username: body.username, isRegistered: true, })
+			.set({ username: body.username, isRegistered: true })
 			.where(eq(users.id, user.id))
 		if (res instanceof Error) {
-			logger.error({
+			console.error({
 				ns: "auth:register",
-				error: res.message,
+				error: res.message
 			})
 			throw createError({
 				status: 500,
-				statusMessage: `Failed to update user: ${res.message}`,
+				statusMessage: `Failed to update user: ${res.message}`
 			})
 		}
 	},
@@ -60,9 +61,9 @@ export default createAuthHandler(db as any, users, authAccounts, sessionManager,
 		router.get(usernameValidRoute, defineEventHandler(async event => {
 			const username = event.context.params?.username
 			const isValid = defaultZodUsernameSchema.safeParse(username)
-			logger.info({ ns: "auth:usernameValid:satisfiesSchema", username, isValid })
+			console.info({ ns: "auth:usernameValid:satisfiesSchema", username, isValid })
 			if (!username || !isValid.success) return false
-			logger.trace({
+			console.trace({
 				ns: `auth:${usernameValidRoute}`,
 				username
 			})
@@ -73,7 +74,7 @@ export default createAuthHandler(db as any, users, authAccounts, sessionManager,
 				)
 				.limit(1)
 
-			logger.info({ ns: "auth:usernameValid:exists", usernameExists })
+			console.info({ ns: "auth:usernameValid:exists", usernameExists })
 			return usernameExists.length === 0
 		}))
 	}

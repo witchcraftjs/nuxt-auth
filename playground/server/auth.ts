@@ -7,23 +7,24 @@ import { authSessions, users } from "~~/db/schema.js"
 
 
 export const sessionManager = new SessionManager(
+	useRuntimeConfig(),
 	db,
 	authSessions,
 	users,
 	{
 		sessionCookie: {
 			attributes: {
-				secure: useRuntimeConfig().public.auth.isSecure,
+				secure: useRuntimeConfig().public.auth.isSecure
 			}
 		}
 	}
 )
 
 export const githubOptions: ProviderOptions<"github"> = {
-	getAdditionalAccountInfo: async ({ avatar_url: avatarUrl }: GithubUser) => ({ avatarUrl }),
+	getAdditionalAccountInfo: async ({ avatar_url: avatarUrl }: GithubUser) => ({ avatarUrl })
 }
 
-declare module "@witchcraft/nuxt-auth/types.js" {
+declare module "@witchcraft/nuxt-auth/types" {
 	interface Register {
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		AdditionalAccountInfo: {

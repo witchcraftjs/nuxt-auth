@@ -1,16 +1,20 @@
 import { genAuthSecretKeys } from "@witchcraft/nuxt-auth/build/genAuthSecretKeys"
+import { fileURLToPath } from "node:url"
 
 export default defineNuxtConfig({
 	modules: [
 		"@witchcraft/nuxt-utils",
 		"@witchcraft/ui/nuxt",
 		"@witchcraft/nuxt-postgres",
-		"../src/module"
-		// the below also works, just remember to run the update-dep script and uncomment ../src/module above before attempting to use the file: linked module
-		// "@witchcraft/nuxt-auth",
+		"@witchcraft/nuxt-logger",
+		// this won't work for local dev because both the app and the module will be using the ui library
+		// and it uses symbols for value injection and because they're using the library
+		// from different node_moduels, it will fail
+		// "../src/module"
+		// this works, just remember to run the update-dep script and uncomment ../src/module above before attempting to use the file: linked module
+		"@witchcraft/nuxt-auth"
 	],
 	devtools: { enabled: true },
-
 	runtimeConfig: {
 		...genAuthSecretKeys(["google", "github"]),
 		public: {
@@ -45,15 +49,11 @@ export default defineNuxtConfig({
 	auth: {
 		authRoutes: {
 			postRegisteredLogin: "/authed"
-		},
-		allowedOrigins: [
-			...(process.env.NODE_ENV !== "production" ? ["http://localhost:3000"] : []),
-			"http://localhost:3000" // in a real app this would be the domain of your app
-		]
+		}
 	},
 	postgres: {
 		devAutoGenerateMigrations: true,
-		connectionOptions: {
+		serverPostgresjsOptions: {
 			// temp
 			ssl: false
 		}

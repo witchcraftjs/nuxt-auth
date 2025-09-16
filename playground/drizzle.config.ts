@@ -1,12 +1,12 @@
 // careful with imports, esm is borked, see nuxt-postgres/src/drizzleConfig.ts
-import { drizzleConfig } from "@witchcraft/nuxt-postgres/drizzleConfig.js"
+import { drizzleConfig } from "@witchcraft/nuxt-postgres/drizzleConfig"
 import { defineConfig } from "drizzle-kit"
-import path from "path"
+import path from "node:path"
 
 
 export default defineConfig({
 	...drizzleConfig,
 	schema: path.resolve("db/schema.ts"),
-	out: "./db/migrations",
+	out: "./db/migrations"
 })
 
