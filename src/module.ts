@@ -1,9 +1,22 @@
 import { crop } from "@alanscodelog/utils/crop"
-import { addComponentsDir, addImportsDir, addRouteMiddleware, addServerImports, addServerImportsDir, addServerScanDir, addTemplate, createResolver, defineNuxtModule, installModule, useLogger } from "@nuxt/kit"
+import {
+	addComponentsDir,
+	addImportsDir,
+	addRouteMiddleware,
+	addServerImports,
+	addServerImportsDir,
+	addServerScanDir,
+	addTemplate,
+	createResolver,
+	defineNuxtModule,
+	useLogger
+} from "@nuxt/kit"
 import type { CookieSerializeOptions } from "cookie-es"
 import { defu } from "defu"
 
 import type { AdditionalApiRoutes, ProviderNames, Secrets, SessionCookieOptions } from "./runtime/types"
+
+import pkg from "../package.json" with { type: "json" }
 
 export type * from "./runtime/types"
 export type * from "./runtime/server/utils/createAuthSchema.js"
@@ -224,11 +237,23 @@ export default defineNuxtModule<ModuleOptions>({
 		onlySaveUnregisteredUserAccountInfo: false,
 		additionalMiddlewarePaths: {}
 	} satisfies Required<ModuleOptions>,
+	metadataDependencies: {
+		"@witchcraft/nuxt-logger": {
+			version: pkg.dependencies["@witchcraft/nuxt-logger"]
+		},
+		"@witchcraft/nuxt-postgres": {
+			version: pkg.dependencies["@witchcraft/nuxt-postgres"]
+		},
+		"nuxt-security": {
+			version: pkg.dependencies["nuxt-security"]
+		},
+		"unplugin-icons/nuxt": {
+			version: pkg.dependencies["unplugin-icons/nuxt"]
+		}
+	},
 	async setup(options, nuxt) {
 		const moduleName = "@witchcraft/nuxt-auth"
 		const logger = useLogger(moduleName)
-		await installModule("@witchcraft/nuxt-logger", (nuxt.options as any).logger)
-		// await installModule("@witchcraft/nuxt-postgres", (nuxt.options as any).postgres)
 
 		const { resolve } = createResolver(import.meta.url)
 		addComponentsDir({
@@ -279,11 +304,6 @@ export default defineNuxtModule<ModuleOptions>({
 		]) {
 			nuxt.options.build.transpile.push(resolve(file))
 		}
-
-		await installModule("@witchcraft/nuxt-postgres", (nuxt.options as any).postgres)
-		await installModule("@witchcraft/ui/nuxt", (nuxt.options as any).witchcraftUi)
-		await installModule("nuxt-security", (nuxt.options as any).security)
-		await installModule("unplugin-icons/nuxt")
 
 		addTemplate({
 			filename: "witchcraft-nuxt-auth.css",
