@@ -31,6 +31,7 @@
     {
       packages = forEachSystem (system: {
         devenv-up = self.devShells.${system}.default.config.procfileScript;
+        devenv-test = self.devShells.${system}.default.config.test;
       });
 
       devShells = forEachSystem
@@ -49,15 +50,17 @@
                 let
                 in
                 [
+                utils.devenvModule
                   ({ pkgs, config, ... }: {
                     custom.js.nodejs.package = pkgs.nodejs_24;
+                    custom.postgres.enabled = true;
+                    # services.postgres.settings = {
+                    #   # for debugging
+                    #   # log_connections = true;
+                    #   # log_statement = "all";
+                    #   # log_disconnections = true;
+                    # };
 
-                    services.postgres.settings = {
-                      # for debugging
-                      # log_connections = true;
-                      # log_statement = "all";
-                      # log_disconnections = true;
-                    };
                   })
                 ];
             };
