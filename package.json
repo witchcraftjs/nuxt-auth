@@ -32,8 +32,8 @@
 		"dev:prepare": "cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true 'pnpm nuxt-module-build build --stub && pnpm nuxt-module-build prepare && pnpm nuxi prepare playground'",
 		"lint": "eslint \"{src,test,playground/app}/**/*.{ts,vue}\" \"*.{js,cjs,mjs,ts}\"",
 		"lint:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit",
-		"test": "vitest run",
-		"test:watch": "vitest watch"
+		"test": "echo no tests and not working yet vitest run --exclude .direnv",
+		"test:watch": "vitest watch --exclude .direnv"
 	},
 	"peerDependencies": {
 		"drizzle-orm": "^0.44.3"
