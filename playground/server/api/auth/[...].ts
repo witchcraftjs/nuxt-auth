@@ -27,7 +27,7 @@ declare module "@witchcraft/nuxt-auth" {
 	}
 }
 
-export default createAuthHandler(useRuntimeConfig(), db as any, users, authAccounts, sessionManager, {
+export default createAuthHandler(useRuntimeConfig(), db as any, users, authAccounts, sessionManager, useServerLogger(), {
 	appUrl: "http://localhost:3000",
 	onRegister: async (event: H3Event) => {
 		const user = event.context.user! // already asserted

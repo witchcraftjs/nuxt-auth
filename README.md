@@ -35,11 +35,20 @@ It is highly recommended you install the nuxt-security module (or something simi
 pnpx nuxi module add nuxt-security
 ```
 
-The module requires the `@witchcraft/ui` module for ui components but is otherwise optional.
+The module requires the `@witchcraft/ui` module for ui components but those are optional so it's not needed if you won't be using them.
+
 ```bash
 pnpx nuxi module add @witchcraft/ui
 ```
 
+`@witchcraft/nuxt-logger` is also recommended as it includes redaction for the redact property, otherwise **you will have to implement this yourself**.
+All logs are objects with at least an `ns` (namespace) property and can ocassionally contain a `redact` property that **must be redacted in production to be secure**.
+
+```bash
+pnpx nuxi module add @witchcraft/nuxt-logger
+
+```
+Don't forget to actually pass it's `useServerLogger` when creating the apis.
 
 ## Usage
 
@@ -126,7 +135,7 @@ Then create two files:
 This creates the api handler.
 ```ts [server/api/auth/[...].ts]
 
-import { createAuthHandler } from "#imports"
+import { createAuthHandler, useServerLogger } from "#imports"
 import { authAccounts, users } from "~~/db/schema.js"
 import { db } from "[PATH TO YOUR DRIZZLE DB]"
 import { sessionManager } from "[PATH TO YOUR SESSION MANAGER INSTANCE]"
@@ -136,7 +145,9 @@ export default createAuthHandler(
 	db,
 	users,
 	authAccounts,
-	sessionManager, {
+	sessionManager,
+	useServerLogger(),
+	{
 		onRegister: (event, route, deeplink) => {
 			// handle user registration, deeplink is for when using external auth handlers (see below)
 		}
@@ -151,10 +162,13 @@ This creates the middleware that sets the user/session on the request context.
 ```ts
 // server/middleware/auth.ts
 
-import { createAuthMiddleware } from "#imports"
+import { createAuthMiddleware, useServerLogger } from "#imports"
 
 import { sessionManager } from "[PATH TO YOUR SESSION MANAGER INSTANCE]"
-export default createAuthMiddleware(sessionManager)
+export default createAuthMiddleware(
+	sessionManager,
+	useServerLogger()
+)
 ```
 
 ### Create the Pages

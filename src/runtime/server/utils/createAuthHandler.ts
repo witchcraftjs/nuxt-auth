@@ -19,8 +19,8 @@ export function createAuthHandler(
 	usersTable: UserTable,
 	authAccountsTable: AuthAccountsTable,
 	sessionManager: SessionManager,
-	opts: Partial<AuthHandlerOptions> = {},
-	logger: BaseLogger = console
+	logger: BaseLogger,
+	opts: Partial<AuthHandlerOptions> = {}
 ): EventHandler {
 	const router = createRouter()
 	const auth = new Auth(

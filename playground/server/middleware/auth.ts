@@ -1,2 +1,3 @@
 import { sessionManager } from "../auth.js"
-export default createAuthMiddleware(sessionManager)
+
+export default createAuthMiddleware(sessionManager, useServerLogger())
