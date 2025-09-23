@@ -9,7 +9,7 @@ export default defineNuxtConfig({
 		"@witchcraft/nuxt-logger",
 		// this won't work for local dev because both the app and the module will be using the ui library
 		// and it uses symbols for value injection and because they're using the library
-		// from different node_moduels, it will fail
+		// from different node_modules, it will fail
 		// "../src/module"
 		// this works, just remember to run the update-dep script and uncomment ../src/module above before attempting to use the file: linked module
 		"@witchcraft/nuxt-auth"

@@ -318,7 +318,7 @@ Then create a class that implements `ProviderHandler<type, PROVIDER_NAME>` which
 See the included providers for examples. They're quite simple to write with the help of the `arctic` library.
 
 ```ts
-export default createAuthHandler(useRuntimeConfig(), db, users, authAccounts, sessionManager, {
+export default createAuthHandler(useRuntimeConfig(), db, users, authAccounts, sessionManager, useServerLogger(), {
 	customProviders: {
 		name: class CustomProvider implements ProviderHandler<"oauth2", "customProvider"> {
 			//...
