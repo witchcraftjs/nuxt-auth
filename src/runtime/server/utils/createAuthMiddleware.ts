@@ -7,8 +7,8 @@ import { defineEventHandler, getCookie, setCookie } from "#imports"
 import type { AuthSession, AuthUser } from "../../types.js"
 
 export function createAuthMiddleware(
-	logger: BaseLogger,
-	sessionManager: SessionManager
+	sessionManager: SessionManager,
+	logger: BaseLogger
 ) {
 	return defineEventHandler(async event => {
 		const sessionId = getCookie(event, sessionManager.options.sessionCookie.name) ?? null
