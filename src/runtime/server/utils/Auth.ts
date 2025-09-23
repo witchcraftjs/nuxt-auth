@@ -166,9 +166,7 @@ export class Auth {
 			handlers,
 			providerOptions,
 			enabledProviders
-		} = {
-			...opts
-		}
+		} = opts
 		if (appUrl === undefined) {
 			throw createError({
 				status: 500,
