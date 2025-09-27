@@ -52,7 +52,7 @@
 		"@oslojs/encoding": "^1.1.0",
 		"@vueuse/core": "^13.9.0",
 		"@witchcraft/nuxt-logger": "^0.0.2",
-		"@witchcraft/ui": "^0.2.3",
+		"@witchcraft/ui": "^0.3.0",
 		"arctic": "~3.7.0",
 		"cookie-es": "^2.0.0",
 		"defu": "latest",
