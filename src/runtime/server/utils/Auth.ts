@@ -131,6 +131,9 @@ export class Auth {
 		logger: BaseLogger
 	) {
 		this.rc = runtimeConfig
+		if (!import.meta.dev && !(this.rc.authSecret || this.rc.authSecret.length === 0)) {
+			throw new Error("FATAL: Missing or empty runtimeConfig.authSecret (i.e. should be set via NUXT_AUTH_SECRET) in production.")
+		}
 		this.providerCookieOpts = {
 			secure: this.rc.public.auth.isSecure,
 			...this.rc.public.auth.providerCookieOpts

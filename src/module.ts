@@ -257,11 +257,14 @@ export default defineNuxtModule<ModuleOptions>({
 			prefix: "Auth",
 			global: true
 		})
-		if (!process.env.NUXT_AUTH_SECRET) {
-			logger.error("Missing $NUXT_AUTH_SECRET.")
-		}
-		if (process.env.NUXT_AUTH_SECRET && process.env.NUXT_AUTH_SECRET.length === 0) {
-			logger.warn("$NUXT_AUTH_SECRET is empty. This is not recommended.")
+
+		if (process.env.NODE_ENV !== "production"
+			&& (
+				!process.env.NUXT_AUTH_SECRET
+				|| (process.env.NUXT_AUTH_SECRET && process.env.NUXT_AUTH_SECRET.length === 0)
+			)
+		) {
+			logger.warn("$NUXT_AUTH_SECRET is missing or empty. This is not recommended.")
 		}
 		nuxt.options.runtimeConfig.public.auth = defu(
 			nuxt.options.runtimeConfig.public.auth as any,
