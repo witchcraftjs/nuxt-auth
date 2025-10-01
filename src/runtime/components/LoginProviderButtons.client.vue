@@ -35,6 +35,11 @@
 			Sign in / Register with {{ styles[provider]?.name ?? provider }}
 		</WButton>
 	</template>
+	<slot
+		name="extra"
+		class="p-2 text-l"
+		icon-class="text-xl px-2"
+	/>
 </div>
 </template>
 
