@@ -191,7 +191,7 @@ export type ProviderOptions<
 	 *
 	 * You can type the return by declaration merging with the `AuthExtendedUserInfo` interface.
 	 *
-	 * This is set only once per provider account creation and can the info column can just be cleared after the information is no longer needed.
+	 * This is set only once per provider account creation and the info column can just be cleared after the information is no longer needed.
 	 */
 	getAdditionalAccountInfo?: (user: TProviderAccountInfo) => Promise<AdditionalAccountInfo>
 }
