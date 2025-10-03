@@ -48,15 +48,19 @@ export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 	}
 	async function logout(): Promise<void> {
 		setFetchUserOnNavigation()
-		userData.value = null
+		const wasSemiAuthed = isSemiAuthed.value
 
 		await Promise.allSettled(hooks.beforeLogout.map(listener => listener()))
 		const handled = handleActions?.("logout", getAuthApiRoute(useRuntimeConfig().public, "logout"))
+		// unset after listeners so they have access to the user data
+		userData.value = null
 		if (!handled) {
-			const res = await $fetch(getAuthApiRoute(useRuntimeConfig().public, "logout"), {
-				cache: "no-store",
-				method: "post"
-			})
+			const res = wasSemiAuthed
+				? true
+				: await $fetch(getAuthApiRoute(useRuntimeConfig().public, "logout"), {
+						cache: "no-store",
+						method: "post"
+					})
 			if (res) {
 				// using external so it forces a reload to clear any state (e.g. indexeddb doesn't properly close until reload sometimes)
 				await navigateTo(authRoutes.unauthenticated, { external: true })
