@@ -5,7 +5,7 @@
 	flex-wrap
 	items-center
 	justify-center
-	align-center
+	items-center
 	h-screen
 	p-6
 	gap-6
