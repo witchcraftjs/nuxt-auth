@@ -1,13 +1,13 @@
 <template>
 <div
-	class="
-	flex-1
-	flex
-	flex-col
-	items-center
-	justify-center
-	gap-2
-"
+	:class="twMerge(`
+		flex-1
+		flex
+		flex-col
+		items-stretch
+		justify-center
+		gap-2
+	`, ($attrs as any)?.class)"
 >
 	<template
 		v-for="provider in enabledProviders"
@@ -19,36 +19,39 @@
 			v-if="provider"
 			:id="'login-provider-' + provider"
 			type="button"
-			class="p-2 text-l"
+			class="text-l p-2 px-4 [&_label]:justify-start [&_label]:gap-4"
 			:style="styles[provider]"
 			:key="provider"
 			@click="login(provider, loginOptions)"
 		>
 			<WIcon
 				v-if="styles[provider]?.logo"
-				class="px-2 text-xl"
+				class="text-xl"
 			>
 				<component
 					:is="styles[provider]?.logo"
 				/>
 			</WIcon>
-			Sign in / Register with {{ styles[provider]?.name ?? provider }}
+			<div>
+				Sign in / Register with {{ styles[provider]?.name ?? provider }}
+			</div>
 		</WButton>
 	</template>
 	<slot
 		name="extra"
-		class="p-2 text-l"
-		icon-class="text-xl px-2"
+		icon-class="text-xl"
+		class="text-l p-2 px-4 [&_label]:justify-start [&_label]:gap-4"
 	/>
 </div>
 </template>
 
 <script setup lang="ts">
 import { useInjectedDarkMode } from "@witchcraft/ui/composables/useInjectedDarkMode"
+import { twMerge } from "@witchcraft/ui/utils/twMerge"
 import defu from "defu"
 
 import { useRuntimeConfig } from "#app"
-import { computed } from "#imports"
+import { computed, useAttrs } from "#imports"
 
 import { useAuth } from "../composables/useAuth.js"
 import { providerStyles as baseProviderStyles } from "../core/providerStyles.js"
@@ -57,6 +60,7 @@ import type { FullProviderStyles, ProviderNames, ProviderStyle, UseAuthComposabl
 const rc = useRuntimeConfig()
 const config = rc.public.auth
 const enabledProviders = config.enabledProviders
+const $attrs = useAttrs()
 
 const { darkMode: isDark } = useInjectedDarkMode()
 const props = withDefaults(defineProps<{

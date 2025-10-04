@@ -12,7 +12,7 @@
 		</div>
 		<AuthSessionStatus/>
 	</div>
-	<div class="p-2 flex flex-col">
+	<div class="p-2 flex flex-col flex-1 justify-center items-center">
 		<NuxtPage/>
 	</div>
 </WRoot>
