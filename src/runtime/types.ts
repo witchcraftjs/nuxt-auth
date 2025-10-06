@@ -6,8 +6,6 @@ import type { StringValue } from "ms"
 import type { InjectionKey } from "vue"
 import { z } from "zod"
 
-import type { GithubUser } from "./core/providers/github.js"
-import type { GoogleUser } from "./core/providers/google.js"
 import type {
 	AuthAccount,
 	AuthSession as DbAuthSession,
@@ -18,10 +16,22 @@ import type { ModulePublicRuntimeConfig } from "../module.js"
 
 export type * from "./server/utils/createAuthSchema.js"
 
+export const zLoginQuery = z.object({
+	devBypass: z.enum(["true", "false"]).optional(),
+	deeplink: z.string().optional()
+})
+
 export type ExternalExchangeResponse = {
 	sessionToken: string
 	user: AuthUser
 }
+
+export type LogoutResponse = true
+export type LoginResponse = undefined
+export type UserInfoResponse = AuthUser | false
+export type RegisterResponse = true | { redirectUrl: string }
+export type CallbackResponse = undefined
+
 /**
 	* This is the minimum information providers need to return.
 	*
@@ -343,3 +353,4 @@ export const AUTH_ERROR = enumFromArray([
 ], "AUTH.")
 
 export type AuthError = EnumLike<typeof AUTH_ERROR>
+

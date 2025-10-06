@@ -21,20 +21,26 @@ import type { JwtPayload } from "jsonwebtoken"
 import type { RuntimeConfig } from "nuxt/schema"
 import { z } from "zod"
 
-import type { AuthAccountsTable, UserTable } from "./createAuthSchema.js"
+import type { AuthAccount, AuthAccountsTable, UserTable } from "./createAuthSchema.js"
 import type { SessionManager } from "./SessionManager.js"
 
-import { createError, useRuntimeConfig } from "#imports"
+import { createError, fetchWithEvent, useRuntimeConfig } from "#imports"
 
 import type {
 	AuthOptions,
 	AuthSession,
 	AuthUser,
 	BaseProviderAccountInfo,
+	CallbackResponse,
+	ExternalExchangeResponse,
+	LoginResponse,
+	LogoutResponse,
 	ProviderHandler,
-	ProviderNames
+	ProviderNames,
+	RegisterResponse,
+	UserInfoResponse
 } from "../../types"
-import { AUTH_ERROR } from "../../types"
+import { AUTH_ERROR, zLoginQuery } from "../../types"
 import { getAuthApiRoute } from "../../utils/getAuthApiRoute.js"
 import { getSafeSecretsInfo } from "../helpers/getSafeSecretsInfo.js"
 import { logSafeRoute } from "../helpers/logSafeRoute.js"
@@ -47,10 +53,6 @@ export const zState = z.object({
 	deeplink: z.string().optional()
 })
 
-const zLoginQuery = z.object({
-	devBypass: z.enum(["true", "false"]).optional(),
-	deeplink: z.string().optional()
-})
 
 type State = z.infer<typeof zState>
 
@@ -220,8 +222,7 @@ export class Auth {
 		const apiRoutes = this.rc.public.auth.authApiRoutes
 		const authRoutes = this.rc.public.auth.authRoutes
 
-		router.get(apiRoutes.usersInfo, defineEventHandler(event => {
-			const user = event.context.user!
+		router.get(apiRoutes.usersInfo, defineEventHandler(async (event): Promise<UserInfoResponse> => {
 			const id = getCookie(event, "userId")
 			this.logger.debug({
 				ns: "auth:users/info",
@@ -232,7 +233,7 @@ export class Auth {
 			return user ?? false
 		}))
 
-		router.get(apiRoutes.externalExchange, defineEventHandler(async event => {
+		router.get(apiRoutes.externalExchange, defineEventHandler(async (event): Promise<ExternalExchangeResponse> => {
 			const accessToken = getRequestHeader(event, "Authorization")?.slice("Bearer ".length)
 
 			const decoded = await this.verifyAccessToken(accessToken)
@@ -266,7 +267,7 @@ export class Auth {
 			return { sessionToken: res.sessionToken, user: user }
 		}))
 
-		router.get(apiRoutes.usersIdAccounts, defineEventHandler(async event => {
+		router.get(apiRoutes.usersIdAccounts, defineEventHandler(async (event): Promise<AuthAccount[]> => {
 			const id = event.context.user?.id
 			Auth.assertAuthorizedUserAndId(event.context.user, id)
 
@@ -279,7 +280,8 @@ export class Auth {
 			))
 			return accounts
 		}))
-		router.post(apiRoutes.logout, defineEventHandler(async event => {
+
+		router.post(apiRoutes.logout, defineEventHandler(async (event): Promise<LogoutResponse> => {
 			this.logger.trace({
 				ns: "auth:users/logout",
 				session: event.context.session !== undefined
@@ -298,7 +300,7 @@ export class Auth {
 			return true
 		}))
 
-		router.get(apiRoutes.login, defineEventHandler(async event => {
+		router.get(apiRoutes.login, defineEventHandler(async (event): Promise<LoginResponse> => {
 			const providerName = event.context.params!.provider
 			this.assertValidProvider(providerName)
 
@@ -307,7 +309,7 @@ export class Auth {
 			const deeplink = query.deeplink
 
 			if (devBypassAuth) {
-				return sendRedirect(event, `${authRoutes.mockAuth}?provider=${providerName}${deeplink ? `&deeplink=${deeplink}` : ""}`)
+				return (await sendRedirect(event, `${authRoutes.mockAuth}?provider=${providerName}${deeplink ? `&deeplink=${deeplink}` : ""}`, 302)) as undefined
 			}
 
 			const state = {
@@ -349,9 +351,9 @@ export class Auth {
 
 				})
 			}
-			return sendRedirect(event, info.url.toString())
+			return (await sendRedirect(event, info.url.toString(), 302)) as undefined
 		}))
-		router.get(apiRoutes.callback, defineEventHandler(async event => {
+		router.get(apiRoutes.callback, defineEventHandler(async (event): Promise<CallbackResponse> => {
 			const providerName = event.context.params!.provider
 			this.assertValidProvider(providerName)
 			const provider = this.getProvider(providerName)
@@ -454,7 +456,7 @@ export class Auth {
 					ns: "auth:callback:existingProviderAccount"
 				})
 				// await this.createSession(event, sessionUserId!)
-				return this.createRedirect(
+				return (await this.createRedirect(
 					event,
 					sessionUserId!,
 					isRegistered,
@@ -542,7 +544,7 @@ export class Auth {
 				deeplink
 			)
 		}))
-		router.post(apiRoutes.register, defineEventHandler(async event => {
+		router.post(apiRoutes.register, defineEventHandler(async (event): Promise<RegisterResponse> => {
 			if (!this.onRegister) {
 				throw createError({ status: 500, statusMessage: "No onRegister handler." })
 			}
