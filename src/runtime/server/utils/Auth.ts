@@ -246,16 +246,24 @@ export class Auth {
 			if (decoded instanceof Error) throw decoded
 
 			const res = await this.createSession(event, decoded.userId)
+
+			// we can immediately return the user to avoid another trip on external platforms
+			// when going through this auth flow, users are guaranteed to have done the registering online
+			// and have a full user profile (if the end user of the lib implemented it)
+			const { user } = await sessionManager.validateSessionToken(res.sessionToken)
+			// this should never happen, but just in case
+			if (!user) throw createError({ status: 500, statusMessage: "Failed to validate session token." })
+
 			this.logger.debug({
 				ns: "auth:callback:createdSession",
-				redact: { res, decoded }
+				redact: { res, decoded, user }
 			})
 
-			// this is returned like this because using node's fetch, createError doesn't throw
+			// we must return an object because using node's fetch, createError doesn't throw
 			// it returns json, so this way we can read the reply by just doing res.json()
 			// todo, investigate why this is
 
-			return { token: res.token }
+			return { sessionToken: res.sessionToken, user: user }
 		}))
 
 		router.get(apiRoutes.usersIdAccounts, defineEventHandler(async event => {

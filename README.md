@@ -453,18 +453,22 @@ You can use the `AuthExternalCallback` component to handle this.
 
 const rc = useRuntimeConfig()
 async function saveSession(token: string) {
-	// you would need to define an api similar to this in electron's preload script
+	// you would need to define an api similar to this in electron's preload script that exchanges the token and saves the returned session token to a cookie on the session
 	// @witchcraft/nuxt-electron provides utilities for helping to create
 	// async functions like these which are normally a pain
 	await window.electron.api.auth.saveSession(
 		rc.public.auth.authRoutes.postRegisteredLogin,
 		token
 	)
+		// alternatively exchange it here, then ask electron to save it to a cookie
 }
 </script>
 ```
 
-This query param will be forwarded throughout (see the red area).
+Note that if you allow multiple users (per os user) and you're using one session partition per user, you might be better off exchanging the token client side, then passing the sessionToken + userInfo to electron, relaunching electron with that info as an argument (make sure not to log this arg), and creating the session partition at that point when you have the username + id. This way it's easier to notify the user of any errors.
+
+
+The query param will be forwarded throughout (see the red area).
 
 For the login action, the app will open `/api/auth/login/{provider}?deeplink=electron` which will open the provider page, saving the deeplink query param in the state passed to it.
 

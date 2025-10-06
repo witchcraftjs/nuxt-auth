@@ -18,6 +18,10 @@ import type { ModulePublicRuntimeConfig } from "../module.js"
 
 export type * from "./server/utils/createAuthSchema.js"
 
+export type ExternalExchangeResponse = {
+	sessionToken: string
+	user: AuthUser
+}
 /**
 	* This is the minimum information providers need to return.
 	*
