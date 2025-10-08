@@ -56,17 +56,15 @@ import {
 	useRoute
 } from "#imports"
 
-import { decodeQueryUri } from "../utils/decodeQueryUri.js"
+import { zUriComponentCodec } from "../types.js"
 
 const query = useRoute().query
 const accessToken = query.accessToken
 if (typeof accessToken !== "string") {
 	unreachable("No session_token.")
 }
-const deepLinkUrl = decodeQueryUri(query.deeplinkUri)
-if (!deepLinkUrl) {
-	unreachable("No deeplinkUrl could be decoded.")
-}
+const deepLinkUrl = zUriComponentCodec.parse(query.deeplinkUri)
+
 /* const props =  */withDefaults(defineProps<{
 	openAppText?: string
 	promptText?: string

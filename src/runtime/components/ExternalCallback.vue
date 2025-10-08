@@ -14,26 +14,34 @@
 				{{ authUri }}
 			</NuxtLink>
 		</div>
-		<WInputDeprecated
-			placeholder="Paste Code Here"
-			v-model="manualAccessToken"
-			@update:model-value="error=undefined"
-		/>
-		<div
-			v-if="error"
-			class="border-2 border-red-500 bg-red-100 dark:bg-red-900 rounded-md p-2"
+		<form
+			class="flex flex-col gap-4"
+			@submit.prevent="authorize(manualAccessToken)"
 		>
-			{{ error }}
-		</div>
-		<WButton
-			:disabled="!manualAccessToken || manualAccessToken.length === 0"
-			@click="authorize(manualAccessToken)"
-		>
-			Submit
-		</WButton>
-		<WButton @click="cancel">
-			Cancel
-		</WButton>
+			<WInputDeprecated
+				placeholder="Paste Code Here"
+				v-model="manualAccessToken"
+				@update:model-value="error=undefined"
+			/>
+			<div
+				v-if="error"
+				class="border-2 border-red-500 bg-red-100 dark:bg-red-900 rounded-md p-2"
+			>
+				{{ error }}
+			</div>
+			<WButton
+				:disabled="!manualAccessToken || manualAccessToken.length === 0"
+				type="submit"
+			>
+				Submit
+			</WButton>
+			<WButton
+				type="button"
+				@click="cancel"
+			>
+				Cancel
+			</WButton>
+		</form>
 	</template>
 	<template v-else>
 		<div class="text-xl text-center">

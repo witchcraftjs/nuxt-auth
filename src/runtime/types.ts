@@ -32,6 +32,19 @@ export type UserInfoResponse = AuthUser | false
 export type RegisterResponse = true | { redirectUrl: string }
 export type CallbackResponse = undefined
 
+export const zUriComponentCodec = z.codec(z.string(), z.string(), {
+	decode: encodedString => decodeURIComponent(encodedString),
+	encode: decodedString => encodeURIComponent(decodedString)
+})
+export const zExternalCallbackPageQuery = z.object({
+	accessToken: z.string()
+}).or(
+	z.object({
+		authUri: zUriComponentCodec
+	})
+)
+
+
 /**
 	* This is the minimum information providers need to return.
 	*
