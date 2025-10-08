@@ -50,6 +50,7 @@
 		"@nuxt/kit": "^4.1.2",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
+		"@types/jsonwebtoken": "^9.0.10",
 		"@vueuse/core": "^13.9.0",
 		"@witchcraft/nuxt-logger": "^0.0.2",
 		"@witchcraft/ui": "^0.3.2",
