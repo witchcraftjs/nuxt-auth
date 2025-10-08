@@ -1,17 +1,18 @@
 import { capitalize } from "@alanscodelog/utils/capitalize"
 import { unreachable } from "@alanscodelog/utils/unreachable"
-import type { BaseLogger } from "@witchcraft/nuxt-logger/createUseLogger"
+import type { BaseLogger } from "@witchcraft/nuxt-logger/shared/createUseLogger"
 import { generateState, type OAuth2RequestError, type OAuth2Tokens } from "arctic"
 import type { CookieSerializeOptions } from "cookie-es"
 import { and, eq } from "drizzle-orm"
 import type { PgDatabase } from "drizzle-orm/pg-core"
 import type { EventHandler, H3Event, Router } from "h3"
 import {
+	createError,
 	defineEventHandler,
 	deleteCookie,
 	getCookie,
 	getQuery,
-	getRequestHeader,
+	getRequestHeaders,
 	getValidatedQuery,
 	sendRedirect,
 	setCookie,
@@ -24,7 +25,7 @@ import { z } from "zod"
 import type { AuthAccount, AuthAccountsTable, UserTable } from "./createAuthSchema.js"
 import type { SessionManager } from "./SessionManager.js"
 
-import { createError, fetchWithEvent, useRuntimeConfig } from "#imports"
+import { useRuntimeConfig } from "#imports"
 
 import type {
 	AuthOptions,
@@ -182,7 +183,7 @@ export class Auth {
 		this.handlers = handlers
 		this.providers = {}
 
-		for (const provider of enabledProviders) {
+		for (const provider of enabledProviders as string[]) {
 			const capitalized = capitalize(provider)
 			const clientId = env[`auth${capitalized}ClientId`]
 			const clientSecret = env[`auth${capitalized}ClientSecret`]
@@ -194,9 +195,9 @@ export class Auth {
 					error: `Missing auth${capitalized}ClientId or auth${capitalized}ClientSecret for ${capitalized}. Disabling.` })
 				continue
 			}
-			const options = providerOptions?.[provider]
+			const options = providerOptions?.[provider as keyof typeof providerOptions]
 			const redirectUri = appUrl + getAuthApiRoute(useRuntimeConfig().public, "callback", { provider: provider.toLowerCase() })
-			const providerClass = this.handlers[provider]
+			const providerClass = this.handlers[provider as keyof typeof this.handlers]
 			if (!providerClass) {
 				this.logger.error({
 					ns: "auth:init",
@@ -223,6 +224,8 @@ export class Auth {
 		const authRoutes = this.rc.public.auth.authRoutes
 
 		router.get(apiRoutes.usersInfo, defineEventHandler(async (event): Promise<UserInfoResponse> => {
+			Auth.assertEventWithAuthorizedUser(event)
+			const user = event.context.user
 			const id = getCookie(event, "userId")
 			this.logger.debug({
 				ns: "auth:users/info",
@@ -234,7 +237,7 @@ export class Auth {
 		}))
 
 		router.get(apiRoutes.externalExchange, defineEventHandler(async (event): Promise<ExternalExchangeResponse> => {
-			const accessToken = getRequestHeader(event, "Authorization")?.slice("Bearer ".length)
+			const accessToken = getRequestHeaders(event).authorization?.slice("Bearer ".length)
 
 			const decoded = await this.verifyAccessToken(accessToken)
 				.catch((err: Error) => createError({
@@ -268,6 +271,7 @@ export class Auth {
 		}))
 
 		router.get(apiRoutes.usersIdAccounts, defineEventHandler(async (event): Promise<AuthAccount[]> => {
+			Auth.assertEventWithAuthorizedUser(event)
 			const id = event.context.user?.id
 			Auth.assertAuthorizedUserAndId(event.context.user, id)
 
@@ -462,7 +466,7 @@ export class Auth {
 					isRegistered,
 					additionalState,
 					deeplink!
-				)
+				)) as undefined
 			// throw createError({
 			// 	status: 400,
 			// 	message: `Account already linked to ${provider.name} provider.`,
@@ -536,13 +540,13 @@ export class Auth {
 			}
 			if (!sessionUserId || typeof sessionUserId !== "string") unreachable()
 			await this.createSession(event, sessionUserId!)
-			return this.createRedirect(
+			return (await this.createRedirect(
 				event,
 				sessionUserId,
 				bypassRegistration ?? isRegistered,
 				additionalState,
 				deeplink
-			)
+			) as undefined)
 		}))
 		router.post(apiRoutes.register, defineEventHandler(async (event): Promise<RegisterResponse> => {
 			if (!this.onRegister) {
@@ -759,10 +763,10 @@ export class Auth {
 		additionalState?: any,
 		deeplink?: string
 	) {
-		let redirect = isRegistered
+		let redirectPath = isRegistered
 			? this.rc.public.auth.authRoutes.postRegisteredLogin
 			: this.rc.public.auth.authRoutes.register
-		if (!redirect) {
+		if (!redirectPath) {
 			throw createError({
 				status: 500,
 				statusMessage: "No register/postRegisteredLogin route defined.",
@@ -772,18 +776,18 @@ export class Auth {
 
 		const modified = this.modifyCallbackRedirect?.(
 			event,
-			redirect,
+			redirectPath,
 			userId,
 			isRegistered,
 			additionalState,
 			deeplink
 		)
-		redirect = modified ?? redirect
+		redirectPath = modified ?? redirectPath
 
 		// see modifyCallbackRedirect note on redirectUrl param
 		if (!modified) {
-			redirect = this.getRedirect(
-				redirect,
+			redirectPath = this.getRedirect(
+				redirectPath,
 				isRegistered,
 				deeplink,
 				await this.createAccessToken(userId)
@@ -794,12 +798,12 @@ export class Auth {
 			ns: "auth:callback:createdSessionAndRedirecting",
 			modified,
 			deeplink,
-			redirect,
+			redirectPath,
 			isRegistered,
 			redact: { additionalState }
 		})
 
-		return sendRedirect(event, redirect)
+		return sendRedirect(event, redirectPath, 302)
 	}
 
 	getRedirect(

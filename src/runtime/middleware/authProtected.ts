@@ -3,7 +3,9 @@ import { keys } from "@alanscodelog/utils/keys"
 import { pick } from "@alanscodelog/utils/pick"
 import type { RouteMeta } from "vue-router"
 
-import { defineNuxtRouteMiddleware, navigateTo, useAuth, useRuntimeConfig } from "#imports"
+import { defineNuxtRouteMiddleware, navigateTo, useRuntimeConfig } from "#imports"
+
+import { useAuth } from "../composables/useAuth.js"
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
 	const rc = useRuntimeConfig()

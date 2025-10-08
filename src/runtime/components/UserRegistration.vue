@@ -172,12 +172,15 @@ const deeplink = typeof query.deeplink === "string" ? query.deeplink : undefined
 const redirect = deeplink
 	? useRuntimeConfig().public.auth.authRoutes.externalCode
 	: useRuntimeConfig().public.auth.authRoutes.register
+
+if (!redirect) throw new Error("No externalCode or register route defined.")
+
 function handleSubmit(event: Event) {
 	props.onSubmitRegistration(
 		event,
 		username.value,
 		registrationError,
-		redirect,
+		redirect!,
 		deeplink
 	)
 }

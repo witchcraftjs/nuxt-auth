@@ -1,3 +1,3 @@
 export function logSafeRoute(route: string): string {
-	return route.split("?")[0]
+	return route.split("?")[0]!
 }

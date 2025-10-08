@@ -8,4 +8,4 @@ export const {
 	migrate,
 	postgres
 	// memoryStorage
-} = createPostgresDb(schema, useServerLogger)
+} = createPostgresDb(schema, useServerLogger())

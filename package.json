@@ -57,6 +57,7 @@
 		"arctic": "~3.7.0",
 		"cookie-es": "^2.0.0",
 		"defu": "latest",
+		"h3": "1.15.4",
 		"jsonwebtoken": "^9.0.2",
 		"ms": "^2.1.3",
 		"nuxt-security": "^2.4.0",

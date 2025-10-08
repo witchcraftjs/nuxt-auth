@@ -1,8 +1,7 @@
-import type { BaseLogger } from "@witchcraft/nuxt-logger/createUseLogger"
+import type { BaseLogger } from "@witchcraft/nuxt-logger/shared/createUseLogger"
+import { defineEventHandler, getCookie, setCookie } from "h3"
 
 import type { SessionManager } from "./SessionManager.js"
-
-import { defineEventHandler, getCookie, setCookie } from "#imports"
 
 import type { AuthSession, AuthUser } from "../../types.js"
 

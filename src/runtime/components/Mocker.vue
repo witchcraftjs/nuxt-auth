@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { navigateTo, useRoute } from "#app"
-import { ref } from "#imports"
+import { ref, useRuntimeConfig } from "#imports"
 
 import { getAuthApiRoute } from "../utils/getAuthApiRoute.js"
 

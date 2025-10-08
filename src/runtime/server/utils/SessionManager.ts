@@ -114,7 +114,7 @@ export class SessionManager {
 			return { session: null, user: null, fresh: false }
 		}
 
-		const { user, session } = result[0]
+		const { user, session } = result[0]!
 
 		const expired = Date.now() >= session.expiresAt.getTime()
 		if (expired) {

@@ -3,9 +3,9 @@ import {
 	useRuntimeConfig,
 	useState
 } from "#app"
-import type { AuthUser, ProviderNames, UseAuthComposableOptions } from "#auth/types.js"
 import { computed } from "#imports"
 
+import type { AuthUser, ProviderNames, UseAuthComposableOptions } from "../types.js"
 import { getAuthApiRoute } from "../utils/getAuthApiRoute.js"
 
 type AuthListenerHook = () => void

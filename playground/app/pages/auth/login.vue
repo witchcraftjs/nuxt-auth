@@ -29,12 +29,12 @@
 	</div>
 	<div
 		class="
-		flex-1
-		whitespace-nowrap
-		justify-center
-		flex
-		[&>div]:max-w-max
-	"
+			flex-1
+			whitespace-nowrap
+			justify-center
+			flex
+			[&>div]:max-w-max
+		"
 	>
 		<AuthLoginProviderButtons :use-auth-options="{ handleActions }">
 			<template #extra="slotProps">
