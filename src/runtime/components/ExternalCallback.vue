@@ -16,7 +16,7 @@
 		</div>
 		<WInputDeprecated
 			placeholder="Paste Code Here"
-			v-model="accessToken"
+			v-model="manualAccessToken"
 			@update:model-value="error=undefined"
 		/>
 		<div
@@ -26,8 +26,8 @@
 			{{ error }}
 		</div>
 		<WButton
-			:disabled="!accessToken || accessToken.length === 0"
-			@click="authorize(accessToken)"
+			:disabled="!manualAccessToken || manualAccessToken.length === 0"
+			@click="authorize(manualAccessToken)"
 		>
 			Submit
 		</WButton>
@@ -47,7 +47,7 @@
 </template>
 
 <script lang="ts" setup>
-import { unreachable } from "@alanscodelog/utils/unreachable"
+import z from "zod"
 
 import { useRuntimeConfig } from "#app"
 import {
@@ -55,10 +55,11 @@ import {
 	ref,
 	useRoute } from "#imports"
 
-import { decodeQueryUri } from "../utils/decodeQueryUri.js"
+import { zExternalCallbackPageQuery } from "../types.js"
+
 
 const props = defineProps<{
-	saveSession: (token: string) => Promise<void>
+	saveSession: (accessToken: string) => Promise<void>
 	successPath?: string
 	cancelPath?: string
 }>()
@@ -66,33 +67,30 @@ const props = defineProps<{
 const rc = useRuntimeConfig()
 const query = useRoute().query
 
-const initialAccessToken = query.access_token
-const authUri = decodeQueryUri(query.authUri)
-if (!authUri && typeof initialAccessToken !== "string") {
-	throw new Error(`access_token parameter is not a string, got query: ${JSON.stringify(query)}`)
-}
-if (!authUri && !initialAccessToken) {
-	unreachable("Server should have passed authUri or access_token.")
-}
 
-if (typeof initialAccessToken === "string") {
+const parsedQuery = zExternalCallbackPageQuery.safeParse(query)
+if (parsedQuery.error) throw new Error(z.prettifyError(parsedQuery.error))
+const initialAccessToken = "accessToken" in parsedQuery.data ? parsedQuery.data.accessToken : undefined
+const authUri = "authUri" in parsedQuery.data ? parsedQuery.data.authUri : undefined
+
+if (initialAccessToken) {
 	void authorize(initialAccessToken, true)
 }
 
-const accessToken = ref("")
+const manualAccessToken = ref("")
 const error = ref()
 
 async function authorize(
-	token?: string,
+	accessToken?: string,
 	initial: boolean = false
 ) {
-	if (!token || token.length === 0) {
+	if (!accessToken || accessToken.length === 0) {
 		if (!initial) {
 			error.value = "No code provided."
 		}
 		return
 	}
-	const res = await props.saveSession(token)
+	const res = await props.saveSession(accessToken)
 		.catch(err => {
 			error.value = err.message
 			return err

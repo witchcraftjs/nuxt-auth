@@ -725,11 +725,11 @@ export class Auth {
 	async createSession(
 		event: H3Event,
 		sessionUserId: string
-	): Promise<{ session: AuthSession, token: string }> {
-		const token = this.sessionManager.generateSessionToken()
-		const session = await this.sessionManager.createSession(token, sessionUserId)
+	): Promise<{ session: AuthSession, sessionToken: string }> {
+		const sessionToken = this.sessionManager.generateSessionToken()
+		const session = await this.sessionManager.createSession(sessionToken, sessionUserId)
 
-		const sessionCookie = this.sessionManager.createSessionCookie(token)
+		const sessionCookie = this.sessionManager.createSessionCookie(sessionToken)
 		this.logger.debug({
 			ns: "auth:createSession",
 			redact: {
@@ -739,7 +739,7 @@ export class Auth {
 		})
 		setCookie(event, sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
 		setCookie(event, `userId`, sessionUserId, sessionCookie.attributes)
-		return { session, token }
+		return { session, sessionToken }
 	}
 
 	async createRedirect(
@@ -805,13 +805,11 @@ export class Auth {
 		}
 
 		const deeplinkUri = `${this.getDeeplinkScheme(deeplink)}?${new URLSearchParams({
-
-			access_token: accessToken
+			accessToken: accessToken
 		})}`
 
 		return `${this.rc.public.auth.authRoutes.externalCode}?${new URLSearchParams({
-
-			access_token: accessToken,
+			accessToken: accessToken,
 			deeplinkUri
 		}).toString()}`
 	}

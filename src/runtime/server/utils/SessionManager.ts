@@ -67,10 +67,10 @@ export class SessionManager {
 	}
 
 	async createSession<TId = string>(
-		token: string,
+		sessionToken: string,
 		userId: TId
 	): Promise<AuthSession> {
-		const hashedSessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
+		const hashedSessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(sessionToken)))
 		const session: AuthSession = {
 			id: hashedSessionId,
 			userId: userId as any,
@@ -102,8 +102,8 @@ export class SessionManager {
 		}
 	}
 
-	async validateSessionToken(token: string): Promise<SessionValidationResult> {
-		const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
+	async validateSessionToken(sessionToken: string): Promise<SessionValidationResult> {
+		const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(sessionToken)))
 		const result = await this.db
 			.select({ user: this.userTable, session: this.sessionTable })
 			.from(this.sessionTable)

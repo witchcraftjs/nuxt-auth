@@ -11,19 +11,19 @@ export function createAuthMiddleware(
 	logger: BaseLogger
 ) {
 	return defineEventHandler(async event => {
-		const sessionId = getCookie(event, sessionManager.options.sessionCookie.name) ?? null
-		if (!sessionId) {
+		const sessionToken = getCookie(event, sessionManager.options.sessionCookie.name) ?? null
+		if (!sessionToken) {
 			event.context.session = null
 			event.context.user = null
 			return
 		}
 
-		const { session, user, fresh } = await sessionManager.validateSessionToken(sessionId)
+		const { session, user, fresh } = await sessionManager.validateSessionToken(sessionToken)
 		logger.debug({
 			ns: "auth:middleware:session",
 			user,
 			fresh,
-			redact: { sessionId, session }
+			redact: { sessionToken, session }
 		})
 		if (fresh) {
 			const cookie = sessionManager.createSessionCookie(session.id)

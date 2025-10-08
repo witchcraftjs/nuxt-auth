@@ -59,7 +59,7 @@ import {
 import { decodeQueryUri } from "../utils/decodeQueryUri.js"
 
 const query = useRoute().query
-const accessToken = query.access_token
+const accessToken = query.accessToken
 if (typeof accessToken !== "string") {
 	unreachable("No session_token.")
 }
