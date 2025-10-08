@@ -30,8 +30,10 @@
 		"//": "drizzle requires we run from playground",
 		"dev:playground": "cd playground && pnpm dev",
 		"dev:prepare": "cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true 'pnpm nuxt-module-build build --stub && pnpm nuxt-module-build prepare && pnpm nuxi prepare playground'",
-		"lint": "eslint \"{src,test,playground/app}/**/*.{ts,vue}\" \"*.{js,cjs,mjs,ts}\"",
+		"lint": "pnpm lint:eslint && pnpm lint:types && pnpm lint:commits",
+		"lint:eslint": "eslint \"{src,test,playground/app}/**/*.{ts,vue}\" \"*.{js,cjs,mjs,ts}\"",
 		"lint:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit",
+		"lint:commits": "commitlint --from-last-tag --to HEAD --verbose",
 		"test": "echo no tests and not working yet vitest run --exclude .direnv",
 		"test:watch": "vitest watch --exclude .direnv"
 	},
@@ -52,7 +54,7 @@
 		"@oslojs/encoding": "^1.1.0",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@vueuse/core": "^13.9.0",
-		"@witchcraft/nuxt-logger": "^0.0.2",
+		"@witchcraft/nuxt-logger": "^0.0.6",
 		"@witchcraft/ui": "^0.3.2",
 		"arctic": "~3.7.0",
 		"cookie-es": "^2.0.0",
@@ -68,6 +70,7 @@
 	"devDependencies": {
 		"@alanscodelog/eslint-config": "^6.3.1",
 		"@alanscodelog/semantic-release-config": "^5.0.4",
+		"@commitlint/cli": "^20.1.0",
 		"@nuxt/eslint-config": "^1.9.0",
 		"@nuxt/module-builder": "^1.0.2",
 		"@nuxt/schema": "^4.1.2",
