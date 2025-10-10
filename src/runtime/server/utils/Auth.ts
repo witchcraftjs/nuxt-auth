@@ -5,6 +5,7 @@ import { generateState, type OAuth2RequestError, type OAuth2Tokens } from "arcti
 import type { CookieSerializeOptions } from "cookie-es"
 import { and, eq } from "drizzle-orm"
 import type { PgDatabase } from "drizzle-orm/pg-core"
+import type { PgliteDatabase } from "drizzle-orm/pglite"
 import type { EventHandler, H3Event, Router } from "h3"
 import {
 	createError,
@@ -106,7 +107,7 @@ export class Auth {
 		}
 	}
 
-	db: PgDatabase<any, any, any>
+	db: PgDatabase<any, any, any> | PgliteDatabase<any>
 
 	usersTable: UserTable
 

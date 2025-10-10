@@ -1,5 +1,6 @@
 import type { BaseLogger } from "@witchcraft/nuxt-logger/shared/createUseLogger"
 import type { PgDatabase } from "drizzle-orm/pg-core"
+import type { PgliteDatabase } from "drizzle-orm/pglite"
 import type { EventHandler } from "h3"
 import { createRouter } from "h3"
 import type { RuntimeConfig } from "nuxt/schema"
@@ -14,7 +15,7 @@ import type { AuthHandlerOptions } from "../../types.js"
 
 export function createAuthHandler(
 	rc: RuntimeConfig,
-	db: PgDatabase<any, any, any>,
+	db: PgDatabase<any, any, any> | PgliteDatabase<any>,
 	usersTable: UserTable,
 	authAccountsTable: AuthAccountsTable,
 	sessionManager: SessionManager,

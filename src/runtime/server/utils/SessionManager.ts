@@ -3,6 +3,7 @@ import { sha256 } from "@oslojs/crypto/sha2"
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from "@oslojs/encoding"
 import { eq } from "drizzle-orm"
 import type { PgDatabase } from "drizzle-orm/pg-core"
+import type { PgliteDatabase } from "drizzle-orm/pglite"
 import type { RuntimeConfig } from "nuxt/schema"
 
 import type {
@@ -28,7 +29,7 @@ export class SessionManager {
 		}
 	}
 
-	db: PgDatabase<any, any, any>
+	db: PgDatabase<any, any, any> | PgliteDatabase<any>
 
 	sessionTable: AuthSessionsTable
 
