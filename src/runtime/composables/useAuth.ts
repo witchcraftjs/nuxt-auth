@@ -55,6 +55,7 @@ export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 		// unset after listeners so they have access to the user data
 		userData.value = null
 		if (!handled) {
+			localStorage.removeItem("auth:user")
 			const res = wasSemiAuthed
 				? true
 				: await $fetch(getAuthApiRoute(useRuntimeConfig().public, "logout"), {
