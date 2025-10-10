@@ -18,8 +18,8 @@ importers:
         specifier: ^0.0.2
         version: 0.0.2(magicast@0.3.5)(pino-pretty@11.3.0)(pino@9.9.0)
       '@witchcraft/nuxt-postgres':
-        specifier: ^0.1.3
-        version: 0.1.3(@netlify/blobs@9.1.2)(@swc/helpers@0.5.17)(db0@0.3.2(@electric-sql/pglite@0.2.17)(drizzle-orm@0.44.5(@electric-sql/pglite@0.2.17)(postgres@3.4.7)))(ioredis@5.7.0)(magicast@0.3.5)(pino-pretty@11.3.0)(pino@9.9.0)(rollup@4.50.2)(vite@7.1.5(@types/node@24.3.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1))
+        specifier: ^0.3.0
+        version: 0.3.1(@netlify/blobs@9.1.2)(@swc/helpers@0.5.17)(db0@0.3.2(@electric-sql/pglite@0.2.17)(drizzle-orm@0.44.5(@electric-sql/pglite@0.2.17)(postgres@3.4.7)))(ioredis@5.7.0)(magicast@0.3.5)(pino-pretty@11.3.0)(pino@9.9.0)(rollup@4.50.2)(vite@7.1.5(@types/node@24.3.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1))
       '@witchcraft/nuxt-utils':
         specifier: ^0.3.2
         version: 0.3.2(magicast@0.3.5)
@@ -1723,8 +1723,8 @@ packages:
       pino: ^9.8.0
       pino-pretty: ^11.2.2
 
-  '@witchcraft/nuxt-postgres@0.1.3':
-    resolution: {integrity: sha512-pvPRR08DFqMalRtkxGfFh3EJJDX/SfYDTjXdl611gUI506h5b3BAaneMzj+byW9F6lnhjGsol8VggOe8QbosLg==}
+  '@witchcraft/nuxt-postgres@0.3.1':
+    resolution: {integrity: sha512-uB+1pgSB7nLXhrdbXStO2rgyzpoGJQN2qmNSF5iMh9kKH+bKGBB9H0hxGdjYjgTZ2TLVcKBxXH0JPMhM3PJodA==}
 
   '@witchcraft/nuxt-utils@0.2.1':
     resolution: {integrity: sha512-+brq+kH9WVNVRKJ4tMyAmXTpTI4m1eGuRCp1fxlb2ATF5D+1vwO9BXkO/b1QGCiuBrgmva0tnqEdxCTPP3l0jA==}
@@ -1732,6 +1732,10 @@ packages:
 
   '@witchcraft/nuxt-utils@0.3.2':
     resolution: {integrity: sha512-aBFT2GiUKyAiytVYeXbOllrZJJ2fUvbD5lGVBP2SYyL0LK9sFJj0H3m80UyBGXOLA4m5g51vsvfrDWWt2F3vtQ==}
+    engines: {node: '>=20.0.0'}
+
+  '@witchcraft/nuxt-utils@0.3.3':
+    resolution: {integrity: sha512-Xt3UVkhND81Ps5L5Fq1igkwQypMs+KyEO+tN3tHpBu9peVox4uhgdSCQyzP9Zvhsk5QqpaPdISPUraCeU6QG8A==}
     engines: {node: '>=20.0.0'}
 
   '@witchcraft/ui@0.3.5':
@@ -6195,14 +6199,14 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  '@witchcraft/nuxt-postgres@0.1.3(@netlify/blobs@9.1.2)(@swc/helpers@0.5.17)(db0@0.3.2(@electric-sql/pglite@0.2.17)(drizzle-orm@0.44.5(@electric-sql/pglite@0.2.17)(postgres@3.4.7)))(ioredis@5.7.0)(magicast@0.3.5)(pino-pretty@11.3.0)(pino@9.9.0)(rollup@4.50.2)(vite@7.1.5(@types/node@24.3.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1))':
+  '@witchcraft/nuxt-postgres@0.3.1(@netlify/blobs@9.1.2)(@swc/helpers@0.5.17)(db0@0.3.2(@electric-sql/pglite@0.2.17)(drizzle-orm@0.44.5(@electric-sql/pglite@0.2.17)(postgres@3.4.7)))(ioredis@5.7.0)(magicast@0.3.5)(pino-pretty@11.3.0)(pino@9.9.0)(rollup@4.50.2)(vite@7.1.5(@types/node@24.3.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1))':
     dependencies:
       '@alanscodelog/tsconfigs': 6.2.0
-      '@alanscodelog/utils': 6.0.1
+      '@alanscodelog/utils': 6.0.2
       '@electric-sql/pglite': 0.2.17
-      '@nuxt/kit': 4.1.2(magicast@0.3.5)
-      '@witchcraft/nuxt-logger': 0.0.2(magicast@0.3.5)(pino-pretty@11.3.0)(pino@9.9.0)
-      '@witchcraft/nuxt-utils': 0.3.2(magicast@0.3.5)
+      '@nuxt/kit': 4.1.3(magicast@0.3.5)
+      '@witchcraft/nuxt-logger': 0.0.6(magicast@0.3.5)(pino-pretty@11.3.0)(pino@9.9.0)
+      '@witchcraft/nuxt-utils': 0.3.3(magicast@0.3.5)
       defu: 6.1.4
       drizzle-kit: 0.31.4
       drizzle-orm: 0.44.5(@electric-sql/pglite@0.2.17)(postgres@3.4.7)
@@ -6210,7 +6214,7 @@ snapshots:
       unstorage: 1.17.1(@netlify/blobs@9.1.2)(db0@0.3.2(@electric-sql/pglite@0.2.17)(drizzle-orm@0.44.5(@electric-sql/pglite@0.2.17)(postgres@3.4.7)))(ioredis@5.7.0)
       vite-plugin-top-level-await: 1.6.0(@swc/helpers@0.5.17)(rollup@4.50.2)(vite@7.1.5(@types/node@24.3.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1))
       vite-plugin-wasm: 3.5.0(vite@7.1.5(@types/node@24.3.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1))
-      zod: 4.1.9
+      zod: 4.1.12
     transitivePeerDependencies:
       - '@aws-sdk/client-rds-data'
       - '@azure/app-configuration'
@@ -6278,6 +6282,16 @@ snapshots:
     dependencies:
       '@alanscodelog/utils': 6.0.1
       '@nuxt/kit': 4.1.2(magicast@0.3.5)
+      change-case: 5.4.4
+      defu: 6.1.4
+      fast-glob: 3.3.3
+    transitivePeerDependencies:
+      - magicast
+
+  '@witchcraft/nuxt-utils@0.3.3(magicast@0.3.5)':
+    dependencies:
+      '@alanscodelog/utils': 6.0.2
+      '@nuxt/kit': 4.1.3(magicast@0.3.5)
       change-case: 5.4.4
       defu: 6.1.4
       fast-glob: 3.3.3

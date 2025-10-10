@@ -24,7 +24,7 @@ export const githubOptions: ProviderOptions<"github"> = {
 	getAdditionalAccountInfo: async ({ avatar_url: avatarUrl }: GithubUser) => ({ avatarUrl })
 }
 
-declare module "@witchcraft/nuxt-auth/types" {
+declare module "@witchcraft/nuxt-auth" {
 	interface Register {
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		AdditionalAccountInfo: {
