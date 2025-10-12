@@ -299,7 +299,7 @@ export default defineNuxtModule<ModuleOptions>({
 			"runtime/utils/getAuthApiRoute",
 			"runtime/core/providers/google",
 			"runtime/core/providers/github",
-			"runtime/utils/createExternalAuthHandler"
+			"runtime/utils/createExternalAuthLoginHandler"
 		]) {
 			nuxt.options.build.transpile.push(resolve(file))
 		}

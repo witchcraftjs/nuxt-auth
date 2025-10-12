@@ -187,7 +187,7 @@ In some cases you may want to customize this behavior, such as when calling this
 
 This can be customized with the `handleActions` option on the `useAuth` composable.
 
-There is also a `createExternalAuthHandler` helper and related utils, see [External Auth Handlers](#external-auth-handlers).
+There is also a `createExternalAuthLoginHandler` helper and related utils, see [External Auth Handlers](#external-auth-handlers).
 
 ### Changing Routes
 
@@ -411,7 +411,7 @@ definePageMeta({
 
 ```
 
-Then in the login page, we can use the `createExternalAuthHandler` to intercept the action of the `LoginProviderButtons` only when the user is on electron.
+Then in the login page, we can use the `createExternalAuthLoginHandler` to intercept the action of the `LoginProviderButtons` only when the user is on electron.
 
 
 ```vue [pages/auth/login.vue]
@@ -425,14 +425,14 @@ import { useRuntimeConfig } from "#app"
 const rc = useRuntimeConfig()
 
 const handleActions: ActionHandler = (action, url) =>
-createExternalAuthHandler(
+createExternalAuthLoginHandler(
 	"electron", // for the query param
 	isElectron, // platform check
 	publicServerUrl, // you must define this somehow
 	window?.electron?.api.open,
 	"auth/code", // the default
 )(action, url)
-|| createExternalAuthHandler(...) // they can be chained
+|| createExternalAuthLoginHandler(...) // they can be chained
 
 </script>
 ```

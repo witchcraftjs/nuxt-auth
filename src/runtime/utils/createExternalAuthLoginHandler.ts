@@ -1,9 +1,9 @@
 import { navigateTo, useRuntimeConfig } from "#imports"
 
 /**
- * Creates an external (e.g. desktop) auth handler.
+ * Creates an external (e.g. desktop) auth login handler. A logout one doesn't exist as that is very platform dependant.
  */
-export function createExternalAuthHandler(
+export function createExternalAuthLoginHandler(
 /**
  * The name of the platform.
  *
@@ -43,11 +43,11 @@ export function createExternalAuthHandler(
 		if (!isExternal()) return false
 
 		if (deeplinkCallbackPath === undefined) {
-			throw new Error("createExternalAuthHandler: deeplinkCallbackPath cannot be undefined. See docs for more info.")
+			throw new Error("createExternalAuthLoginHandler: deeplinkCallbackPath cannot be undefined. See docs for more info.")
 		}
 
-		if (!serverUrl) throw new Error("createExternalAuthHandler: serverUrl cannot be undefined when isExternal returns true. See docs for more info.")
-		if (!open) throw new Error("createExternalAuthHandler: open cannot be undefined when isExternal returns true. See docs for more info.")
+		if (!serverUrl) throw new Error("createExternalAuthLoginHandler: serverUrl cannot be undefined when isExternal returns true. See docs for more info.")
+		if (!open) throw new Error("createExternalAuthLoginHandler: open cannot be undefined when isExternal returns true. See docs for more info.")
 
 		let origin = typeof serverUrl === "function" ? serverUrl() : serverUrl
 		if (origin instanceof Promise) {
