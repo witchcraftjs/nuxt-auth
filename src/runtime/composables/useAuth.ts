@@ -39,8 +39,7 @@ export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 		setFetchUserOnNavigation()
 		const loginRoute = getAuthApiRoute(useRuntimeConfig().public, "login", { provider: provider.toLowerCase() }, { devBypass })
 		const external = provider ? true : undefined
-		let handled = handleActions?.("login", loginRoute, provider)
-		if (handled instanceof Promise) handled = await handled
+		const handled = handleActions?.("login", loginRoute, provider)
 
 		if (!handled) {
 			await navigateTo(loginRoute, { external })
@@ -51,6 +50,8 @@ export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 		const wasSemiAuthed = isSemiAuthed.value
 
 		await Promise.allSettled(hooks.beforeLogout.map(listener => listener()))
+		// this does NOT need to be a awaited
+		// the handler should always immediately tell us if it will handle it or not
 		const handled = handleActions?.("logout", getAuthApiRoute(useRuntimeConfig().public, "logout"))
 		// unset after listeners so they have access to the user data
 		userData.value = null

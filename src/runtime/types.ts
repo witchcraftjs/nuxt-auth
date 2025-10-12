@@ -341,15 +341,29 @@ export type UseAuthComposableOptions = {
 	 * Handle login and logout actions yourself.
 	 *
 	 * Return `true` to let prevent the handler from handling the action.
+	 *
+	 * To run an async function while returning true you can do:
+	 *
+	 * ```
+	 * setTimeout(() => {
+	 *		void (async function() {})()
+	 * })
+	 * return true
+	 * ```
+	 *
+	 * The reason handlers cna't return a promise is to allow handler chaining (see the docs).
 	 */
 	handleActions?: ActionHandler
 }
+
+export type ActionReturnType = undefined | false | true
+
 /**
  * See {@link UseAuthComposableOptions.handleActions}
  */
 export type ActionHandler
-	= ((action: "login", url: string, provider: ProviderNames) => any | false)
-		& ((action: "logout", url: string) => any | false)
+	= ((action: "login", url: string, provider: ProviderNames) => ActionReturnType)
+		& ((action: "logout", url: string) => ActionReturnType)
 
 export const AUTH_ERROR = enumFromArray([
 	"USER_ALREADY_REGISTERED",

@@ -38,8 +38,10 @@ export function createExternalAuthHandler(
 	deeplinkCallbackPath: string = useRuntimeConfig().public.auth.authRoutes.deeplink!
 
 ) {
-	return async (_action: "login" | "logout", url: string) => {
+	return async (action: "login" | "logout", url: string) => {
+		if (action !== "login") return false
 		if (!isExternal()) return false
+
 		if (deeplinkCallbackPath === undefined) {
 			throw new Error("createExternalAuthHandler: deeplinkCallbackPath cannot be undefined. See docs for more info.")
 		}
