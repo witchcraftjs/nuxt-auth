@@ -117,6 +117,10 @@ export type OAuth2PkceAuthUrl = {
 	codeVerifier: string
 }
 
+// note that when we do infer T, we must use object instead of T when there is no T otherwise typescript will simplify the type and cause issues, see this playground (the emitted dts on the return type of useUser as an example)
+
+// https://www.typescriptlang.org/play/?ts=3.3.3#code/KYDwDg9gTgLgBDAnmYcAiAjAggVxgCwFUBnYKOAXjgG8BYAKDjh1KgDsBDAW2AC5iYUAJZsA5gwC+DUJFhwRMMgDMOAY1QAlYKKECyNBpOnho8JCji4CJfVQAUWnXvKhFbACbEalvEVa95NiV9ABU4KXoASAB+ODDXYA8vLVVodwAeAWExABo4DjZEAD4GSJi40siA6giqmgkASjgAMnRsXxsoQ3oZUwRkVAAFKAgUKCs-WzgHbV1FFxA3T28JzoCRYPIw2tj4xcTllLTMwRFRPILiyt3KgIgMACtgVRhSu8fnmCbWzFXWbt6ciUODYLyEEDYzFInTsTTojDgqTYAihZF4fym1FR7G4fDgACIWGRODx8eFSkiUWARmMMVAAsNRmQ6ZRvEScTwAoTWCTgPiIkwoMAYDh2GzWHlqUzxh1WOT6BIgA
+
 export interface Register {
 }
 
@@ -144,19 +148,15 @@ export type AdditionalAccountInfo = Register extends { AdditionalAccountInfo: in
 export type AdditionalApiRoutes = (Register extends { ApiRoutes: infer T }
 	? T extends Record<string, any>
 		? T
-		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-		: {}
-	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-	: {})
+		: object
+	: object)
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export type ApiRoutesParams = (Register extends { ApiRoutesParams: infer T }
 	? T extends Record<string, any>
 		? T
-		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-		: {}
-	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-	: {}) & {
+		: object
+	: object) & {
 		userIdAccounts: Record<"id", string>
 		login: Record<"provider", string>
 		callback: Record<"provider", string>
@@ -167,19 +167,17 @@ export type ApiRoutesParams = (Register extends { ApiRoutesParams: infer T }
 export type AuthSession = (Register extends { AuthSession: infer T }
 	? T extends Record<string, any>
 		? T
-		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-		: {}
-	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-	: {}) & DbAuthSession
+		: object
+	: object) & DbAuthSession
+
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export type AuthUser = (Register extends { AuthUser: infer T }
 	? T extends Record<string, any>
 		? T
-		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-		: {}
-	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-	: {}) & DbAuthUser
+		: object
+	: object) & DbAuthUser
+
 
 export type SessionValidationResult
 	= | { session: AuthSession, user: AuthUser, fresh: boolean }

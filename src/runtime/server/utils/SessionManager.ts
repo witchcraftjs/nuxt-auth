@@ -54,7 +54,7 @@ export class SessionManager {
 				attributes: {
 					secure: rc.public.auth.isSecure,
 					...(rc.public.auth.sessionCookieOpts ?? {}),
-					...options.sessionCookie?.attributes
+					...(options.sessionCookie?.attributes as any)
 				}
 			}
 		}
