@@ -1,5 +1,7 @@
 import { navigateTo, useRuntimeConfig } from "#imports"
 
+import type { ActionHandler } from "../types.js"
+
 /**
  * Creates an external (e.g. desktop) auth login handler. A logout one doesn't exist as that is very platform dependant.
  */
@@ -23,7 +25,7 @@ export function createExternalAuthLoginHandler(
 	 *
 	 * This is allowed to be undefined because it might only be available in some environments, BUT, it cannot be undefined when isExternal returns true.
 	 */
-	serverUrl: string | (() => string) | (() => Promise<string>) | undefined,
+	serverUrl: string | (() => string) | undefined,
 	/**
 	 * The function on the external **platform** to open the url on a browser.
 	 *
@@ -37,8 +39,8 @@ export function createExternalAuthLoginHandler(
 	 */
 	deeplinkCallbackPath: string = useRuntimeConfig().public.auth.authRoutes.deeplink!
 
-) {
-	return async (action: "login" | "logout", url: string) => {
+): ActionHandler {
+	return (action: "login" | "logout", url: string) => {
 		if (action !== "login") return false
 		if (!isExternal()) return false
 
@@ -49,10 +51,7 @@ export function createExternalAuthLoginHandler(
 		if (!serverUrl) throw new Error("createExternalAuthLoginHandler: serverUrl cannot be undefined when isExternal returns true. See docs for more info.")
 		if (!open) throw new Error("createExternalAuthLoginHandler: open cannot be undefined when isExternal returns true. See docs for more info.")
 
-		let origin = typeof serverUrl === "function" ? serverUrl() : serverUrl
-		if (origin instanceof Promise) {
-			origin = await origin
-		}
+		const origin = typeof serverUrl === "function" ? serverUrl() : serverUrl
 		const serverAuth = new URL(url, origin)
 		serverAuth.searchParams.set("deeplink", name)
 		const serverAuthUri = encodeURIComponent(serverAuth.toString())
