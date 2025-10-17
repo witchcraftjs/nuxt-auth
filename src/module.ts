@@ -16,7 +16,6 @@ import { defu } from "defu"
 
 import type { AdditionalApiRoutes, ProviderNames, Secrets, SessionCookieOptions } from "./runtime/types"
 
-import pkg from "../package.json" with { type: "json" }
 
 export type * from "./runtime/types"
 export type * from "./runtime/server/utils/createAuthSchema.js"
@@ -239,11 +238,11 @@ export default defineNuxtModule<ModuleOptions>({
 	} satisfies Required<ModuleOptions>,
 	moduleDependencies: {
 		"@witchcraft/ui": {
-			version: pkg.dependencies["@witchcraft/ui"],
+			version: "^0.3.5",
 			optional: true
 		},
 		"nuxt-security": {
-			version: pkg.dependencies["nuxt-security"],
+			version: "^2.4.0",
 			optional: true
 		}
 	},

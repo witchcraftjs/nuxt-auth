@@ -7,8 +7,7 @@
 		"dev:nix": "devenv up",
 		"build": "cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true 'nuxi build'",
 		"db:regenerate": "rm -rf .devenv/state/postgres && rm -rf db/migrations && drizzle-kit generate",
-		"generate": "nuxi generate",
-		"update-dep": "cd ../ && pnpm build:only && cd playground && pnpm update @witchcraft/nuxt-auth"
+		"generate": "nuxi generate"
 	},
 	"@comments": {
 		"dependencies": {
@@ -16,26 +15,21 @@
 		}
 	},
 	"dependencies": {
-		"@witchcraft/nuxt-auth": "file:..",
-		"@witchcraft/nuxt-logger": "^0.0.2",
-		"@witchcraft/nuxt-postgres": "^0.3.0",
-		"@witchcraft/nuxt-utils": "^0.3.2",
-		"@witchcraft/ui": "^0.3.5",
-		"arctic": "^3.7.0",
-		"cookie-es": "^2.0.0",
-		"drizzle-orm": "^0.44.5",
-		"nuxt": "^4.1.2",
-		"unplugin-icons": "^22.3.0",
-		"unplugin-vue-components": "^29.0.0",
-		"zod": "^4.1.9"
-	},
-	"pnpm": {
-		"overrides": {
-			"@witchcraft/ui": "^0.3.5"
-		}
+		"@witchcraft/nuxt-auth": "workspace:*",
+		"@witchcraft/nuxt-logger": "catalog:",
+		"@witchcraft/nuxt-postgres": "catalog:",
+		"@witchcraft/nuxt-utils": "catalog:",
+		"@witchcraft/ui": "catalog:",
+		"arctic": "catalog:",
+		"cookie-es": "catalog:",
+		"drizzle-orm": "catalog:",
+		"nuxt": "catalog:",
+		"unplugin-icons": "catalog:",
+		"unplugin-vue-components": "catalog:",
+		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"drizzle-kit": "^0.31.4",
-		"tsx": "^4.20.5"
+		"drizzle-kit": "catalog:",
+		"tsx": "catalog:"
 	}
 }
