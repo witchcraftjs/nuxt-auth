@@ -137,16 +137,17 @@ const props = withDefaults(defineProps<{
 			body: {
 				username
 			}
-		}).catch(e => {
+		}).catch(async e => {
+			error.value = `Registration Error: ${e.data.message}`
+
 			if (e?.data?.code === AUTH_ERROR.USER_ALREADY_REGISTERED) {
 				useAuth().setFetchUserOnNavigation(true)
-				navigateTo(redirectUrl, { external: true })
+				await navigateTo(redirectUrl, { external: true })
 			}
-			error.value = `Registration Error: ${e.data.message}`
 		})
 
 		if (typeof res === "object" && res.redirectUrl) {
-			navigateTo(res.redirectUrl, { external: true })
+			await navigateTo(res.redirectUrl, { external: true })
 		}
 	}
 })
