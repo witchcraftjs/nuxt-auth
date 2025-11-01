@@ -1,7 +1,7 @@
 import type { ProviderOptions } from "@witchcraft/nuxt-auth"
 
-import type { GithubUser } from "#auth/core/providers/github.js"
-import { SessionManager } from "#auth/server/utils/SessionManager.js"
+import type { GithubUser } from "#witchcraft-nuxt-auth/core/providers/github.js"
+import { SessionManager } from "#witchcraft-nuxt-auth/server/utils/SessionManager.js"
 import { postgres as db } from "#postgres"
 import { authSessions, users } from "~~/db/schema.js"
 

@@ -274,7 +274,7 @@ export default defineNuxtModule<ModuleOptions>({
 		)
 		delete (nuxt.options.runtimeConfig.public.auth as any).useGlobalMiddleware
 
-		nuxt.options.alias["#auth"] = resolve("runtime")
+		nuxt.options.alias["#witchcraft-nuxt-auth"] = resolve("runtime")
 
 		addImportsDir(resolve("runtime/composables"))
 		addImportsDir(resolve("runtime/utils"))

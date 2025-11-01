@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm"
 import type { H3Event } from "h3"
 import { z } from "zod"
 
-import { defaultZodUsernameSchema } from "#auth/types.js"
+import { defaultZodUsernameSchema } from "#witchcraft-nuxt-auth/types.js"
 import { postgres as db } from "#postgres"
 
 //
