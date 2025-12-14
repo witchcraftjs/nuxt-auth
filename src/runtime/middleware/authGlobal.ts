@@ -19,7 +19,7 @@ export default defineNuxtRouteMiddleware(async (_to, _from) => {
 		console.log({ ns: "auth:middleware:authGlobal", doFetch: doFetch.value, userData: userData.value })
 	}
 
-	if (doFetch.value)  {
+	if (doFetch.value) {
 		const res = await useFetch<any>(getAuthApiRoute(useRuntimeConfig().public, "usersInfo"))
 		doFetch.value = false
 		userData.value = res.data.value

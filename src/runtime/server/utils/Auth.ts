@@ -156,6 +156,7 @@ export class Auth {
 		this.generateUser = opts.generateUser
 		this.createMockUser = opts.createMockUser ?? Auth.defaultCreateMockUser
 
+
 		this.modifyCallbackRedirect = opts.modifyCallbackRedirect
 		this.deeplinkSchemes = opts.deeplinkSchemes ?? {}
 		for (const val of Object.values(this.deeplinkSchemes)) {

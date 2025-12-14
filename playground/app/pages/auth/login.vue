@@ -65,8 +65,8 @@
 </template>
 
 <script setup lang="ts">
-import type { ActionHandler } from "#witchcraft-nuxt-auth/types.js"
 import { useRuntimeConfig } from "#imports"
+import type { ActionHandler } from "#witchcraft-nuxt-auth/types.js"
 
 const appInfo = useRuntimeConfig().public.appInfo
 const appName = appInfo.name
