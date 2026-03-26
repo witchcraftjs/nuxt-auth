@@ -1,4 +1,4 @@
-import type { BaseLogger } from "@witchcraft/nuxt-logger/shared/createUseLogger"
+import type { BaseLogger } from "@witchcraft/nuxt-logger/types"
 import type { PgDatabase } from "drizzle-orm/pg-core"
 import type { PgliteDatabase } from "drizzle-orm/pglite"
 import type { EventHandler } from "h3"

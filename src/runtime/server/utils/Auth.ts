@@ -1,6 +1,6 @@
 import { capitalize } from "@alanscodelog/utils/capitalize"
 import { unreachable } from "@alanscodelog/utils/unreachable"
-import type { BaseLogger } from "@witchcraft/nuxt-logger/shared/createUseLogger"
+import type { BaseLogger } from "@witchcraft/nuxt-logger/types"
 import { generateState, type OAuth2RequestError, type OAuth2Tokens } from "arctic"
 import type { CookieSerializeOptions } from "cookie-es"
 import { and, eq } from "drizzle-orm"
