@@ -70,10 +70,10 @@ export const useAuth = ({ handleActions }: UseAuthComposableOptions = {}) => {
 		}
 	}
 
-	async function on(hook: AuthListenerHooks, listener: AuthListenerHook): Promise<void> {
+	function on(hook: AuthListenerHooks, listener: AuthListenerHook): void {
 		hooks[hook].push(listener)
 	}
-	async function off(hook: AuthListenerHooks, listener: AuthListenerHook): Promise<void> {
+	function off(hook: AuthListenerHooks, listener: AuthListenerHook): void {
 		const index = hooks[hook].indexOf(listener)
 		if (index > -1) {
 			hooks[hook].splice(index, 1)
