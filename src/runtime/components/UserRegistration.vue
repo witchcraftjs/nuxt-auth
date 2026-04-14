@@ -23,13 +23,19 @@
 			<div class="input-wrapper relative flex">
 				<WSimpleInput
 					:id="usernameId"
+					:aria-busy="isLoading"
+					:aria-describedby="`${usernameId}-error`"
 					name="username"
-					class="w-0 pr-[calcl(1rem+var(--spacing)*2)]"
+					class="w-0 pr-[calc(1rem+var(--spacing)*2)]"
 					:valid="!anyError && (username === '' || isValidUsername)"
+					:aria-invalid="!!anyError || (!isValidUsername && username !== '')"
 					v-model="username"
 				/>
-				<div class="absolute top-0 bottom-0 pr-2">
-					<WIcon class="w-[1rem] pointer-events-none">
+				<div
+					class="absolute top-0 bottom-0 pr-1 right-0"
+					aria-live="polite"
+				>
+					<WIcon class="w-[1rem] pointer-events-none mt-px">
 						<slot
 							v-if="isLoading"
 							name="username-icon-loading"
@@ -37,14 +43,16 @@
 							<IconSpinner
 								class="animate-spin text-neutral-500"
 							/>
+							<span class="sr-only">Checking availability...</span>
 						</slot>
 						<slot
 							v-else-if="isValidUsername"
 							name="username-icon-valid"
 						>
 							<IconCheck
-								class="text-green-500"
+								class="text-green-500 scale-110"
 							/>
+							<span class="sr-only">Username available.</span>
 						</slot>
 						<slot
 							v-else-if="anyError || (!isValidUsername && username !== '')"
@@ -53,6 +61,7 @@
 							<IconInvalid
 								class="text-red-500"
 							/>
+							<span class="sr-only">Username unavailable.</span>
 						</slot>
 					</WIcon>
 				</div>
@@ -71,22 +80,23 @@
 	<slot
 		v-if="anyError"
 		name="error"
-		v-bind="{ error, registrationError }"
+		v-bind="{ error, registrationError, localUsernameError, id: `${usernameId}-error` }"
 	>
 		<div
+			:id="`${usernameId}-error`"
 			class="
-		border
-		border-red-500
-		rounded-md
-		p-2
-		text-red-500
-		bg-red-10j0
-		dark:bg-red-900
-		whitespace-pre-wrap
-		break-all
-	"
+				border
+				border-red-500
+				rounded-md
+				p-2
+				text-red-500
+				bg-red-100
+				dark:bg-red-950/50
+				whitespace-pre-wrap
+				break-all
+			"
 		>
-			{{ registrationError || error }}
+			{{ localUsernameError || registrationError || error }}
 		</div>
 	</slot>
 </form>
@@ -94,12 +104,13 @@
 
 <script lang="ts" setup>
 import { refDebounced } from "@vueuse/core"
+import z from "zod"
 
 import { navigateTo, useAsyncData, useRuntimeConfig } from "#app"
 import { computed, type Ref, ref, useId, useRoute } from "#imports"
-import IconInvalid from "~icons/fa-solid/times"
-import IconCheck from "~icons/fa6-solid/check"
-import IconSpinner from "~icons/gg/spinner"
+import IconCheck from "~icons/lucide/check"
+import IconSpinner from "~icons/lucide/loader-circle"
+import IconInvalid from "~icons/lucide/x"
 
 import { useAuth } from "../composables/useAuth.js"
 import { AUTH_ERROR, defaultZodUsernameSchema } from "../types.js"
@@ -119,6 +130,12 @@ const props = withDefaults(defineProps<{
 		deeplink?: string
 	) => void
 	id?: string
+	/**
+	 * When a validator is provided, if it errors, the server is not queried so as to avoid invalid queries. Any errors it produces are also shown.
+	 *
+	 * @default defaultZodUsernameSchema
+	 */
+	usernameSchema?: z.ZodType<string, any, any>
 }>(), {
 	debounce: 1000,
 	getValidUsernameRoute: (username: string) => {
@@ -151,25 +168,38 @@ const props = withDefaults(defineProps<{
 		if (typeof res === "object" && res.redirectUrl) {
 			await navigateTo(res.redirectUrl, { external: true })
 		}
-	}
+	},
+	usernameSchema: defaultZodUsernameSchema as any
 })
 const usernameId = props.id ?? useId()
 const username = ref("")
 const debouncedUsername = refDebounced(username, props.debounce)
 const registrationError = ref("")
 
+const localUsernameError = computed(() => {
+	const res = props.usernameSchema.safeParse(username.value)
+	if (res.success) return undefined
+	return z.prettifyError(res.error).replaceAll("✖", "❌")
+})
 const { data: isValidUsername, status, error } = await useAsyncData(
 	"auth:username:valid",
-	() => $fetch<boolean>(props.getValidUsernameRoute(debouncedUsername.value)),
+	async () => {
+		if (localUsernameError.value) return false
+		return $fetch<boolean>(props.getValidUsernameRoute(debouncedUsername.value))
+	},
 	{
-		watch: [debouncedUsername],
+		watch: [localUsernameError, debouncedUsername],
 		immediate: false,
 		default: () => false
 	}
 )
 
-const isLoading = computed(() => username.value !== "" && (status.value === "pending" || username.value !== debouncedUsername.value))
-const anyError = computed(() => error.value || registrationError.value)
+const isLoading = computed(() => {
+	if (localUsernameError.value) return false
+	return username.value !== "" && (status.value === "pending" || username.value !== debouncedUsername.value)
+})
+
+const anyError = computed(() => localUsernameError.value || error.value || registrationError.value)
 
 const deeplink = typeof query.deeplink === "string" ? query.deeplink : undefined
 const redirect = deeplink
