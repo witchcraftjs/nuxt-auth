@@ -12,21 +12,23 @@
 	"
 	@submit.prevent="handleSubmit"
 >
-	<div class="flex flex-col">
-		<WLabel
+	<div class="flex flex-col items-stretch">
+		<label
 			:for="usernameId"
+			class="text-sm"
 		>
 			Username
-		</WLabel>
+		</label>
 		<div>
-			<WInputDeprecated
-				:id="usernameId"
-				name="username"
-				class="w-0"
-				inner-wrapper-class="bg-bg dark:bg-neutral-800"
-				v-model="username"
-			>
-				<template #right>
+			<div class="input-wrapper relative flex">
+				<WSimpleInput
+					:id="usernameId"
+					name="username"
+					class="w-0 pr-[calcl(1rem+var(--spacing)*2)]"
+					:valid="!anyError && (username === '' || isValidUsername)"
+					v-model="username"
+				/>
+				<div class="absolute top-0 bottom-0 pr-2">
 					<WIcon class="w-[1rem] pointer-events-none">
 						<slot
 							v-if="isLoading"
@@ -53,8 +55,8 @@
 							/>
 						</slot>
 					</WIcon>
-				</template>
-			</WInputDeprecated>
+				</div>
+			</div>
 		</div>
 	</div>
 	<slot/>

@@ -238,7 +238,7 @@ export default defineNuxtModule<ModuleOptions>({
 	} satisfies Required<ModuleOptions>,
 	moduleDependencies: {
 		"@witchcraft/ui": {
-			version: "^0.3.5",
+			version: "^0.4.0",
 			optional: true
 		},
 		"nuxt-security": {

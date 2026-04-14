@@ -50,8 +50,9 @@
                 let
                 in
                 [
-                utils.devenvModule
+                  utils.devenvModule
                   ({ pkgs, config, ... }: {
+                    process.manager.implementation = "hivemind";
                     custom.js.nodejs.package = pkgs.nodejs_24;
                     custom.postgres.enabled = true;
                     # services.postgres.settings = {
