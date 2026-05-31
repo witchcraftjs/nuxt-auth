@@ -29,6 +29,13 @@ export default defineNuxtConfig({
 		compatibilityVersion: 4 as const
 	},
 	compatibilityDate: "2024-09-23",
+	vite: {
+		server: {
+			watch: {
+				usePolling: true
+			}
+		}
+	},
 	hooks: {
 		// https://github.com/nuxt/nuxt/issues/30481
 		"nitro:config"(nitroConfig) {
