@@ -332,7 +332,7 @@ export type ProviderStyle = {
 	}
 }
 
-export const providerStylesInjectionKey = Symbol("providerStyles") as InjectionKey<Partial<Record<ProviderNames, Partial<ProviderStyle>>>>
+export const providerStylesInjectionKey = Symbol.for("@witchcraft/nuxt-auth:providerStyles") as InjectionKey<Partial<Record<ProviderNames, Partial<ProviderStyle>>>>
 
 export type FullProviderStyles = Record<"github" | "google", ProviderStyle> & Record<ProviderNames, Partial<ProviderStyle>>
 
