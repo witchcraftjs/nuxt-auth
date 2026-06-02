@@ -47,7 +47,7 @@ catalog:
   h3: 1.15.4
   husky: ^9.1.7
   jsonwebtoken: ^9.0.2
-  ms: ^2.1.3
+  ms: ^3.0.0-beta.2
   nuxt: ^4.2.1
   nuxt-security: ^2.4.0
   reka-ui: ^2.5.1
@@ -57,7 +57,7 @@ catalog:
   unplugin-icons: ^23.0.1
   unplugin-vue-components: ^32.0.0
   vitest: ^3.2.4
-  vue-tsc: ^3.1.1
+  vue-tsc: ^3.3.3
   zod: ^4.1.12
 
 minimumReleaseAgeExclude:
@@ -70,3 +70,9 @@ patchedDependencies:
 settings:
   catalogMode: strict
   cleanupUnusedCatalogs: false
+
+overrides:
+  "unplugin-icons>vue": "*"
+
+publicHoistPattern:
+  - '*vue*'
