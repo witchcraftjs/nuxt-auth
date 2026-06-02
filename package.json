@@ -86,6 +86,7 @@
 		"husky": "catalog:",
 		"nuxt": "catalog:",
 		"reka-ui": "catalog:",
+		"semantic-release": "catalog:",
 		"tailwindcss": "catalog:",
 		"typescript": "catalog:",
 		"vitest": "catalog:",
