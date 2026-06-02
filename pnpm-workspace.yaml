@@ -47,7 +47,7 @@ catalog:
   h3: 1.15.4
   husky: ^9.1.7
   jsonwebtoken: ^9.0.2
-  ms: ^3.0.0-beta.2
+  ms: ^3.0.0-canary.202508261828
   nuxt: ^4.2.1
   nuxt-security: ^2.4.0
   reka-ui: ^2.5.1

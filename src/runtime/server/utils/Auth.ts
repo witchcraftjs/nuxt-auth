@@ -855,7 +855,8 @@ export class Auth {
 
 	async createAccessToken(userId: string, payload: Record<string, any> = {}): Promise<string> {
 		return signJwt({ ...payload, userId }, this.rc.authSecret, {
-			expiresIn: this.externalAccessTokenExpiresIn
+			//  ms is different package version so type doesn't match
+			expiresIn: this.externalAccessTokenExpiresIn as any
 		})
 	}
 }
