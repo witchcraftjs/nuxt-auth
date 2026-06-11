@@ -53,6 +53,7 @@
 		"@nuxt/kit": "catalog:",
 		"@oslojs/crypto": "catalog:",
 		"@oslojs/encoding": "catalog:",
+		"@standard-schema/spec": "catalog:",
 		"@types/jsonwebtoken": "catalog:",
 		"@vueuse/core": "catalog:",
 		"@witchcraft/nuxt-logger": "catalog:",

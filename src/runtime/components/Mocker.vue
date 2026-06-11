@@ -18,24 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { navigateTo, useRoute } from "#app"
-import { ref, useRuntimeConfig } from "#imports"
+import { useAuthMocker } from "../composables/useAuthMocker.js"
 
-import { getAuthApiRoute } from "../utils/getAuthApiRoute.js"
-
-const username = ref("")
-const bypassRegistration = ref(false)
-const provider = useRoute().query.provider
-if (!provider || typeof provider !== "string") throw new Error("Missing provider query param.")
-async function submit() {
-	const query = useRoute().query
-	delete query.provider
-	const route = getAuthApiRoute(useRuntimeConfig().public, "callback", { provider: provider as string }, {
-		devBypass: true,
-		username: username.value,
-		devBypassRegistration: bypassRegistration.value,
-		...query
-	})
-	await navigateTo(route, { external: true })
-}
+const { provider, username, bypassRegistration, submit } = useAuthMocker()
 </script>

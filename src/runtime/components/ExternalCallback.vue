@@ -55,59 +55,10 @@
 </template>
 
 <script lang="ts" setup>
-import z from "zod"
+import type { ExternalCallbackOptions } from "../composables/useAuthExternalCallback.js"
+import { useAuthExternalCallback } from "../composables/useAuthExternalCallback.js"
 
-import { useRuntimeConfig } from "#app"
-import {
-	navigateTo,
-	ref,
-	useRoute } from "#imports"
+const props = defineProps<ExternalCallbackOptions>()
 
-import { zExternalCallbackPageQuery } from "../types.js"
-
-
-const props = defineProps<{
-	saveSession: (accessToken: string) => Promise<void>
-	successPath?: string
-	cancelPath?: string
-}>()
-
-const rc = useRuntimeConfig()
-const query = useRoute().query
-
-
-const parsedQuery = zExternalCallbackPageQuery.safeParse(query)
-if (parsedQuery.error) throw new Error(z.prettifyError(parsedQuery.error))
-const initialAccessToken = "accessToken" in parsedQuery.data ? parsedQuery.data.accessToken : undefined
-const authUri = "authUri" in parsedQuery.data ? parsedQuery.data.authUri : undefined
-
-if (initialAccessToken) {
-	void authorize(initialAccessToken, true)
-}
-
-const manualAccessToken = ref("")
-const error = ref()
-
-async function authorize(
-	accessToken?: string,
-	initial: boolean = false
-) {
-	if (!accessToken || accessToken.length === 0) {
-		if (!initial) {
-			error.value = "No code provided."
-		}
-		return
-	}
-	const res = await props.saveSession(accessToken)
-		.catch(err => {
-			error.value = err.message
-			return err
-		})
-	if (!(res instanceof Error)) {
-		await navigateTo(props.successPath ?? rc.public.auth.authRoutes.postRegisteredLogin)
-	}
-}
-async function cancel() {
-	await navigateTo(props.cancelPath ?? rc.public.auth.authRoutes.login)
-}
+const { authUri, initialAccessToken, manualAccessToken, error, authorize, cancel } = useAuthExternalCallback(props)
 </script>

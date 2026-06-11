@@ -39,7 +39,7 @@
 				hover:text-accent-500
 				break-all
 			"
-		@click="copy(accessToken as string)"
+		@click="copyToken"
 	>
 		{{ accessToken }}
 	</WButton>
@@ -47,25 +47,11 @@
 </template>
 
 <script lang="ts" setup>
-import { unreachable } from "@alanscodelog/utils/unreachable"
-import { copy } from "@witchcraft/ui/helpers/copy"
+import { useAuthExternalCode } from "../composables/useAuthExternalCode.js"
 
-import {
-	navigateTo,
-	onMounted,
-	useRoute
-} from "#imports"
+const { accessToken, deepLinkUrl, copyToken } = useAuthExternalCode()
 
-import { zUriComponentCodec } from "../types.js"
-
-const query = useRoute().query
-const accessToken = query.accessToken
-if (typeof accessToken !== "string") {
-	unreachable("No session_token.")
-}
-const deepLinkUrl = zUriComponentCodec.parse(query.deeplinkUri)
-
-/* const props =  */withDefaults(defineProps<{
+withDefaults(defineProps<{
 	openAppText?: string
 	promptText?: string
 	copyTitle?: string
@@ -73,10 +59,5 @@ const deepLinkUrl = zUriComponentCodec.parse(query.deeplinkUri)
 	openAppText: "Open App and Authorize",
 	promptText: "If you are not prompted to open the app, try clicking below or copy this token into the app:",
 	copyTitle: "Click to Copy"
-})
-onMounted(() => {
-	if (accessToken) {
-		void navigateTo(deepLinkUrl, { external: true })
-	}
 })
 </script>

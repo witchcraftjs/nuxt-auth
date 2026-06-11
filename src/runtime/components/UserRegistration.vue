@@ -23,12 +23,12 @@
 			<div class="input-wrapper relative flex">
 				<WSimpleInput
 					:id="usernameId"
-					:aria-busy="isLoading"
+					:aria-busy="status === 'loading'"
 					:aria-describedby="`${usernameId}-error`"
 					name="username"
 					class="w-0 pr-[calc(1rem+var(--spacing)*2)]"
-					:valid="!anyError && (username === '' || isValidUsername)"
-					:aria-invalid="!!anyError || (!isValidUsername && username !== '')"
+					:valid="inputValid"
+					:aria-invalid="!inputValid"
 					v-model="username"
 				/>
 				<div
@@ -37,31 +37,25 @@
 				>
 					<WIcon class="w-[1rem] pointer-events-none mt-px">
 						<slot
-							v-if="isLoading"
+							v-if="status === 'loading'"
 							name="username-icon-loading"
 						>
-							<IconSpinner
-								class="animate-spin text-neutral-500"
-							/>
-							<span class="sr-only">Checking availability...</span>
+							<IconSpinner class="animate-spin text-neutral-500"/>
+							<span class="sr-only">{{ statusText }}</span>
 						</slot>
 						<slot
-							v-else-if="isValidUsername"
+							v-else-if="status === 'valid'"
 							name="username-icon-valid"
 						>
-							<IconCheck
-								class="text-green-500 scale-110"
-							/>
-							<span class="sr-only">Username available.</span>
+							<IconCheck class="text-green-500 scale-110"/>
+							<span class="sr-only">{{ statusText }}</span>
 						</slot>
 						<slot
-							v-else-if="anyError || (!isValidUsername && username !== '')"
+							v-else-if="status === 'invalid'"
 							name="username-icon-invalid"
 						>
-							<IconInvalid
-								class="text-red-500"
-							/>
-							<span class="sr-only">Username unavailable.</span>
+							<IconInvalid class="text-red-500"/>
+							<span class="sr-only">{{ statusText }}</span>
 						</slot>
 					</WIcon>
 				</div>
@@ -71,16 +65,16 @@
 	<slot/>
 	<WButton
 		:id="submitId"
-		:disabled="!!error || isLoading || username === '' || !isValidUsername"
+		:disabled="!canSubmit"
 		class="w-full"
 		type="submit"
 	>
 		Register
 	</WButton>
 	<slot
-		v-if="anyError"
+		v-if="errors.length"
 		name="error"
-		v-bind="{ error, registrationError, localUsernameError, id: `${usernameId}-error` }"
+		v-bind="{ errors, id: `${usernameId}-error` }"
 	>
 		<div
 			:id="`${usernameId}-error`"
@@ -96,125 +90,58 @@
 				break-all
 			"
 		>
-			{{ localUsernameError || registrationError || error }}
+			<div
+				v-for="err in errors"
+				:key="err"
+			>
+				{{ err }}
+			</div>
 		</div>
 	</slot>
 </form>
 </template>
 
-<script lang="ts" setup>
-import { refDebounced } from "@vueuse/core"
-import z from "zod"
+<script lang="ts">
+/**
+ * @deprecated This component is deprecated and will be removed in a future version.
+ */
+export default {}
+</script>
 
-import { navigateTo, useAsyncData, useRuntimeConfig } from "#app"
-import { computed, type Ref, ref, useId, useRoute } from "#imports"
+<script lang="ts" setup>
+import type { StandardSchemaV1 } from "@standard-schema/spec"
+
+import { useId } from "#imports"
 import IconCheck from "~icons/lucide/check"
 import IconSpinner from "~icons/lucide/loader-circle"
 import IconInvalid from "~icons/lucide/x"
 
-import { useAuth } from "../composables/useAuth.js"
-import { AUTH_ERROR, defaultZodUsernameSchema } from "../types.js"
-import { getAuthApiRoute } from "../utils/getAuthApiRoute.js"
+import { useAuthUserRegistration } from "../composables/useAuthUserRegistration.js"
 
-const query = useRoute().query
-const submitId = useId()
-const props = withDefaults(defineProps<{
-	debounce?: number
-	/** Can throw to indicate the username is invalid (before a request to properly check it is even made. The default throws if the default username schema isn't met. */
-	getValidUsernameRoute?: (username: string) => string
-	onSubmitRegistration?: (
-		event: Event,
-		username: string,
-		error: Ref<string>,
-		redirectUrl: string,
-		deeplink?: string
-	) => void
-	id?: string
-	/**
-	 * When a validator is provided, if it errors, the server is not queried so as to avoid invalid queries. Any errors it produces are also shown.
-	 *
-	 * @default defaultZodUsernameSchema
-	 */
-	usernameSchema?: z.ZodType<string, any, any>
-}>(), {
-	debounce: 1000,
-	getValidUsernameRoute: (username: string) => {
-		const res = defaultZodUsernameSchema.safeParse(username)
-		if (!res.success) throw new Error(res.error.format()._errors.join("\n"))
-		return getAuthApiRoute(useRuntimeConfig().public, "usernameValid", { username })
-	},
-	onSubmitRegistration: async (
-		_event: Event,
-		username: string,
-		error: Ref<string>,
-		redirectUrl: string,
-		deeplink?: string
-	) => {
-		const res = await $fetch<true | { redirectUrl: string }>(`${getAuthApiRoute(useRuntimeConfig().public, "register")}${deeplink ? `?deeplink=${deeplink}` : ""}`, {
-			cache: "no-store",
-			method: "post",
-			body: {
-				username
-			}
-		}).catch(async e => {
-			error.value = `Registration Error: ${e.data.message}`
-
-			if (e?.data?.code === AUTH_ERROR.USER_ALREADY_REGISTERED) {
-				useAuth().setFetchUserOnNavigation(true)
-				await navigateTo(redirectUrl, { external: true })
-			}
-		})
-
-		if (typeof res === "object" && res.redirectUrl) {
-			await navigateTo(res.redirectUrl, { external: true })
-		}
-	},
-	usernameSchema: defaultZodUsernameSchema as any
-})
-const usernameId = props.id ?? useId()
-const username = ref("")
-const debouncedUsername = refDebounced(username, props.debounce)
-const registrationError = ref("")
-
-const localUsernameError = computed(() => {
-	const res = props.usernameSchema.safeParse(username.value)
-	if (res.success) return undefined
-	return z.prettifyError(res.error).replaceAll("✖", "❌")
-})
-const { data: isValidUsername, status, error } = await useAsyncData(
-	"auth:username:valid",
-	async () => {
-		if (localUsernameError.value) return false
-		return $fetch<boolean>(props.getValidUsernameRoute(debouncedUsername.value))
-	},
-	{
-		watch: [localUsernameError, debouncedUsername],
-		immediate: false,
-		default: () => false
-	}
-)
-
-const isLoading = computed(() => {
-	if (localUsernameError.value) return false
-	return username.value !== "" && (status.value === "pending" || username.value !== debouncedUsername.value)
-})
-
-const anyError = computed(() => localUsernameError.value || error.value || registrationError.value)
-
-const deeplink = typeof query.deeplink === "string" ? query.deeplink : undefined
-const redirect = deeplink
-	? useRuntimeConfig().public.auth.authRoutes.externalCode
-	: useRuntimeConfig().public.auth.authRoutes.register
-
-if (!redirect) throw new Error("No externalCode or register route defined.")
-
-function handleSubmit(event: Event) {
-	props.onSubmitRegistration(
-		event,
-		username.value,
-		registrationError,
-		redirect!,
-		deeplink
-	)
+if (import.meta.dev) {
+	// eslint-disable-next-line no-console
+	console.warn("[nuxt-auth] <UserRegistration> is deprecated and will be removed in a future version.")
 }
+
+const props = defineProps<{
+	debounce?: number
+	usernameSchema?: StandardSchemaV1<string, string>
+	id?: string
+}>()
+
+const usernameId = props.id ?? useId()
+const submitId = useId()
+
+const {
+	username,
+	errors,
+	status,
+	statusText,
+	canSubmit,
+	handleSubmit,
+	inputValid
+} = useAuthUserRegistration({
+	debounce: props.debounce,
+	usernameSchema: props.usernameSchema
+})
 </script>
