@@ -10,23 +10,13 @@ import type { ProviderStyle } from "../types.js"
 // export const facebookProviderStyle = {
 // 	name: "Facebook",
 // 	logo: FacebookLogo,
-// 	style: {
-// 		bg: "#fff",
-// 		text: "#006aff",
-// 		bgDark: "#006aff",
-// 		textDark: "#fff"
-// 	},
+// 	class: "bg-white text-[#006aff] dark:bg-[#006aff] dark:text-white",
 // }
 
 // export const twitterProviderStyle = {
 // 	name: "Twitter",
 // 	logo: TwitterLogo,
-// 	style: {
-// 		bg: "#fff",
-// 		text: "#1da1f2",
-// 		bgDark: "#1da1f2",
-// 		textDark: "#fff"
-// 	}
+//    class: "bg-white text-[#1da1f2] dark:bg-[#1da1f2] dark:text-white",
 // }
 
 export const providerStyles: Record<string, ProviderStyle> = {

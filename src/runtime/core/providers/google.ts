@@ -105,10 +105,5 @@ export default class GoogleProvider implements ProviderHandler<"oauth2_pcke", "g
 export const googleProviderStyle = {
 	name: "Google",
 	logo: GoogleLogo,
-	style: {
-		bg: "#fff",
-		bgDark: "#000",
-		text: "#000",
-		textDark: "#fff"
-	}
+	class: "bg-white text-black dark:bg-black dark:text-white"
 }

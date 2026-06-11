@@ -139,10 +139,5 @@ export default class GithubProvider implements ProviderHandler<"oauth2", "github
 export const githubProviderStyle = {
 	name: "Github",
 	logo: GithubLogo,
-	style: {
-		bg: "#fff",
-		bgDark: "#000",
-		text: "#000",
-		textDark: "#fff"
-	}
+	class: "bg-white text-black dark:bg-black dark:text-white"
 }

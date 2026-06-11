@@ -324,17 +324,10 @@ export interface BaseProviderAccountInfo extends AuthAccount, InitialAccountInfo
 export type ProviderStyle = {
 	name: string
 	logo: any
-	style: {
-		bg: string
-		text: string
-		bgDark: string
-		textDark: string
-	}
+	class?: string
 }
 
 export const providerStylesInjectionKey = Symbol.for("@witchcraft/nuxt-auth:providerStyles") as InjectionKey<Partial<Record<ProviderNames, Partial<ProviderStyle>>>>
-
-export type FullProviderStyles = Record<"github" | "google", ProviderStyle> & Record<ProviderNames, Partial<ProviderStyle>>
 
 export type UseAuthComposableOptions = {
 	/**
