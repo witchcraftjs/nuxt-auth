@@ -1,47 +1,17 @@
 <template>
-<div
-	:class="twMerge(`
-		flex-1
-		flex
-		flex-col
-		items-stretch
-		justify-center
-		gap-2
-	`, ($attrs as any)?.class)"
+<WAuth
+	:class="($attrs as any)?.class"
+	:providers="enabledProviders"
+	:provider-styles="providerStyles"
+	@login="onLogin"
 >
-	<template
-		v-for="provider in enabledProviders"
-		:key="provider"
-	>
-		<!-- custom id is because useId is causing hydration mismtaches :/
-		I think because of the for loop -->
-		<WButton
-			v-if="provider"
-			:id="'login-provider-' + provider"
-			type="button"
-			:class="twMerge(`text-l p-2 px-4 [&_label]:justify-start [&_label]:gap-4`, providerStyles[provider]?.class)"
-			:key="provider"
-			@click="login(provider, loginOptions)"
-		>
-			<WIcon
-				v-if="providerStyles[provider]?.logo"
-				class="text-xl"
-			>
-				<component
-					:is="providerStyles[provider]?.logo"
-				/>
-			</WIcon>
-			<div>
-				Sign in / Register with {{ providerStyles[provider]?.name ?? provider }}
-			</div>
-		</WButton>
+	<template #extra="slotProps">
+		<slot
+			name="extra"
+			v-bind="slotProps"
+		/>
 	</template>
-	<slot
-		name="extra"
-		icon-class="text-xl"
-		class="text-l p-2 px-4 [&_label]:justify-start [&_label]:gap-4"
-	/>
-</div>
+</WAuth>
 </template>
 
 <script lang="ts">
@@ -52,7 +22,7 @@ export default {}
 </script>
 
 <script setup lang="ts">
-import { twMerge } from "@witchcraft/ui/utils/twMerge"
+import WAuth from "@witchcraft/ui/components/WAuth"
 
 import { useRuntimeConfig } from "#app"
 import { useAttrs } from "#imports"
@@ -65,6 +35,10 @@ if (import.meta.dev) {
 	console.warn("[nuxt-auth] <LoginProviderButtons> is deprecated and will be removed in a future version.")
 }
 
+defineOptions({
+	inheritAttrs: false
+})
+
 const rc = useRuntimeConfig()
 const config = rc.public.auth
 const enabledProviders = config.enabledProviders
@@ -75,9 +49,14 @@ const props = withDefaults(defineProps<{
 	useAuthOptions?: UseAuthComposableOptions
 	loginOptions?: Parameters<ReturnType<typeof useAuth>["login"]>[1]
 }>(), {
-	providerStyles: () => ({}) as any,
+	providerStyles: () => ({} as any),
 	useAuthOptions: () => ({}),
 	loginOptions: () => ({})
 })
+
 const { login } = useAuth(props.useAuthOptions)
+
+function onLogin(provider: string) {
+	login(provider as any, props.loginOptions)
+}
 </script>

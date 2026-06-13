@@ -18,7 +18,7 @@ catalog:
   '@alanscodelog/eslint-config': ^6.3.1
   '@alanscodelog/semantic-release-config': ^6.0.2
   '@alanscodelog/tsconfigs': ^6.3.0
-  '@alanscodelog/utils': ^6.2.0
+  '@alanscodelog/utils': ^6.3.1
   '@commitlint/cli': ^20.1.0
   '@iconify/json': ^2.2.393
   '@nuxt/eslint-config': ^1.9.0
@@ -35,7 +35,7 @@ catalog:
   '@witchcraft/nuxt-logger': ^0.0.11
   '@witchcraft/nuxt-postgres': ^0.4.4
   '@witchcraft/nuxt-utils': ^0.3.10
-  '@witchcraft/ui': ^0.5.0
+  '@witchcraft/ui': ^0.5.2
   arctic: ^3.7.0
   changelogen: ^0.6.2
   cookie-es: ^3.1.1
@@ -81,6 +81,7 @@ blockExoticSubdeps: true
 minimumReleaseAgeExclude:
   - "@alanscodelog/*"
   - "@witchcraft/*"
+  - 'metamorphosis'
   - '@typescript-eslint/eslint-plugin@8.60.1'
   - '@typescript-eslint/parser@8.60.1'
   - '@typescript-eslint/project-service@8.60.1'
