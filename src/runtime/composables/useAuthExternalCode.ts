@@ -1,5 +1,5 @@
+import { copyToClipboard } from "@alanscodelog/utils/copyToClipboard"
 import { unreachable } from "@alanscodelog/utils/unreachable"
-import { copy } from "@witchcraft/ui/helpers/copy"
 import { onMounted } from "vue"
 
 import {
@@ -18,7 +18,7 @@ export function useAuthExternalCode() {
 	const deepLinkUrl = zUriComponentCodec.parse(query.deeplinkUri)
 
 	function copyToken() {
-		copy(accessToken as string)
+		copyToClipboard(accessToken as string)
 	}
 
 	onMounted(() => {
