@@ -843,7 +843,11 @@ export class Auth {
 	}
 
 	async verifyAccessToken(accessToken?: string): Promise<JwtPayload & { userId: string }> {
-		return jwtVerify<JwtPayload & { userId: string }>(accessToken, this.rc.authSecret, {})
+		return jwtVerify<JwtPayload & { userId: string }>(
+			accessToken,
+			this.rc.authSecret,
+			{ algorithms: ["HS256"] }
+		)
 			.catch(err => {
 				throw createError({
 					status: 400,
@@ -856,7 +860,9 @@ export class Auth {
 	async createAccessToken(userId: string, payload: Record<string, any> = {}): Promise<string> {
 		return signJwt({ ...payload, userId }, this.rc.authSecret, {
 			//  ms is different package version so type doesn't match
-			expiresIn: this.externalAccessTokenExpiresIn as any
+			expiresIn: this.externalAccessTokenExpiresIn as any,
+			// this is the default but just to be explicit
+			algorithm: "HS256"
 		})
 	}
 }
