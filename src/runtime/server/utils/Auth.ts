@@ -239,7 +239,15 @@ export class Auth {
 		}))
 
 		router.get(apiRoutes.externalExchange, defineEventHandler(async (event): Promise<ExternalExchangeResponse> => {
-			const accessToken = getRequestHeaders(event).authorization?.slice("Bearer ".length)
+			const authorization = getRequestHeaders(event).authorization
+			if (!authorization || !/^Bearer\s+\S+$/.test(authorization)) {
+				throw createError({
+					status: 400,
+					statusMessage: "Invalid Authorization header. Expected 'Bearer <token>'.",
+					data: { code: AUTH_ERROR.INVALID_ACCESS_TOKEN }
+				})
+			}
+			const accessToken = authorization.slice("Bearer ".length)
 
 			const decoded = await this.verifyAccessToken(accessToken)
 				.catch((err: Error) => createError({
