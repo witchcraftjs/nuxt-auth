@@ -51,7 +51,7 @@ import { verifyJwt as jwtVerify } from "../helpers/verifyJwt.js"
 
 export const zState = z.object({
 	oauthState: z.string(),
-	additionalState: z.any(),
+	additionalState: z.any().optional(),
 	deeplink: z.string().optional()
 })
 
@@ -84,6 +84,7 @@ export class Auth {
 
 	eventHandler: EventHandler
 
+	/** Careful with this, parse any input carefully before returning it. */
 	getAdditionalState?: AuthOptions["additionalState"]
 
 	modifyCallbackRedirect?: AuthOptions["modifyCallbackRedirect"]
