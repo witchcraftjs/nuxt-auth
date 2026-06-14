@@ -36,7 +36,10 @@
 			[&>div]:max-w-max
 		"
 	>
-		<AuthLoginProviderButtons :use-auth-options="{ handleActions }">
+		<AuthLoginProviderButtons
+			:use-auth-options="{ handleActions }"
+			:provider-styles="providerStyles"
+		>
 			<template #extra="slotProps">
 				<WButton
 					:class="slotProps.class"
@@ -66,11 +69,13 @@
 
 <script setup lang="ts">
 import { useRuntimeConfig } from "#imports"
+import { providerStyles } from "#witchcraft-nuxt-auth/core/providerStyles"
 import type { ActionHandler } from "#witchcraft-nuxt-auth/types.js"
 
 const appInfo = useRuntimeConfig().public.appInfo
 const appName = appInfo.name
 const appSubName = appInfo.subName
+
 
 definePageMeta({
 	middleware: ["authProtected"],

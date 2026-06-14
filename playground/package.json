@@ -26,7 +26,8 @@
 		"nuxt": "catalog:",
 		"unplugin-icons": "catalog:",
 		"unplugin-vue-components": "catalog:",
-		"zod": "catalog:"
+		"zod": "catalog:",
+		"pino": "catalog:"
 	},
 	"devDependencies": {
 		"drizzle-kit": "catalog:",

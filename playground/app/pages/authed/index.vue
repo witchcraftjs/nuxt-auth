@@ -1,5 +1,5 @@
 <template>
-<div class="p-6 border-2 border-red-500 flex-1">
+<div class="p-6 border-2 border-red-500 flex-1 w-full">
 	Authenticated Registered Only
 </div>
 </template>

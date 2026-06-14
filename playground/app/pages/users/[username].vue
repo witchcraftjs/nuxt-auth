@@ -1,6 +1,5 @@
 <template>
 <div class="p-6">
-	<SessionStatus/>
 	<div>
 		User Profile
 	</div>

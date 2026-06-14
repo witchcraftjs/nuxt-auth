@@ -10,7 +10,12 @@
 			<NuxtLink to="/authed">Authed Only</NuxtLink>
 			<NuxtLink to="/unauthed">Unauthed Only</NuxtLink>
 		</div>
-		<AuthSessionStatus/>
+		<div class="flex gap-4">
+			<WButton @click="removeUser">
+				Remove User
+			</WButton>
+			<AuthSessionStatus/>
+		</div>
 	</div>
 	<div class="p-2 flex flex-col flex-1 justify-center items-center">
 		<NuxtPage/>
@@ -20,4 +25,11 @@
 
 <script lang="ts" setup>
 const isClientSide = import.meta.client
+
+async function removeUser() {
+	await $fetch("/api/auth/users/remove", {
+		method: "post"
+	})
+	await navigateTo("/", { external: true }) // force reload so cookies are cleared
+}
 </script>
