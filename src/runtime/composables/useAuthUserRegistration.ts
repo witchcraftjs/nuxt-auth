@@ -68,7 +68,12 @@ export function useAuthUserRegistration({
 		{
 			debounce: 0, // we already debounced
 			statusTextMap,
-			schema: usernameSchema
+			schema: usernameSchema,
+			getFetchOptions: () => ({
+				query: {
+					username: debouncedUsername.value
+				}
+			})
 		}
 	)
 

@@ -3,15 +3,15 @@ import { eq } from "drizzle-orm"
 import type { H3Event } from "h3"
 import { z } from "zod"
 
-import { defaultZodUsernameSchema } from "#witchcraft-nuxt-auth/types.js"
 import { postgres as db } from "#postgres"
+import { defaultZodUsernameSchema } from "#witchcraft-nuxt-auth/types.js"
 
 //
 import { authAccounts, users } from "../../../db/schema.js"
 import { sessionManager } from "../../auth.js"
 
-export const registerBody = z.object({
-	username: z.string()
+export const usernameObj = z.object({
+	username: defaultZodUsernameSchema
 })
 
 declare module "@witchcraft/nuxt-auth" {
@@ -31,8 +31,10 @@ export default createAuthHandler(useRuntimeConfig(), db as any, users, authAccou
 	appUrl: "http://localhost:3000",
 	onRegister: async (event: H3Event) => {
 		const user = event.context.user! // already asserted
-		const body = await readValidatedBody(event, registerBody.parse)
-		const usernameIsValid = await $fetch(getAuthApiRoute(useRuntimeConfig().public, "usernameValid", { username: body.username }))
+		const body = await readValidatedBody(event, usernameObj.parse)
+		// double check server side
+		// note usage of event.$fetch as it fowards the user's cookies
+		const usernameIsValid = await event.$fetch(getAuthApiRoute(useRuntimeConfig().public, "usernameValid"), { query: { username: body.username } })
 		if (!usernameIsValid) {
 			throw createError({
 				status: 400,
@@ -57,14 +59,34 @@ export default createAuthHandler(useRuntimeConfig(), db as any, users, authAccou
 		}
 	},
 	extendRouter: router => {
+		// IMPORTANT do not actually log like this, it's for dev purposes only
 		const usernameValidRoute = useRuntimeConfig().public.auth.authApiRoutes.usernameValid
 		router.get(usernameValidRoute, defineEventHandler(async event => {
-			const username = event.context.params?.username
+			Auth.assertEventWithAuthorizedUser(event)
+			// user entry should exist by the time they try to register
+			// this prevents endpoint getting hammered
+			const user = event.context.user
+			if ("username" in user && user.username) {
+				throw createError({
+					statusCode: 403,
+					statusMessage: "Cannot change username."
+				})
+			}
+			const query = getQuery(event)
+			const res = usernameObj.safeParse(query)
+			if (res.error) {
+				throw createError({
+					statusCode: 400,
+					statusMessage: "Invalid body." + JSON.stringify(res.error)
+				})
+			}
+			const username = res.data.username
 			const isValid = defaultZodUsernameSchema.safeParse(username)
 			console.info({ ns: "auth:usernameValid:satisfiesSchema", username, isValid })
 			if (!username || !isValid.success) return false
 			console.trace({
 				ns: `auth:${usernameValidRoute}`,
+
 				username
 			})
 			const usernameExists = await db.select()
@@ -76,6 +98,13 @@ export default createAuthHandler(useRuntimeConfig(), db as any, users, authAccou
 
 			console.info({ ns: "auth:usernameValid:exists", usernameExists })
 			return usernameExists.length === 0
+		}))
+		router.post("/users/remove", defineEventHandler(async event => {
+			Auth.assertEventWithAuthorizedUser(event)
+			const user = event.context.user
+			console.info({ ns: "auth:dev-remove-user", user })
+			await db.delete(users).where(eq(users.id, user.id))
+			return true
 		}))
 	}
 })

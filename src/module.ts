@@ -163,7 +163,7 @@ export interface ModuleOptions {
 		/**
 			* Note the route is NOT defined by the module, you must extend the routes and define it yourself if you are using the UserRegistration component which makes use of it.
 			*
-			* @default "/api/auth/public/users/:username/valid"
+			* @default "/api/auth/users/username/valid"
 			*/
 		usernameValid: string
 	}> & Partial<AdditionalApiRoutes>
@@ -231,7 +231,7 @@ export default defineNuxtModule<ModuleOptions>({
 			login: "/login/:provider",
 			callback: "/callback/:provider",
 			register: "/register",
-			usernameValid: "/public/users/:username/valid"
+			usernameValid: "/users/username/valid"
 		} satisfies Required<ModuleOptions["authApiRoutes"]> as any,
 		onlySaveUnregisteredUserAccountInfo: false,
 		additionalMiddlewarePaths: {}
