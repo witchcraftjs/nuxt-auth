@@ -57,6 +57,7 @@
 		"@types/jsonwebtoken": "catalog:",
 		"@vueuse/core": "catalog:",
 		"@witchcraft/nuxt-logger": "catalog:",
+		"@witchcraft/nuxt-utils": "catalog:",
 		"@witchcraft/ui": "catalog:",
 		"arctic": "catalog:",
 		"cookie-es": "catalog:",
@@ -90,6 +91,7 @@
 		"semantic-release": "catalog:",
 		"tailwindcss": "catalog:",
 		"typescript": "catalog:",
+		"vue": "catalog:",
 		"vitest": "catalog:",
 		"vue-tsc": "catalog:"
 	},

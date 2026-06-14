@@ -64,11 +64,11 @@ catalogs:
       specifier: ^0.4.4
       version: 0.4.5
     '@witchcraft/nuxt-utils':
-      specifier: ^0.3.10
-      version: 0.3.10
+      specifier: ^0.3.13
+      version: 0.3.13
     '@witchcraft/ui':
-      specifier: ^0.5.2
-      version: 0.5.2
+      specifier: ^0.5.3
+      version: 0.5.3
     arctic:
       specifier: ^3.7.0
       version: 3.7.0
@@ -114,6 +114,9 @@ catalogs:
     nuxt-security:
       specifier: ^2.4.0
       version: 2.6.0
+    pino:
+      specifier: ^10.0.0
+      version: 10.3.1
     reka-ui:
       specifier: ^2.5.1
       version: 2.9.8
@@ -138,6 +141,9 @@ catalogs:
     vitest:
       specifier: ^3.2.4
       version: 3.2.4
+    vue:
+      specifier: ^3.5.0
+      version: 3.5.35
     vue-tsc:
       specifier: ^3.3.3
       version: 3.3.3
@@ -184,10 +190,13 @@ importers:
         version: 13.9.0(vue@3.5.35(typescript@5.9.3))
       '@witchcraft/nuxt-logger':
         specifier: 'catalog:'
-        version: 0.0.11(magicast@0.5.3)(pino-pretty@11.3.0)(pino@9.14.0)
+        version: 0.0.11(magicast@0.5.3)(pino-pretty@11.3.0)(pino@10.3.1)
+      '@witchcraft/nuxt-utils':
+        specifier: 'catalog:'
+        version: 0.3.13(magicast@0.5.3)(vue@3.5.35(typescript@5.9.3))
       '@witchcraft/ui':
         specifier: 'catalog:'
-        version: 0.5.2(@babel/parser@7.29.7)(magicast@0.5.3)(tailwindcss@4.3.0)(unplugin-icons@23.0.1(@vue/compiler-sfc@3.5.35))(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3))
+        version: 0.5.3(@babel/parser@7.29.7)(magicast@0.5.3)(tailwindcss@4.3.0)(unplugin-icons@23.0.1(@vue/compiler-sfc@3.5.35))(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3))
       arctic:
         specifier: 'catalog:'
         version: 3.7.0
@@ -282,6 +291,9 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 3.2.4(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0)
+      vue:
+        specifier: 'catalog:'
+        version: 3.5.35(typescript@5.9.3)
       vue-tsc:
         specifier: 'catalog:'
         version: 3.3.3(typescript@5.9.3)
@@ -293,16 +305,16 @@ importers:
         version: link:..
       '@witchcraft/nuxt-logger':
         specifier: 'catalog:'
-        version: 0.0.11(magicast@0.5.3)(pino-pretty@11.3.0)(pino@9.14.0)
+        version: 0.0.11(magicast@0.5.3)(pino-pretty@11.3.0)(pino@10.3.1)
       '@witchcraft/nuxt-postgres':
         specifier: 'catalog:'
-        version: 0.4.5(@electric-sql/pglite@0.3.16)(@swc/helpers@0.5.23)(db0@0.3.4(@electric-sql/pglite@0.3.16)(drizzle-orm@0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9)))(drizzle-orm@0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9))(ioredis@5.11.0)(magicast@0.5.3)(pino-pretty@11.3.0)(pino@9.14.0)(rollup@4.60.4)(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
+        version: 0.4.5(@electric-sql/pglite@0.3.16)(@swc/helpers@0.5.23)(db0@0.3.4(@electric-sql/pglite@0.3.16)(drizzle-orm@0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9)))(drizzle-orm@0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9))(ioredis@5.11.0)(magicast@0.5.3)(pino-pretty@11.3.0)(pino@10.3.1)(rollup@4.60.4)(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3))
       '@witchcraft/nuxt-utils':
         specifier: 'catalog:'
-        version: 0.3.10(magicast@0.5.3)(vue@3.5.35(typescript@5.9.3))
+        version: 0.3.13(magicast@0.5.3)(vue@3.5.35(typescript@5.9.3))
       '@witchcraft/ui':
         specifier: 'catalog:'
-        version: 0.5.2(@babel/parser@7.29.7)(magicast@0.5.3)(tailwindcss@4.3.0)(unplugin-icons@23.0.1(@vue/compiler-sfc@3.5.35))(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3))
+        version: 0.5.3(@babel/parser@7.29.7)(magicast@0.5.3)(tailwindcss@4.3.0)(unplugin-icons@23.0.1(@vue/compiler-sfc@3.5.35))(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3))
       arctic:
         specifier: 'catalog:'
         version: 3.7.0
@@ -315,6 +327,9 @@ importers:
       nuxt:
         specifier: 'catalog:'
         version: 4.4.6(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@electric-sql/pglite@0.3.16)(@parcel/watcher@2.5.6)(@types/node@25.9.1)(@vue/compiler-sfc@3.5.35)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(drizzle-orm@0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9)))(drizzle-orm@0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9))(eslint@9.39.4(jiti@2.7.0))(ioredis@5.11.0)(lightningcss@1.32.0)(magicast@0.5.3)(meow@13.2.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.4))(rollup@4.60.4)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.3)(typescript@5.9.3)(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
+      pino:
+        specifier: 'catalog:'
+        version: 10.3.1
       unplugin-icons:
         specifier: 'catalog:'
         version: 23.0.1(@vue/compiler-sfc@3.5.35)
@@ -3369,16 +3384,12 @@ packages:
       '@electric-sql/pglite': ~0.3.11
       drizzle-orm: ^0.44.7
 
-  '@witchcraft/nuxt-utils@0.3.10':
-    resolution: {integrity: sha512-X5YksvLXTJiLP0ORP62b+D60ASk/ITN3j4GwcSQ99qjV6qg9hA50tWjj53dnOi4xEMpEd45j/FJyi000TgkmYA==}
+  '@witchcraft/nuxt-utils@0.3.13':
+    resolution: {integrity: sha512-uvLG5T3dA38x4BpsyfCwATfryIDq93hblADoBspd8rOKaYGVWPqlYUdNFGLyYZ2hFZU3EputLU1hudfDKXwIFg==}
     engines: {node: '>=20.0.0'}
 
-  '@witchcraft/nuxt-utils@0.3.9':
-    resolution: {integrity: sha512-mawft35WGEYTNHL873+7VrKMUHTMSPtvy3ZTIuUJde6crb8v9x1zDygdMwHqhX7fPgFxWhRgEqnqWKg+l4CFSQ==}
-    engines: {node: '>=20.0.0'}
-
-  '@witchcraft/ui@0.5.2':
-    resolution: {integrity: sha512-91BSqSm8iau25Uivnr8qJfMWJIbd2c0oRiAzduIGFiN8jN44qcRxN7uv4WsPrjE5skhvX3uXIbjsTkuY5ZgEXQ==}
+  '@witchcraft/ui@0.5.3':
+    resolution: {integrity: sha512-Pqvt88W27LRsZogo+5ggcddeW4sa9arfi/qydNVn14lwdtG9k4eyrvAksJJpKsVQgGCy5MoEGa26jUGRmSs/Zg==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       tailwindcss: ^4.2.1
@@ -6360,6 +6371,9 @@ packages:
   pino-abstract-transport@2.0.0:
     resolution: {integrity: sha512-F63x5tizV6WCh4R6RHyi2Ml+M70DNRXt/+HANowMflpgGFMAym/VKm6G7ZOQRjqN7XbGxK1Lg9t6ZrtzOaivMw==}
 
+  pino-abstract-transport@3.0.0:
+    resolution: {integrity: sha512-wlfUczU+n7Hy/Ha5j9a/gZNy7We5+cXp8YL+X+PG8S0KXxw7n/JXA3c46Y0zQznIJ83URJiwy7Lh56WLokNuxg==}
+
   pino-pretty@11.3.0:
     resolution: {integrity: sha512-oXwn7ICywaZPHmu3epHGU2oJX4nPmKvHvB/bwrJHlGcbEWaVcotkpyVHMKLKmiVryWYByNp0jpgAcXpFJDXJzA==}
     hasBin: true
@@ -6367,8 +6381,8 @@ packages:
   pino-std-serializers@7.1.0:
     resolution: {integrity: sha512-BndPH67/JxGExRgiX1dX0w1FvZck5Wa4aal9198SrRhZjH3GxKQUKIBnYJTdj2HDN3UQAS06HlfcSbQj2OHmaw==}
 
-  pino@9.14.0:
-    resolution: {integrity: sha512-8OEwKp5juEvb/MjpIc4hjqfgCNysrS94RIOMXYvpYCdm/jglrKEiAYmiumbmGhCvs+IcInsphYDFwqrjr7398w==}
+  pino@10.3.1:
+    resolution: {integrity: sha512-r34yH/GlQpKZbU1BvFFqOjhISRo1MNx1tWYsYvmj6KIRHSPMT2+yHOEb1SG6NMvRoHRF0a07kCOox/9yakl1vg==}
     hasBin: true
 
   pkg-conf@2.1.0:
@@ -6839,6 +6853,9 @@ packages:
   real-require@0.2.0:
     resolution: {integrity: sha512-57frrGM/OCTLqLOAh0mhVA9VBMHd+9U7Zb2THMGdBUoZVOtGbJzjxsYGDJ3A9AYYCP4hn6y1TVbaOfzWtm5GFg==}
     engines: {node: '>= 12.13.0'}
+
+  real-require@1.0.0:
+    resolution: {integrity: sha512-P4nbQYQfePJxRSmY+v/KINxVucm4NF3p3s7pJveMTtom52FR4YGltUQLB8idDXwDDWW+eYrWDFbuzUnjoWHF7g==}
 
   redis-errors@1.2.0:
     resolution: {integrity: sha512-1qny3OExCf0UvUV/5wpYKf2YwPcOqXzkwKKSmKHiE6ZMQs5heeE/c8eXK+PNllPvmjgAbfnsbpkGZWy8cBpn9w==}
@@ -7387,8 +7404,9 @@ packages:
   thenify@3.3.1:
     resolution: {integrity: sha512-RVZSIV5IG10Hk3enotrhvz0T9em6cyHBLkH/YAZuKqd8hRkKhSfCGIcP2KUY0EPxndzANBmNllzWPwak+bheSw==}
 
-  thread-stream@3.1.0:
-    resolution: {integrity: sha512-OqyPZ9u96VohAyMfJykzmivOrY2wfMSf3C5TtFJVgN+Hm6aj+voFhlK+kZEIv2FBh1X6Xp3DlnCOfEQ3B2J86A==}
+  thread-stream@4.2.0:
+    resolution: {integrity: sha512-e2zZ96wSChazBsbENf/Pcm/4swHt2cEKQ92rhUjkL9GCKiTDJIaTBenjE/m9DXi0QBmTMDkFDdOomUy20A1tDQ==}
+    engines: {node: '>=20'}
 
   through2@2.0.5:
     resolution: {integrity: sha512-/mrRod8xqpA+IHSLyGCQ2s8SPHiCDEeQJSep1jqLYeEUClOFG2Qsh+4FU6G9VeqpZnGW/Su8LQGc4YKni5rYSQ==}
@@ -11227,25 +11245,25 @@ snapshots:
     dependencies:
       vue: 3.5.35(typescript@5.9.3)
 
-  '@witchcraft/nuxt-logger@0.0.11(magicast@0.5.3)(pino-pretty@11.3.0)(pino@9.14.0)':
+  '@witchcraft/nuxt-logger@0.0.11(magicast@0.5.3)(pino-pretty@11.3.0)(pino@10.3.1)':
     dependencies:
       '@alanscodelog/tsconfigs': 6.3.1
       '@alanscodelog/utils': 6.3.0
       '@nuxt/kit': 4.4.6(magicast@0.5.3)
       defu: 6.1.7
-      pino: 9.14.0
+      pino: 10.3.1
       pino-pretty: 11.3.0
     transitivePeerDependencies:
       - magicast
 
-  '@witchcraft/nuxt-postgres@0.4.5(@electric-sql/pglite@0.3.16)(@swc/helpers@0.5.23)(db0@0.3.4(@electric-sql/pglite@0.3.16)(drizzle-orm@0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9)))(drizzle-orm@0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9))(ioredis@5.11.0)(magicast@0.5.3)(pino-pretty@11.3.0)(pino@9.14.0)(rollup@4.60.4)(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))':
+  '@witchcraft/nuxt-postgres@0.4.5(@electric-sql/pglite@0.3.16)(@swc/helpers@0.5.23)(db0@0.3.4(@electric-sql/pglite@0.3.16)(drizzle-orm@0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9)))(drizzle-orm@0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9))(ioredis@5.11.0)(magicast@0.5.3)(pino-pretty@11.3.0)(pino@10.3.1)(rollup@4.60.4)(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3))':
     dependencies:
       '@alanscodelog/tsconfigs': 6.3.1
       '@alanscodelog/utils': 6.3.0
       '@electric-sql/pglite': 0.3.16
       '@nuxt/kit': 4.4.6(magicast@0.5.3)
-      '@witchcraft/nuxt-logger': 0.0.11(magicast@0.5.3)(pino-pretty@11.3.0)(pino@9.14.0)
-      '@witchcraft/nuxt-utils': 0.3.9(magicast@0.5.3)
+      '@witchcraft/nuxt-logger': 0.0.11(magicast@0.5.3)(pino-pretty@11.3.0)(pino@10.3.1)
+      '@witchcraft/nuxt-utils': 0.3.13(magicast@0.5.3)(vue@3.5.35(typescript@5.9.3))
       defu: 6.1.7
       drizzle-kit: 0.31.10
       drizzle-orm: 0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9)
@@ -11280,10 +11298,11 @@ snapshots:
       - rollup
       - uploadthing
       - vite
+      - vue
 
-  '@witchcraft/nuxt-utils@0.3.10(magicast@0.5.3)(vue@3.5.35(typescript@5.9.3))':
+  '@witchcraft/nuxt-utils@0.3.13(magicast@0.5.3)(vue@3.5.35(typescript@5.9.3))':
     dependencies:
-      '@alanscodelog/utils': 6.3.0
+      '@alanscodelog/utils': 6.3.1
       '@nuxt/kit': 4.4.6(magicast@0.5.3)
       '@standard-schema/spec': 1.1.0
       '@vueuse/core': 14.3.0(vue@3.5.35(typescript@5.9.3))
@@ -11296,20 +11315,9 @@ snapshots:
       - magicast
       - vue
 
-  '@witchcraft/nuxt-utils@0.3.9(magicast@0.5.3)':
+  '@witchcraft/ui@0.5.3(@babel/parser@7.29.7)(magicast@0.5.3)(tailwindcss@4.3.0)(unplugin-icons@23.0.1(@vue/compiler-sfc@3.5.35))(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3))':
     dependencies:
-      '@alanscodelog/utils': 6.3.0
-      '@nuxt/kit': 4.4.6(magicast@0.5.3)
-      change-case: 5.4.4
-      defu: 6.1.7
-      fast-glob: 3.3.3
-      tailwind-merge: 3.6.0
-    transitivePeerDependencies:
-      - magicast
-
-  '@witchcraft/ui@0.5.2(@babel/parser@7.29.7)(magicast@0.5.3)(tailwindcss@4.3.0)(unplugin-icons@23.0.1(@vue/compiler-sfc@3.5.35))(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3))':
-    dependencies:
-      '@alanscodelog/utils': 6.3.0
+      '@alanscodelog/utils': 6.3.1
       '@iconify/json': 2.2.479
       '@nuxt/kit': 4.4.6(magicast@0.5.3)
       '@nuxt/schema': 4.4.6
@@ -11318,7 +11326,7 @@ snapshots:
       '@regle/rules': 1.26.1(vue@3.5.35(typescript@5.9.3))
       '@standard-schema/spec': 1.1.0
       '@tailwindcss/vite': 4.3.0(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
-      '@witchcraft/nuxt-utils': 0.3.10(magicast@0.5.3)(vue@3.5.35(typescript@5.9.3))
+      '@witchcraft/nuxt-utils': 0.3.13(magicast@0.5.3)(vue@3.5.35(typescript@5.9.3))
       colord: 2.9.3
       colorjs.io: 0.6.0-alpha.1
       defu: 6.1.7
@@ -13870,7 +13878,7 @@ snapshots:
 
   metamorphosis@0.7.1(colorjs.io@0.6.0-alpha.1)(tailwindcss@4.3.0):
     dependencies:
-      '@alanscodelog/utils': 6.3.0
+      '@alanscodelog/utils': 6.3.1
     optionalDependencies:
       colorjs.io: 0.6.0-alpha.1
       tailwindcss: 4.3.0
@@ -14630,6 +14638,10 @@ snapshots:
     dependencies:
       split2: 4.2.0
 
+  pino-abstract-transport@3.0.0:
+    dependencies:
+      split2: 4.2.0
+
   pino-pretty@11.3.0:
     dependencies:
       colorette: 2.0.20
@@ -14649,19 +14661,19 @@ snapshots:
 
   pino-std-serializers@7.1.0: {}
 
-  pino@9.14.0:
+  pino@10.3.1:
     dependencies:
       '@pinojs/redact': 0.4.0
       atomic-sleep: 1.0.0
       on-exit-leak-free: 2.1.2
-      pino-abstract-transport: 2.0.0
+      pino-abstract-transport: 3.0.0
       pino-std-serializers: 7.1.0
       process-warning: 5.0.0
       quick-format-unescaped: 4.0.4
       real-require: 0.2.0
       safe-stable-stringify: 2.5.0
       sonic-boom: 4.2.1
-      thread-stream: 3.1.0
+      thread-stream: 4.2.0
 
   pkg-conf@2.1.0:
     dependencies:
@@ -15116,6 +15128,8 @@ snapshots:
   readdirp@5.0.0: {}
 
   real-require@0.2.0: {}
+
+  real-require@1.0.0: {}
 
   redis-errors@1.2.0: {}
 
@@ -15786,9 +15800,9 @@ snapshots:
     dependencies:
       any-promise: 1.3.0
 
-  thread-stream@3.1.0:
+  thread-stream@4.2.0:
     dependencies:
-      real-require: 0.2.0
+      real-require: 1.0.0
 
   through2@2.0.5:
     dependencies:
@@ -16687,8 +16701,8 @@ time:
   '@vueuse/core@13.9.0': '2025-09-01T11:42:03.511Z'
   '@witchcraft/nuxt-logger@0.0.11': '2026-02-26T15:18:58.031Z'
   '@witchcraft/nuxt-postgres@0.4.5': '2026-06-03T00:54:51.762Z'
-  '@witchcraft/nuxt-utils@0.3.10': '2026-06-11T05:05:04.579Z'
-  '@witchcraft/ui@0.5.2': '2026-06-13T20:34:49.957Z'
+  '@witchcraft/nuxt-utils@0.3.13': '2026-06-14T20:20:44.016Z'
+  '@witchcraft/ui@0.5.3': '2026-06-15T04:40:15.260Z'
   arctic@3.7.0: '2025-05-21T10:52:28.145Z'
   changelogen@0.6.2: '2025-07-06T09:40:02.737Z'
   cookie-es@3.1.1: '2026-03-27T00:31:47.436Z'
@@ -16704,6 +16718,7 @@ time:
   ms@3.0.0-canary.202508261828: '2025-08-26T18:28:57.034Z'
   nuxt-security@2.6.0: '2026-05-12T06:07:43.929Z'
   nuxt@4.4.6: '2026-05-18T09:33:15.329Z'
+  pino@10.3.1: '2026-02-09T15:50:56.728Z'
   reka-ui@2.9.8: '2026-05-22T09:32:39.377Z'
   semantic-release@25.0.3: '2026-01-30T21:12:54.322Z'
   tailwindcss@4.3.0: '2026-05-08T20:25:26.174Z'
@@ -16713,4 +16728,5 @@ time:
   unplugin-vue-components@32.1.0: '2026-05-20T04:38:37.140Z'
   vitest@3.2.4: '2025-06-17T17:54:25.895Z'
   vue-tsc@3.3.3: '2026-05-30T10:01:31.832Z'
+  vue@3.5.35: '2026-05-27T09:04:53.705Z'
   zod@4.4.3: '2026-05-04T07:06:40.819Z'

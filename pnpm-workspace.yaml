@@ -34,8 +34,8 @@ catalog:
   '@vueuse/core': ^13.9.0
   '@witchcraft/nuxt-logger': ^0.0.11
   '@witchcraft/nuxt-postgres': ^0.4.4
-  '@witchcraft/nuxt-utils': ^0.3.10
-  '@witchcraft/ui': ^0.5.2
+  '@witchcraft/nuxt-utils': ^0.3.13
+  '@witchcraft/ui': ^0.5.3
   arctic: ^3.7.0
   changelogen: ^0.6.2
   cookie-es: ^3.1.1
@@ -51,6 +51,7 @@ catalog:
   ms: ^3.0.0-canary.202508261828
   nuxt: ^4.2.1
   nuxt-security: ^2.4.0
+  pino: ^10.0.0
   reka-ui: ^2.5.1
   semantic-release: ^25.0.3
   tailwindcss: ^4.1.14
@@ -59,6 +60,7 @@ catalog:
   unplugin-icons: ^23.0.1
   unplugin-vue-components: ^32.0.0
   vitest: ^3.2.4
+  vue: ^3.5.0
   vue-tsc: ^3.3.3
   zod: ^4.1.12
 
