@@ -623,7 +623,7 @@ export class Auth {
 			})
 			throw createError({
 				status: 400,
-				statusMessage: `Invalid provider: ${provider}, known: ${Object.keys(this.providers).join(", ")}`,
+				statusMessage: `Invalid provider: ${provider}`,
 				data: { code: AUTH_ERROR.UNKNOWN_PROVIDER }
 			})
 		}
