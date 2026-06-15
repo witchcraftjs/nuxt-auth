@@ -81,10 +81,10 @@ export class SessionManager {
 		return session
 	}
 
-	createSessionCookie(sessionId: string): SessionCookie {
+	createSessionCookie(hashedSessionId: string): SessionCookie {
 		return {
 			name: this.options.sessionCookie.name,
-			value: sessionId,
+			value: hashedSessionId,
 			attributes: {
 				...this.options.sessionCookie.attributes,
 				maxAge: new Date().getTime() + this.options.expiresAt
@@ -104,12 +104,12 @@ export class SessionManager {
 	}
 
 	async validateSessionToken(sessionToken: string): Promise<SessionValidationResult> {
-		const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(sessionToken)))
+		const hashedSessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(sessionToken)))
 		const result = await this.db
 			.select({ user: this.userTable, session: this.sessionTable })
 			.from(this.sessionTable)
 			.innerJoin(this.userTable, eq(this.sessionTable.userId, this.userTable.id))
-			.where(eq(this.sessionTable.id, sessionId))
+			.where(eq(this.sessionTable.id, hashedSessionId))
 
 		if (result.length < 1) {
 			return { session: null, user: null, fresh: false }
@@ -143,7 +143,8 @@ export class SessionManager {
 	}
 
 	async invalidateSession(sessionId: string): Promise<void> {
+		const hashedSessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(sessionId)))
 		await this.db.delete(this.sessionTable)
-			.where(eq(this.sessionTable.id, sessionId))
+			.where(eq(this.sessionTable.id, hashedSessionId))
 	}
 }
