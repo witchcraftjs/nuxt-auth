@@ -24,8 +24,8 @@ export function createAuthMiddleware(
 			fresh,
 			redact: { sessionToken, session }
 		})
-		if (fresh) {
-			const cookie = sessionManager.createSessionCookie(session.id)
+		if (fresh && session) {
+			const cookie = sessionManager.createSessionCookie(sessionToken)
 			setCookie(event, cookie.name, cookie.value, cookie.attributes)
 			// appendHeader(event, "Set-Cookie",)
 		}
