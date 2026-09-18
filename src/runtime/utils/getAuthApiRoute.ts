@@ -1,13 +1,16 @@
 import { keys } from "@alanscodelog/utils/keys"
-import type { PublicRuntimeConfig } from "@nuxt/schema"
 
-import type { ApiRoutesParams } from "../../module.js"
+import type { ApiRoutesParams, ModulePublicRuntimeConfig } from "../../module.js"
 
 export function getAuthApiRoute<
-	T extends keyof PublicRuntimeConfig["auth"]["authApiRoutes"],
+	T extends keyof ModulePublicRuntimeConfig["auth"]["authApiRoutes"],
 	TParams extends T extends keyof ApiRoutesParams ? ApiRoutesParams[T] : never
 >(
-	rc: PublicRuntimeConfig,
+	rc: {
+		auth: {
+			authApiRoutes: ModulePublicRuntimeConfig["auth"]["authApiRoutes"]
+		}
+	},
 	route: T,
 	params?: TParams,
 	queryParams?: Record<string, any>

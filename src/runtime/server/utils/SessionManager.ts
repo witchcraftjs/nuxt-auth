@@ -4,13 +4,13 @@ import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from "@oslojs/enco
 import { eq } from "drizzle-orm"
 import type { PgDatabase } from "drizzle-orm/pg-core"
 import type { PgliteDatabase } from "drizzle-orm/pglite"
-import type { RuntimeConfig } from "nuxt/schema"
 
 import type {
 	AuthSessionsTable,
 	AuthUsersTable
 } from "./createAuthSchema.js"
 
+import type { ModuleRuntimeConfig } from "../../../module.js"
 import type {
 	AuthSession,
 	SessionCookie,
@@ -36,7 +36,7 @@ export class SessionManager {
 	userTable: AuthUsersTable
 
 	constructor(
-		rc: RuntimeConfig,
+		rc: ModuleRuntimeConfig,
 		db: SessionManager["db"],
 		sessionTable: SessionManager["sessionTable"],
 		userTable: SessionManager["userTable"],

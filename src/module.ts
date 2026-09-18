@@ -183,10 +183,16 @@ export interface ModulePublicRuntimeConfig {
 	}
 }
 
+export interface ModulePrivateRuntimeConfig extends Secrets {
+	authSecret: string
+}
+
+export interface ModuleRuntimeConfig extends ModulePrivateRuntimeConfig {
+	public: ModulePublicRuntimeConfig
+}
+
 declare module "@nuxt/schema" {
-	interface RuntimeConfig extends Secrets {
-		authSecret: string
-	}
+	interface RuntimeConfig extends ModulePrivateRuntimeConfig {}
 	interface PublicRuntimeConfig extends ModulePublicRuntimeConfig {}
 }
 

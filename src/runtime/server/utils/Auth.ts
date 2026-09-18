@@ -20,7 +20,6 @@ import {
 	useBase
 } from "h3"
 import type { JwtPayload } from "jsonwebtoken"
-import type { RuntimeConfig } from "nuxt/schema"
 import { z } from "zod"
 
 import type { AuthAccount, AuthAccountsTable, UserTable } from "./createAuthSchema.js"
@@ -28,6 +27,7 @@ import type { SessionManager } from "./SessionManager.js"
 
 import { useRuntimeConfig } from "#imports"
 
+import type { ModuleRuntimeConfig } from "../../../module.js"
 import type {
 	AuthOptions,
 	AuthSession,
@@ -120,12 +120,12 @@ export class Auth {
 
 	logger: BaseLogger
 
-	rc: RuntimeConfig
+	rc: ModuleRuntimeConfig
 
 	providerCookieOpts: CookieSerializeOptions
 
 	constructor(
-		runtimeConfig: RuntimeConfig,
+		runtimeConfig: ModuleRuntimeConfig,
 		db: Auth["db"],
 		usersTable: Auth["usersTable"],
 		authAccountsTable: Auth["authAccountsTable"],

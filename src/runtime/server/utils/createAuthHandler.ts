@@ -3,18 +3,18 @@ import type { PgDatabase } from "drizzle-orm/pg-core"
 import type { PgliteDatabase } from "drizzle-orm/pglite"
 import type { EventHandler } from "h3"
 import { createRouter } from "h3"
-import type { RuntimeConfig } from "nuxt/schema"
 
 import { Auth } from "./Auth.js"
 import type { AuthAccountsTable, UserTable } from "./createAuthSchema.js"
 import type { SessionManager } from "./SessionManager.js"
 
+import type { ModuleRuntimeConfig } from "../../../module.js"
 import github from "../../core/providers/github.js"
 import google from "../../core/providers/google.js"
 import type { AuthHandlerOptions } from "../../types.js"
 
 export function createAuthHandler(
-	rc: RuntimeConfig,
+	rc: ModuleRuntimeConfig,
 	db: PgDatabase<any, any, any> | PgliteDatabase<any>,
 	usersTable: UserTable,
 	authAccountsTable: AuthAccountsTable,
