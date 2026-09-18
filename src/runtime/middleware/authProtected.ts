@@ -47,7 +47,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 						? auth.authRoutes.postRegisteredLogin
 						: meta.redirectTo === "$externalCode"
 							? auth.authRoutes.externalCode
-							: meta.redirectTo && keys(config.additionalMiddlewarePaths ?? []).includes(meta.redirectTo)
+							: meta.redirectTo && keys<string>(config.additionalMiddlewarePaths ?? []).includes(meta.redirectTo)
 								? config.additionalMiddlewarePaths[meta.redirectTo]
 								: meta.redirectTo)
 							+ (keys(query).length > 0
