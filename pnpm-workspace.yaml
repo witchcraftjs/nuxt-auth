@@ -73,6 +73,8 @@ settings:
 
 overrides:
   "unplugin-icons>vue": "*"
+  # force the @visulima/package version that declares the missing @visulima/yaml dep (visulima/visulima#931), safe to remove after 2026-10-28
+  "@visulima/package": "5.0.43"
 
 publicHoistPattern:
   - '*vue*'
@@ -84,6 +86,8 @@ minimumReleaseAgeExclude:
   - "@alanscodelog/*"
   - "@witchcraft/*"
   - 'metamorphosis'
+  # exempt @visulima/* from the age check so the override above can install the fixed versions immediately, safe to remove after 2026-10-28
+  - '@visulima/*'
   - '@typescript-eslint/eslint-plugin@8.60.1'
   - '@typescript-eslint/parser@8.60.1'
   - '@typescript-eslint/project-service@8.60.1'
