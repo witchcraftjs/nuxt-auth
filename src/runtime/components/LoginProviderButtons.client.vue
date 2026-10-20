@@ -2,7 +2,7 @@
 <WAuth
 	:class="($attrs as any)?.class"
 	:providers="enabledProviders"
-	:provider-styles="providerStyles"
+	:provider-styles="fullProviderStyles"
 	@login="onLogin"
 >
 	<template #extra="slotProps">
@@ -23,11 +23,14 @@ export default {}
 
 <script setup lang="ts">
 import WAuth from "@witchcraft/ui/components/WAuth"
+import defu from "defu"
+import { pick } from "@alanscodelog/utils/pick"
 
 import { useRuntimeConfig } from "#app"
-import { useAttrs } from "#imports"
+import { computed, useAttrs } from "#imports"
 
 import { useAuth } from "../composables/useAuth.js"
+import { providerStyles as baseProviderStyles } from "../core/providerStyles.js"
 import type { ProviderNames, ProviderStyle, UseAuthComposableOptions } from "../types.js"
 
 if (import.meta.dev) {
@@ -55,6 +58,12 @@ const props = withDefaults(defineProps<{
 })
 
 const { login } = useAuth(props.useAuthOptions)
+
+const fullProviderStyles = computed(() =>
+	defu(
+		props.providerStyles,
+		pick(baseProviderStyles, enabledProviders)
+	) as Record<ProviderNames, Partial<ProviderStyle>>)
 
 function onLogin(provider: string) {
 	login(provider as any, props.loginOptions)
