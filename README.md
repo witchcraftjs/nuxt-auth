@@ -583,7 +583,7 @@ The server will then bypass auth and create a session for the user.
 
 ## Testing the Server APIs directly with Mock Users
 
-This is a bit more complicated because the ecosystem is not very mature here. The nuxt test utils (really unjs/ofetch) do not expose a $fetch that can use cookies so we have to create it with the help of [`fetch-cookies`](https://www.npmjs.com/package/fetch-cookie):
+This is a bit more complicated because the ecosystem is not very mature here. The nuxt test utils (really unjs/ofetch) do not expose a $fetch that can use cookies so we have to create it with the help of [`fetch-cookies`](https://www.npmjs.com/package/fetch-cookie). ofetch is stateless by design and will not persist cookies between requests ([unjs/ofetch#382](https://github.com/unjs/ofetch/issues/382), [unjs/ofetch#435](https://github.com/unjs/ofetch/issues/435)):
 
 Create a utility function somewhere:
 
