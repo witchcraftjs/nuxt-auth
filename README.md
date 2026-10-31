@@ -6,35 +6,13 @@
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-
-VERY WIP wrapper module following the guide by [lucia auth](https://lucia-auth.com/) with postgres and drizzle db.
-
-I am not an auth expert, **use at your own risk**. The module's auth code is not that long, read 
-[src/runtime/server/utils/SessionManager.ts](https://github.com/witchcraftjs/nuxt-auth/blob/master/src/runtime/server/utils/SessionManager.ts) (based on lucia) and
-[`src/runtime/server/utils/Auth.ts`](https://github.com/witchcraftjs/nuxt-auth/blob/master/src/runtime/server/utils/Auth.ts) which contains all the logic.
+Nuxt auth module built on [better-auth](https://www.better-auth.com). Tries to set up nearly everything + some extra goodies.
 
 
 ## Playground
 
-There is a playground but it must be run locally as it requires a postgres instance and env secrets to be set.
-
-## Features
-
-The following providers are included (using the `arctic` library), custom providers can be easily added.
-
-- [Google](https://console.cloud.google.com/apis/credentials)
-- [Github](https://github.com/settings/applications/new)
-<!-- - [Facebook](https://developers.facebook.com/apps) -->
-<!-- - [Twitter](https://developer.twitter.com/en/portal/dashboard) -->
-
-
+There is a playground that runs with in-memory postgres, but it must be run locally as it requires env secrets to be set.
 ## Install
-
-It is highly recommended you install the nuxt-security module (or something similar) as this module does NOT add middleware to guard against CSRF.
-
-```bash
-pnpx nuxi module add nuxt-security
-```
 
 The module requires the `@witchcraft/ui` module for ui components but those are optional so it's not needed if you won't be using them.
 
@@ -42,14 +20,12 @@ The module requires the `@witchcraft/ui` module for ui components but those are 
 pnpx nuxi module add @witchcraft/ui
 ```
 
-`@witchcraft/nuxt-logger` is also recommended as it includes redaction for the redact property, otherwise **you will have to implement this yourself**.
-All logs are objects with at least an `ns` (namespace) property and can ocassionally contain a `redact` property that **must be redacted in production to be secure**.
+`@witchcraft/nuxt-logger` is also recommended for it's polymorphic-ish loggers (see playground's usage of `use*Logger`s). All logs are objects with at least an `ns` (namespace) property.
 
 ```bash
 pnpx nuxi module add @witchcraft/nuxt-logger
 
 ```
-Don't forget to actually pass it's `useServerLogger` when creating the apis.
 
 ## Usage
 
@@ -57,9 +33,11 @@ Don't forget to actually pass it's `useServerLogger` when creating the apis.
 
 The following env variables are needed:
 
-- `AUTH_SECRET` // for nuxt-auth
-- `AUTH_{PROVIDER}_CLIENT_ID`
-- `AUTH_{PROVIDER}_CLIENT_SECRET`
+- `NUXT_AUTH_SECRET` // for nuxt-auth
+- `NUXT_AUTH_{PROVIDER}_CLIENT_ID`
+- `NUXT_AUTH_{PROVIDER}_CLIENT_SECRET`
+
+`NUXT_AUTH_SECRET` must be at least 32 bytes (better-auth's minimum). In production the module throws on boot when it is missing or shorter. Generate one with `openssl rand -base64 32`.
 
 Set the ones you need in the nuxt config. There is a helper function for doing this:
 
@@ -76,28 +54,25 @@ export default defineNuxtConfig({
 			// this is set automatically (for production, it's always true, for dev it's true if nuxt.options.devServer.https is defined)
 			// this determines whether to use https in the auth callback url
 			// isSecure: ...
-		}
-	},
-	auth: {
-		allowedOrigins: [
-			...(process.env.NODE_ENV === "development" ? ["http://localhost:3000"] : []),
-			"https://your-app-site.com",
-			],
-		// see also allowedMiddlewareExclusions for external hosts 
-		// that should only be allowed access for certain requests
+		},
+		enabledProviders: ["google", "github"],
+		// optional, electron apps only
+		// deeplinkSchemes: { electron: "myapp" },
 	}
 })
 ```
 
+`createBetterAuth` trusts `appUrl`. Add extra origins through `betterAuthOptions.trustedOrigins` (list is merged with the defaults):
+
 The callback url is `{http/https}://localhost:3000/api/auth/callback/{PROVIDER}`.
-Note that if using `https`, both the allowed origins and the callback url must have https in the provider's config. 
+Note that if using `https`, both the trusted origin and the callback url must have https in the provider's config.
 
 ### Basic Setup
 
 #### DB
 
-The module provides a `createAuthSchema` helper and a list of `authUserFields` it needs on the user's table. Unlike some examples, a uuid is used for the id. You can set them up like:
 
+The module provides `authUserFields` (the columns it needs on the user's table, including `username`) plus `createAuthSchema` for the session, account, and verification tables. Spread the fields into your own users table. Table shapes follow the [better-auth core schema](https://www.better-auth.com/docs/concepts/database).
 ```ts
 // path/to/schema.ts
 // careful not to use nuxt paths, or drizzle won't be able to import them when when generating migrations, etc
@@ -112,6 +87,7 @@ export const users = pgTable("users", {
 export const {
 	authAccounts,
 	authSessions,
+	authVerifications,
 	authProvidersRelations,
 	authSessionRelations
 } = createAuthSchema(users)
@@ -120,57 +96,59 @@ export const {
 #### SessionManager and Routes
 
 
-First configure your session manager instance with your db in some file (it can be anywhere) and export it.
+First create your auth instance with your db in some file (it can be anywhere) and export it.
 
 Then create two files:
 ```
 - server
+	// the better auth instance
+	auth.ts
 	- middleware
 		- auth.ts
 	- api
 		- auth
-		// this is named like this literally, it is a catch-all route
-		- [...].get.ts
+			// this is named like this **literally**, it is a catch-all route
+			- [...].ts
 ```
 
-This creates the api handler.
-```ts [server/api/auth/[...].ts]
+This creates the auth instance.
+```ts [server/auth.ts]
+import { createBetterAuth } from "@witchcraft/nuxt-auth/server/utils/createBetterAuth"
 
-import { createAuthHandler, useServerLogger } from "#imports"
-import { authAccounts, users } from "~~/db/schema.js"
-import { db } from "[PATH TO YOUR DRIZZLE DB]"
-import { sessionManager } from "[PATH TO YOUR SESSION MANAGER INSTANCE]"
-
-export default createAuthHandler(
-	useRuntimeConfig(),
+export const auth = createBetterAuth({
 	db,
-	users,
-	authAccounts,
-	sessionManager,
-	useServerLogger(),
-	{
-		onRegister: (event, route, deeplink) => {
-			// handle user registration, deeplink is for when using external auth handlers (see below)
-		}
-	}
-)
+	schema: { users, authAccounts, authSessions, authVerifications },
+	// you can gate here or at the nuxt config level, up to you, if you are using electron I suggest at the config level to start (see the playground)
+	appUrl: import.meta.dev
+		? `${useRuntimeConfig().public.auth.isSecure ? "https" : "http"}://localhost:${useRuntimeConfig().port}`
+		: useRuntimeConfig().public.siteUrl as string,
+	usernameSchema: z.string().min(3).max(32),
+	devBypassAuth: true, // allow the dev only dev-mock bypass
+	logger: useServerLogger()
+})
 ```
 
-This creates the middleware that sets the user/session on the request context.
+This creates the catch-all api handler.
+```ts [server/api/auth/[...].ts]
+import { auth } from "../auth.js"
 
-**IMPORTANT: The middleware by itself DOES NOT validate the origin and does not have any CSRF protection. The nuxt-security is installed by the module to handle this. DO NOT disable it.**
+export default defineEventHandler(event => {
+	return auth.handler(toWebRequest(event))
+})
+```
+
+The following creates the middleware that sets the user/session on the request context.
+
+**IMPORTANT: better-auth validates origins and handles CSRF for its own endpoints. It does not protect your application's own routes. Use nuxt-security or equivalent for those.**
 
 ```ts
 // server/middleware/auth.ts
+import { auth } from "../auth.js"
 
-import { createAuthMiddleware, useServerLogger } from "#imports"
-
-import { sessionManager } from "[PATH TO YOUR SESSION MANAGER INSTANCE]"
-export default createAuthMiddleware(
-	sessionManager,
-	useServerLogger()
-)
+export default createAuthMiddleware(auth, useServerLogger())
 ```
+
+The middleware fills `event.context.user` plus `event.context.session` (null when logged out). To guard a route, use the `assertEventWithAuthorizedUser` server util. It throws a 401 on a missing user and narrows the event type past the check.
 
 ### Create the Pages
 
@@ -186,26 +164,19 @@ By default the module will redirect to corresponding api route when calling `use
 
 In some cases you may want to customize this behavior, such as when calling this from a desktop app where you need to open a browser instance.
 
-This can be customized with the `handleActions` option on the `useAuth` composable.
-
-There is also a `createExternalAuthLoginHandler` helper and related utils, see [External Auth Handlers](#external-auth-handlers).
+For handling auth in external apps, see [External Auth Handlers](#external-auth-handlers).
 
 ### Changing Routes
 
-While not recommended, you can change the routes used by the module by setting the `authApiRoutes` and `authRoutes` options. In the case of the api routes, you will probably want to access them using the getAuthApiRoute helper:
-
-```ts
-getAuthApiRoute(useRuntimeConfig().public, "usersInfo")
-getAuthApiRoute(useRuntimeConfig().public, "usersIdAccounts", id)
-```
+While not recommended, you can change the routes used by the module by setting the `authApiRouteBase` (changing where the server API is) and `authRoutes` options (changing where redirects happen to).
 
 #### Middleware
 
 ### Auth Middleware
 
-A global middleware is registered by default to determine the user's logged in state (by fetching `/api/auth/users/info`).
+A global middleware is registered to determine the user's logged in state (through the better-auth client session), on every navigation. It does not redirect by default.
 
-This is only done on page load or before (because they might redirect) any actions (login/logout/register\*) so that we don't fetch from the server on every page navigation.
+Reading it is only done on page load or before (because they might redirect) any actions (login/logout/register\*) so that we don't fetch from the server on every page navigation.
 
 You can use `useAuth().setFetchUserOnNavigation(...)` to allow fetch on the next navigation. The middleware then disables fetching again to prevent further fetching.
 
@@ -217,12 +188,13 @@ You can also fetch from the api manually if you want and set `auth:user` yoursel
 
 ### Route Protection
 
-The module does not register a global middleware for route protection by default (see `useGlobalMiddleware`). It must be set:
+The module does not redirect by default. You have to add `authProtected` to the page's middleware:
 
 ```ts
 definePageMeta({ middleware: "authProtected" })
+```
 
-This will automatically redirect unauthenticated users to the login page and unregistered users to the register page.
+This will automatically redirect a signed out visitor to the `unauthenticated` route (home by default) and an unregistered user to the register page, unless the page sets a `redirectTo`.
 
 Additionally you can set the following meta properties to control the middleware:
 
@@ -234,12 +206,14 @@ definePageMeta({
 	 	only: "authenticated" /* | "registered" | "authenticated-unregistered" | "unauthenticated" */
 
 		// change the redirect path
-		// or can use the special values "$login", "$register", "$postRegisteredLogin"
+		// or can use the special values "$login", "$register", "$postRegisteredLogin", "$externalCode"
 		redirectTo: "/some/path", 
 	}
 })
 ```
-You can register additional paths with the `additionalMiddlewarePaths` option.
+You can register additional paths with the `additionalMiddlewarePaths` option. `only` can also be a function that receives the refs like `isAuthenticated` (e.g. `only: ({isAuthenticated}) => !isAuthenticated.value`.
+
+A page that only makes sense for a signed in user can still be rendered on the server, but a local user exists only in that window's storage, so the server cannot see them, and `authProtected` would redirect the render instead of painting the page. Set `disableServerRedirect: true` on the page to render it anyway and let the browser decide the redirect or set `ssr: false` for the route.
 
 ### Clearing User Data on Logout 
 
@@ -248,6 +222,7 @@ You can add a `beforeLogout` listener to clear the user data on logout by using 
 ```ts
 useAuth().on("beforeLogout", clearUserData)
 ```
+
 ### Branding
 
 The module does not create any pages by default.
@@ -261,10 +236,12 @@ Only components like `AuthLoginProviderButtons` are provided. It's button styles
 `AuthSessionStatus` - Provided for creating a login button / status indificator in the nav bar.
 `AuthLoginProviderButtons` - Provided for creating login the buttons.
 `AuthUserRegistration` - Provided for creating a simple registration form with a username input and check. 
-	- This requires an api route (customizable, see props) that can validate the username (`/api/auth/public/users/:username/valid` by defualt).
-	- And it submits (customizable) to an undefined register route (`/api/auth/register` by default) with `body: { username }`.
+	- It checks against the built-in better-auth endpoint `${authApiRouteBase}/username/valid` (mounted under the app's auth base path).
+	- And it submits through the better-auth client (`updateUser` with `body: { username }`).
 	- It has a slot for easily adding more fields.
-`AuthExternalCallback` - Provided for creating a callback page for external auth handlers, see [External Auth Handlers](#external-auth-handlers).
+`AuthExternalCode` - Provided for creating a code page for external auth handlers, see [External Auth Handlers](#external-auth-handlers).
+`AuthMocker` - Provided for building the app's mock auth page at the `mockAuth` route (`/auth/mock` by default, the module strips it from non-dev builds), see [Mocking Auth](#mocking-auth-experimental).
+`AuthMockBypassRegistrationFields` - Provided to easily setup mocking at other points (such as the login for external apps which completely bypass the browser).
 
 #### Composables
 
@@ -272,314 +249,189 @@ Only components like `AuthLoginProviderButtons` are provided. It's button styles
 
 #### Types
 
-`zodUsernameSchema` - A zod schema for validating usernames. While the module does not make use of it, it's nice have on hand for writing the username validation route.
+`defaultZodUsernameSchema` - A zod schema for validating usernames. The module uses it as the default when no `usernameSchema` is passed, it's also nice to have on hand for writing a custom username validation route. We wire the min/max length internally to better-auth's options and it serves as validation on top of theirs and for local users which don't go through the server at all.
+
+### Common Account Data Access
 
 
-### Database Schema / Customizing Account Data
+The user's provider avatar is available as `user.image` (set from the provider profile on login).
 
-The auth schema creates the session table `authSesssions` table and an `authAccounts` table which describes the user's linked provider accounts and contains any saved information from the provider.
+Registration state is tracked with `isRegistered` (a better-auth `additionalFields` entry defaulting to false). It flips to true automatically through a `databaseHooks` entry when a username is set.
 
-What additional information (e.g. `avatarUrl`) is saved when a user logs in with a provider for the first time can be customized when creating the api handler (see `AuthOptions`). It is saved to a single jsonb column `info`.
-
-Usually this is only needed pre-registration (e.g. to suggest a username) and can then be deleted. There is also an option, `onlySaveUnregisteredUserAccountInfo` which will only save this additional information if the user is unregistered.
-
-You can type this information by extending the `Register` interface:
-
-```ts
-declare module "@witchcraft/nuxt-auth" {
-	interface Register {
-		AdditionalAccountInfo: {
-			avatarUrl: string
-		}
-	}
-}
-```
-
-### Custom Providers
-
-Custom providers can be added when configuring the handler.
-
-You must extend the `Register` interface with the correct types for your provider: 
-```ts
-declare module "@witchcraft/nuxt-auth" {
-	interface Register {
-			AdditionalProviders: {
-				customProvider: {
-					id: string
-					// ...info as returned by the provider's api
-				}
-			
-		}
-	}
-}
-```
-
-Then create a class that implements `ProviderHandler<type, PROVIDER_NAME>` which really only needs to tell the module what the url is (and any pcke code verifiers) and how to get the user info.
-
-See the included providers for examples. They're quite simple to write with the help of the `arctic` library.
-
-```ts
-export default createAuthHandler(useRuntimeConfig(), db, users, authAccounts, sessionManager, useServerLogger(), {
-	customProviders: {
-		name: class CustomProvider implements ProviderHandler<"oauth2", "customProvider"> {
-			//...
-		}
-	}
-})
-```
 ### Extending the Router
 
-You can extend the router at `/api/auth` with the `extendRouter` option when creating the handler.
-
-This is useful for adding custom endpoints like `/api/auth/public/users/:username/valid`.
-
-### Auth Flow
-
-The full auth flow is as follows:
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Browser
-    participant Nuxt Server
-    participant OAuth Provider
-    participant Electron App
-
-    User->>Browser: Clicks login button
-
-    alt Normal Web Auth
-        Browser->>Nuxt Server: GET /api/auth/login/{provider}
-        Nuxt Server->>Browser: Redirect to OAuth Provider
-        Browser->>OAuth Provider: User authenticates
-        OAuth Provider->>Browser: Redirect to /api/auth/callback/{provider}
-        Browser->>Nuxt Server: GET /api/auth/callback/{provider}
-        Nuxt Server->>Nuxt Server: Creates User & Session
-        
-        alt New User Registration
-            Nuxt Server->>Browser: Redirect to /register
-            User->>Browser: Fills out username
-            Browser->>Nuxt Server: POST /api/auth/register (with username)
-            Nuxt Server->>Nuxt Server: Updates user with username
-            Nuxt Server->>Browser: Sets session token as cookie
-        else Existing User
-            Nuxt Server->>Browser: Sets session token as cookie
-        end
-
-    else External Auth (Electron)
-        User->>Electron App: Clicks login button in Electron
-        rect rgba(255, 0, 0, 0.1)
-            Electron App->>Browser: Opens /api/auth/login/{provider}?deeplink=electron
-            Browser->>Nuxt Server: GET /api/auth/login/{provider}?deeplink=electron
-            Nuxt Server->>Browser: Redirect to OAuth Provider (with deeplink in state)
-            Browser->>OAuth Provider: User authenticates
-            OAuth Provider->>Browser: Redirect to /api/auth/callback/{provider}
-            Browser->>Nuxt Server: GET /api/auth/callback/{provider}
-            Nuxt Server->>Nuxt Server: Decodes state, retrieves "deeplink" option
-            Nuxt Server->>Nuxt Server: Creates User & Session
-        end
-
-        rect rgba(255, 255, 0, 0.1)
-            Nuxt Server->>Browser: Redirect to /auth/code with short-lived access token
-            Browser->>User: Displays short-lived access token, attempts to directly open electron app with it.
-            User->>Electron App: Pastes short-lived access token (if app doesn't open)
-            Electron App->>Nuxt Server: GET /api/auth/external/exchange with short-lived access token
-        end
-        Nuxt Server->>Electron App: Returns session token
-        Electron App->>Electron App: Saves session token, sets it as a cookie on the window session
-    end
-```
-
-### External Auth Handlers
-
-An external auth handler refers to auth flows handled externally in part, such as by a desktop app. These require a more complicated auth flow (see above). There are various ways to handle them, this is just one. 
-
-For example, using electron:
-
-If using nuxt-electron, you will need to tell it to include the `auth/external/callback` route and the `auth/login` route using the `additionalRoutes` option.
-
-Then add a custom `redirectTo` function when using the `authProtected` middleware that always redirects any pages that aren't included in the build that only registered users should have access to, to `$login` since they won't exist. This is because we want all that flow to happen on the browser and only redirect back at the end.
-
-```vue [pages/auth/(app|register).vue]
-<script setup lang="ts">
-definePageMeta({
-	middleware: ["authProtected"],
-	auth: {
-		only: "authenticated-registered",
-		redirectTo: () => isElectron() ? "$login" : undefined,
-	}
-})
-</script>
-
-```
-
-Then in the login page, we can use the `createExternalAuthLoginHandler` to intercept the action of the `LoginProviderButtons` only when the user is on electron.
-
-
-```vue [pages/auth/login.vue]
-<template>
-	<AuthLoginProviderButtons :use-auth-options="{handleActions}"/>
-</template>
-<script setup lang="ts">
-import { isElectron } from "#imports"
-import { useRuntimeConfig } from "#app"
-
-const rc = useRuntimeConfig()
-
-const handleActions: ActionHandler = (action, url) =>
-createExternalAuthLoginHandler(
-	"electron", // for the query param
-	isElectron, // platform check
-	publicServerUrl, // you must define this somehow
-	window?.electron?.api.open,
-	"auth/code", // the default
-)(action, url)
-|| createExternalAuthLoginHandler(...) // they can be chained
-
-</script>
-```
-
-This will make a click on a login button on electron redirect to the `auth/external/callback` on electron, and open the browser to the wanted action, appending the query param, `deeplink=electron`.
-
-`auth/external/callback` can be dual purpose. If no accessToken is given to it, it can show a link to open the external browser in case it didn't, otherwise it can try to exchange the accessToken for a full sessionToken.
-
-You can use the `AuthExternalCallback` component to handle this.
-
-```vue
-<template>
-	<AuthExternalCallback
-		:save-session="saveSession"
-	/>
-</template>
-<script lang="ts" setup>
-
-const rc = useRuntimeConfig()
-async function saveSession(token: string) {
-	// you would need to define an api similar to this in electron's preload script that exchanges the token and saves the returned session token to a cookie on the session
-	// @witchcraft/nuxt-electron provides utilities for helping to create
-	// async functions like these which are normally a pain
-	await window.electron.api.auth.saveSession(
-		rc.public.auth.authRoutes.postRegisteredLogin,
-		token
-	)
-		// alternatively exchange it here, then ask electron to save it to a cookie
-}
-</script>
-```
-
-Note that if you allow multiple users (per os user) and you're using one session partition per user, you might be better off exchanging the token client side, then passing the sessionToken + userInfo to electron, relaunching electron with that info as an argument (make sure not to log this arg), and creating the session partition at that point when you have the username + id. This way it's easier to notify the user of any errors.
-
-
-The query param will be forwarded throughout (see the red area).
-
-For the login action, the app will open `/api/auth/login/{provider}?deeplink=electron` which will open the provider page, saving the deeplink query param in the state passed to it.
-
-When it redirects to the callback, we decode this state, accesing the `deeplink` query param again. 
-
-At this point, if the user is registered, we can redirect them to `auth/code` with a short lived access token and the deeplinkUri the page can show in case they click cancel on the prompt. The short lived token should be shown for them to copy if opening the link doesn't work.
-
-A component, `AuthExternalCode` is provided for this purpose.
-
-```vue [pages/auth/code.vue]
-<template>
-	<AuthExternalCode/>
-</template>
-```
-
-If they aren't registered, they are redirected to `auth/register?deeplink=electron` first and once `api/auth/register?deeplink=electron` is called, it will redirect to `auth/code` with the access token and the deeplinkUri.
-
-Paths that contain the access token are in the yellow area.
-
-Once the access token is transferred to the app (either via the deeplink or manually on the `auth/external/callback` page), the app can exchange it for a proper session token behind the scenes. 
-
-The module provides a helper class for handling this in electron, but the basic premise is you make a fetch request to `api/auth/external/exchange` with your accessToken to exchange it for the real sessionToken:
+You can extend the router at `/api/auth` with `betterAuthOptions` plugin endpoints (arrays concatenate with the module plugins, see the [better-auth plugin docs](https://www.better-auth.com/docs/concepts/plugins) for the `endpoints` shape):
 
 ```ts
-const sessionToken = await fetch(`${this.publicServerUrl}${getAuthApiRoute(useRuntimeConfig().public, "externalExchange")}`, {
-	method: "GET",
-	headers: {
-		Authorization: `Bearer ${accessToken}`,
+createBetterAuth({
+	// ... the rest of your options
+	betterAuthOptions: {
+		plugins: [myPluginWithEndpoints()]
 	}
-}).then(async res => res.text())
-.catch(err => err)
-if (sessionToken instanceof Error) {
-	...
-}
-// valid sessionToken
+})
 ```
 
-Then set a cookie (for the server's url) and force the page to reload so the middleware can redirect the user.
+### Local-only users
 
-Why not just pass the token directly? Well we'd have to expose it somewhere (usually this is done via a query param which is not very safe) and while redirecting from the server to the deeplink url is safer (it's not kept in browser history) there is no fallback for if that doesn't work (the tab is immediately closed). 
+Unlike better-auth's "anonymouse" plugin. Local-only users have no server account at all. The `local-only-users` client plugin creates them in the shape of real users, entirely in `localStorage`. `useAuth` then wraps better-auth's client to intercept certain calls and wrote them to the plugin's methods instead only when the provider/user is "local". The rest of the methods that would not apply are rejected. See [authClientWrapper.ts](src/runtime/utils/authClientWrapper.ts) for the full table.
 
-This way, only a short lived token is exposed. The app can then safely exchange it for a very long lived one if we want.
+Note that a user can also be `local` on an app, it's just the storage backend part usually changes, so their type is still `local`. External apps that support local users should implement an external plugin, if like `@witchcraft/nuxt-electron` they use a session per user. The playground example and the included electron utilities show how to store and manage via electron. If the app does everything with a single session (not reccommended) you can leave local user storage to the single session.
 
-# Semi-Auth
+There is no upgrade path at the moment to a normal user (there will be in the future): logging in normally just creates a real session, merging any local data into it is up to the app.
 
-In desktop apps (but this can apply online) we usually want the login session to persist for as long as possible. The module offers an alternative to making the session longer, it just pretends the user is logged in.
+##### How
 
-Since the auth check is done against `useState("auth:user")`, if we set it, the user is considered authenticated on the client side even if they don't have the right cookies to send with requests because they've expired.
+The default `authGlobal` middleware reads `localStorage` first for the `auth:user` key and uses that user if it carries a `type`. It skips the server. Otherwise it checks the session and falls back to the stored user.
+
+So if we write to that key with a user's shape and type `local`, it will just use it.
+
+A user's `type` may be one of the following:
+1. `type`: undefined: web users. The auth is checked again on each page load. A dead session means no user and the protected routes send them to sign-in.
+2. `type: "external"`: electron/desktop user. The stored user stays across relaunches and the window never waits on the server for it.
+3. `type: "local"`: completely local users. Similar to external users, except they have no server session so server methods just error for them. 
 
 This is safe because **you should always check authentication on the server side, if you're not that's inherently unsafe**.
 
-The default `authGlobal` middleware will look for a `localStorage` item called `auth:user` and if it's set, set the user to that. It will additionally set `useState("auth:semiAuthed")` to true. This can be used in components and is used in the `SessionStatus` to indicate that while the user is considered logged in, api requests will fail. 
+### External Auth Handlers
 
-You can then ask for re-authentication when they trigger an action (e.g. sync) that requires it. By default, clicking on the username in `SessionStatus` will redirect them to the login page instead of `/users/{username}`.
+An external auth handler refers to auth flows handled externally in part, such as by a desktop app. These require a more complicated auth flow. Only electron is fully shown and supported with helpers.
 
-If using this feature, you will probably want to set a custom condition on the login page to allow semi-authed users on it:
-```ts
-definePageMeta({
-	only: ({ isAuthenticated, isSemiAuthed }:ReturnType<typeof useAuth>) => !isAuthenticated.value || isSemiAuthed.value
-})
+#### Electron
+
+The full example setup can be found in the playground. This is the sign-in flow.
+
+```mermaid
+sequenceDiagram
+	autonumber
+	participant Main as Main
+	participant Preload as Preload
+	participant Renderer as Renderer
+	participant Browser as Browser
+	participant Server as Server
+
+	Renderer->>Renderer: login click, external plugin login
+	alt real
+		Renderer->>Preload: requestExternalAuth({ provider, isDevBypass })
+		Preload->>Main: ipc (better-auth)
+		Main->>Main: requestAuth: make verifier + state, keep the verifier
+		Main->>Browser: openExternal(/electron/init-oauth-proxy?code_challenge&state&client_id&provider)
+	else mocked
+		Renderer->>Preload: auth.mockRequestAuth({ provider, username, devBypassRegistration })
+		Preload->>Main: ipc (auth:mockRequestAuth): make verifier + state, stash the identity
+		Main->>Main: openExternal intercepted w/ stashed identity to POST to dev/mock
+	end
+	Renderer->>Renderer: navigate to the callback page with ?provider=, no token yet
+	Note over Renderer: waiting room: retry button, paste box
+	rect rgba(120, 120, 120, 0.15)
+		Note over Browser,Server: When mocked: skipped
+		Browser->>Server: GET /electron/init-oauth-proxy
+		Server->>Server: sign-in/social, then 302 to the provider
+		Browser->>Server: provider callback
+		Server->>Server: mints the code, sets the better-auth.electron cookie, redirects to the externalCode page
+		Browser->>Browser: externalCode page polls the cookie
+	end
+	Browser-->>Main: scheme:/callback#token=code reaches the app through the OS
+	Main->>Main: handleUrl, only while the app is already running
+	Main->>Renderer: loads the callback page with access_token=code, keeping the query
+	Renderer->>Preload: authenticate({ token })
+	Preload->>Main: ipc
+	Main->>Server: POST /electron/token { token, state, code_verifier }
+	Server-->>Main: session cookies stored in the client storage
+	Renderer->>Preload: electron.api.auth.exchangeSession()
+	Preload->>Main: ipc
+	Main->>Server: GET /get-session
+	Server-->>Main: { user }
+	Main->>Main: finishLogin: sets httpOnly cookies on the server origin, localStorage auth:user
+	Renderer->>Renderer: navigateTo(postRegisteredLogin), the middleware sees auth:user
+	Renderer->>Server: proxied requests carry the cookie
 ```
-Note that if the user doesn't have internet access and the request for userInfo fails (even though they might have proper cookies) but the localStorage request suceeds, they will also be considered semi-authenticated. To avoid this, you would have to check from the platform that they still have cookies and set `useState("auth:semiAuthed")` to false.
-
-For example:
-```ts [app/app.vue]
-if (isElectron()) {
-	// you would have to define this in the preload script
-	if (window.electron?.meta.cookiesValid) {
-		useAuth().isSemiAuthed.value = false
-	}
-}
-```
-
-# Mocking Auth (experimental)
 
 
-The auth middleware can mock authentication for testing purposes. This is only allowed if `devBypassAuth` option is true on the route auth handler, and the client sends a `devBypass` query param with their login.
+Note that unlike better-auth's default implementation, `@witchcraft/nuxt-electron`'s proxy allows us the real cookie on the session, stored against the origin of `publicServerUrl` (your auth server), and it will be sent with proxied requests.
 
-`devBypassAuth` should be set to something that makes sure the environment is safe to allow bypassing like `import.meta.dev && process.env.VITEST === "true"` to allow during dev and testing.
+We cannot store it on `app://bundle` for two reasons. Chromium refuses secure cookies for every non-http(s) scheme, so a window served over `app://bundle` or `file://` can never hold one, no matter what privileges the scheme has. Second, server requests get proxied to the real server anyways as is intended with `@witchcraft/nuxt-electron`.
+
+- **Avoid passing nuxt's `useFetch` to better-auth. The better auth client is purposely built on `publicServerUrl` and rewrites every request back to a relative path, so it resolves against the window origin and goes through that proxy. A method that takes its own fetch, such as `auth.client.useSession(useFetch)`, replaces that rewrite and requests the absolute url instead, where no proxy adds the session cookie.
+
+- `@witchcraft/nuxt-electon`'s `additionalRoutes` option decides which pages exist in the electron bundle. nuxt-electron drops every page except `/`, the electron route and the ones listed, so the callback page and the login page have to be there, because main loads them from the bundled static pages.
+
+- Electron needs to be setup to take a the single instance lock so it can handle the token on the incoming scheme links. It should handle `second-instance` and `open-url`. A url that arrives while the app is closed is ignored, because the verifier only lives in the running process's memory.
+
+- For mocking auth, since you could test a production version of an electron app against a dev server, mocking on the electron side is only enabled with env `TEST`. Without `TEST`, the mock is still reachable through the browser.
+
+- The login handler is platform agnostic. The platform supplies `requestExternalAuth`, which starts its own login, and gets `isDevBypass` and context about the type of mocking wanted so it can pick the mock instead of the real sign-in.
+
+#### Post-Expiration Session Persistance
+
+In desktop apps we usually want the login session to persist for as long as possible. The module offers an alternative to making the session longer, it just pretends the user is logged in, similarly to local users but with type `external`. See above for details.
+
+The user is considered authenticated on the client side even if they don't have the right cookies to send with requests because they've expired.
+
+This is safe because **you should always check authentication on the server side, if you're not that's inherently unsafe**.
+
+##### Differentiating Between Expired External Users and Not.
+
+The expiry is stored in local storage at the key `externalExpiryStorageKey` (`auth:external:expiresAt` in ms). `logout` removes it. Only external users store this as they are the only ones that can expire and still navigate. The external app should set this when it get's the session.
+
+The included electron utils write it at login from the session it exchanges, and again whenever the server sets or replaces the window's session cookie. The middleware writes it on load, for an external user, from the session it reads. 
+
+You can use `useAuth().isExpired()` to estimate it on the spot against the clock.
+The middleware also writes `useState("auth:isExpired")` on every client navigation based on the time and stored value to avoid re-calculating it with a timer since it's not something you need to be recalculating all the time. 
+
+You can use `useAuth().isExpired()` to estimate it on the spot against the clock.
+The middleware uses it to also write `useState("auth:isExpired")` on every client navigation based on the time and stored value to avoid re-calculating it with a timer since it's not something you need to be recalculating all the time. 
+
+And it is not meant to be foolproof anyways. It's meant only to give UI indications for when, for example, you might re-prompt for credentials directly instead of even allowing an action to happen. It is completely possible for it to be wrong!
+
+## Mocking Auth (experimental)
+
+The auth middleware can mock authentication for testing purposes. This is only allowed if `devBypassAuth` is set to true when creating the auth instance (it defaults to false, and the plugin itself only runs in dev). The client sends a `devBypass` query param with their login.
 
 To use the mocked auth, in your login component you can add a checkbox to enable/disable the bypass option which you can pass to the the `AuthLoginProviderButtons` component:
 
 ```vue
-<AuthLoginProviderButtons :use-auth-options="{ handleActions }" :login-options="{ devBypass }" />
+<template>
+	<AuthLoginProviderButtons @login="login($event, { devBypass })" />
+</template>
+
+<script lang="ts">
+const { login } = useAuth(...)
+</script>
 ```
 
 If true, the login request will add the `devBypass` query param so that the server will redirect to the `mockAuth` route (`/auth/mock` with the provider as a query param) instead of the provider's url.
 
 You should place the `AuthMocker` in this route (**the module will remove the route for non-dev builds**). It will allow you to specify a username to login as. When you press the `AuthMocker`'s submit it will redirect to the server's callback with the username and the bypass request in the query params.
 
-The server by default will mock the getting of the user's info from the provider and return the following:
-```ts
-{
-	provider,
-	providerId: `dev-${provider}-${username}`,
-	email: `dev-${provider}-${username}@dev.com`,
-	isVerified: true,
-	name: `Dev ${username}`,
-	info: null
-}
-```
-If no username is passed either, but an id is passed instead (e.g. for testing unregistered users), the username will be `username-${id}`.
+The dev-mock plugin hooks `callback/${provider}` paths with `?devBypass=true` plus an optional `username` or `id` queries.
 
-You can change this by specifying a custom `createMockUser` function when creating the auth handler.
+Without `devBypassRegistration` the request must not carry a username and the user is named after their id. 
+
+With it the username comes from the query, falling back to the `generateUser`, option, then to `username_<id>`, **trimmed to fit the default username schema (CAREFUL)**. `POST /dev/mock` takes the same fields (`username`, `id`, `provider`, `devBypassRegistration`) as a body.
+
 
 If the user does not exist, it will be created using this information. 
 
-To simulate existing users with the default function you can use `Auth.defaultCreateMockUser` to get the info when seeding your database.
+
+
+```ts
+createBetterAuth({
+	// ... the rest of your options
+	generateUser: () => {
+		const id = crypto.randomUUID()
+		return {
+			
+			// override the fallback user, e.g. change the email created
+			id,
+			email: generateEmail(id)
+		}
+	},
+})
+```
 
 The server will then bypass auth and create a session for the user.
+
+We do not use better-auth's mocking utils because they skip the sign-in flow, they just give you a signed-in user, you cannot test any flows.
 
 ## Testing the Server APIs directly with Mock Users
 
@@ -672,12 +524,12 @@ describe("server/db/users", async () => {
 			credentials: "include",
 		})
 		console.log(await get$fetchCookies())
-		const userInfo = await $fetch("/api/auth/users/info", {
+		const userInfo = await $fetch("/api/auth/get-session", {
 			method: "GET",
 			credentials: "include",	
 		})
-		expect(userInfo.username).toBe("test")
-		expect(userInfo.isRegistered).toBe(true)
+		expect(userInfo.user.username).toBe("test")
+		expect(userInfo.user.isRegistered).toBe(true)
 		console.log({userInfo})
 	})
 	test("cookies cleared", async () => {

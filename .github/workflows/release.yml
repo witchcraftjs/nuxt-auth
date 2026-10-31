@@ -27,9 +27,28 @@ jobs:
         uses: alanscodelog/actions/.github/actions/setup@master
         with:
           USE_LOCKFILE: ${{ vars.USE_LOCKFILE }}
+          INSTALL_PLAYWRIGHT: "true"
+
+      - name: Ephemeral auth secret
+        run: echo "NUXT_AUTH_SECRET=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
 
       - name: Build
         uses: alanscodelog/actions/.github/actions/build@master
+        with:
+          test_script: "pnpm test:unit"
+
+      - name: Start test server
+        run: pnpm --dir playground test:server > /tmp/nuxt.log 2>&1 &
+
+      - name: Wait for server
+        run: for i in $(seq 1 60); do curl -sf "http://localhost:3000/api/auth/username/valid?username=ciprobe" && break || sleep 5; done
+
+      - name: Tests with server
+        env:
+          NUXT_PORT: "3000"
+        run: |
+          pnpm --dir playground exec vitest run test/unit
+          pnpm --dir playground exec playwright test --project=web
 
       - name: Release
         uses: alanscodelog/actions/.github/actions/release@master

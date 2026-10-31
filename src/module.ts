@@ -3,7 +3,6 @@ import {
 	addComponentsDir,
 	addImportsDir,
 	addRouteMiddleware,
-	addServerImports,
 	addServerImportsDir,
 	addServerScanDir,
 	addTemplate,
@@ -14,7 +13,7 @@ import {
 import type { CookieSerializeOptions } from "cookie-es"
 import { defu } from "defu"
 
-import type { AdditionalApiRoutes, ProviderNames, Secrets, SessionCookieOptions } from "./runtime/types"
+import type { SessionCookieOptions } from "./runtime/types"
 
 
 export type * from "./runtime/types"
@@ -34,6 +33,12 @@ declare module "vue-router" {
 			 */
 			only?: "authenticated" | "authenticated-registered" | "registered" | "authenticated-unregistered" | "unauthenticated" | ((auth: ReturnType<typeof useAuth>) => boolean)
 
+			/**
+			 * Do not redirect during the server render. The page is rendered and the redirect is decided in the browser instead.
+			 *
+			 * Use it on pages a local user must be able to reach: a local user exists only in that window's storage, so the server cannot see them and would send them to `authRoutes.unauthenticated`.
+			 */
+			disableServerRedirect?: boolean
 			/** Path to redirect to. Can be a magic path like "$login" or "$register". */
 			redirectTo?: string | "$login" | "$register" | "$postRegisteredLogin" | "$externalCode" | (() => string)
 			handleRedirect?: (url: string) => void | Promise<void>
@@ -42,9 +47,27 @@ declare module "vue-router" {
 }
 
 export interface ModuleOptions {
-	enabledProviders: ProviderNames[]
-	useGlobalMiddleware: boolean
-	onlySaveUnregisteredUserAccountInfo: boolean
+	enabledProviders: string[]
+	/**
+	 * Deep-link schemes by name. The `electron` entry feeds the web
+	 * client proxy plugin, the better-auth electron plugin, and the
+	 * dev-mock deeplink redirects. No trailing colon,
+	 * `myapp:` throws.
+	 *
+	 * @default {}
+	 */
+	deeplinkSchemes: { electron?: string } & Record<string, string>
+	/**
+	 * Enables the mock sign-in: the `devMock` server plugin, the mock page and, in a test
+	 * run, electron's local short circuit.
+	 *
+	 * This is a public option, so every client can read it, which is harmless. The server
+	 * only registers the plugin when this is on and the module runs in dev, and the plugin
+	 * is tree-shaken out of production builds, so turning it on in production does nothing.
+	 *
+	 * @default false
+	 */
+	devBypassAuth: boolean
 	/**
 	 * Options for the provider cookies.
 	 *
@@ -72,18 +95,29 @@ export interface ModuleOptions {
 	 *
 	 * Can also be overriden when creating the `SessionManager`.
 	 *
-	 * `secure` is not included in the options because it's determined by whether `useRuntimeConfig().public.auth.isSecure` was defined (which this module sets automatically).
+	 * `secure` and `httpOnly` are not configurable. `secure` is determined by better-auth. `httpOnly` is always on.
+	 *
+	 * `domain` is not configurable. Use better-auth's `crossSubDomainCookies` if you need cross-subdomain cookies.
 	 *
 	 * @default {
 	 * 	sameSite: "lax" as const,
-	 * 	httpOnly: true,
 	 * 	path: "/",
 	 * }
 	 */
-	sessionCookieOpts: Omit<SessionCookieOptions, "maxAge" | "secure" | "expiresAt">
+	sessionCookieOpts: Omit<SessionCookieOptions, "maxAge" | "secure" | "expires">
+	/**
+	 * Prefix for better-auth cookies, e.g. the session cookie is `${cookiePrefix}.session_token`.
+	 *
+	 * Wired to the server session cookies and `ElectronAuth`.
+	 *
+	 * @default "better-auth"
+	 */
+	cookiePrefix: string
 	authRoutes: Partial<{
 		/**
 		 * When the user tries to go to a protected route, they will be redirected here.
+		 *
+		 * Also where logging out, or deleting the active user, sends the window.
 		 *
 		 * @default "/"
 		 */
@@ -92,8 +126,6 @@ export interface ModuleOptions {
 		 * The route for the login page.
 		 *
 		 * @default "/auth/login"
-		 *
-		 * The path is also used to redirect unauthenticated users in the protected routes.
 		 */
 		login: string
 		/**
@@ -135,53 +167,44 @@ export interface ModuleOptions {
 		mockAuth: string
 	}>
 	/**
-	 * The routes for the api calls.
+	 * The base path the catch all api is defined at (e.g. where the `[...]` server event handler is.
 	 *
-	 * If you stick to using these as variables from the runtime config, you can change them so long as you don't rename the dynamic parts:
-	 *
-	 * ```ts
-	 * fetch(`${useRuntimeConfig().public.auth.authApiRoutes.usersInfo}`)
-	 * ```
+	 * @default "/api/auth"
 	 */
-	authApiRoutes: Partial<{
-		/** @default "/api/auth" */
-		base: string
-		/** @default "/users/info" */
-		usersInfo: string
-		/** @default "/external/exchange" */
-		externalExchange: string
-		/** @default "/users/:id/accounts" */
-		usersIdAccounts: string
-		/** @default "/logout" */
-		logout: string
-		/** @default "/login/:provider" */
-		login: string
-		/** @default "/register" */
-		register: string
-		/** @default "/callback/:provider" */
-		callback: string
-		/**
-			* Note the route is NOT defined by the module, you must extend the routes and define it yourself if you are using the UserRegistration component which makes use of it.
-			*
-			* @default "/api/auth/users/username/valid"
-			*/
-		usernameValid: string
-	}> & Partial<AdditionalApiRoutes>
+	authApiRouteBase?: string
 	/** Additional "magic" paths that can be used for the `auth.redirectTo` page meta property when using the `authProtected` middleware. */
 	additionalMiddlewarePaths?: Record<string, string>
+	/**
+	 * Origin of the auth server (e.g. https://mysite.com). You can also do the dev gating here to point to your dev server or you can do it only in createBetterAuth, depends on your needs.
+	 *
+	 * For example, this module does it at the nuxt config level. This is because we build and bake it, dev port included into electron for testing, as it's otherwise a different pain to setup envs to override it just during testing. In a simpler app without electron it won't matter. In a more complex app, the pain might be justified to avoid rebuilds before tests.
+	 *
+	 * It exists because:
+	 * - Electron needs it to know where the server is so it can proxy the window's requests to it.
+	 * - `createBetterAuth` also uses it as better-auth's base url and trusted origin if nothing is set to override it.
+	 *
+	 * Required, the module throws when it is blank.
+	 *
+	 * @default ""
+	 */
+	publicServerUrl: string
 }
 export interface ModulePublicRuntimeConfig {
 	auth: Required<Omit<
 		ModuleOptions,
-		| "useGlobalMiddleware"
 		| "authRoutes"
-		| "authApiRoutes"
+		| "deeplinkSchemes"
 	>> & {
+		deeplinkSchemes: ModuleOptions["deeplinkSchemes"]
 		authRoutes: Required<ModuleOptions>["authRoutes"]
-		authApiRoutes: Required<ModuleOptions["authApiRoutes"]>
 		isSecure: boolean
 	}
 }
+
+type Secrets = Partial<
+	Record<`auth${Capitalize<string>}ClientId`, string>
+	& Record<`auth${Capitalize<string>}ClientSecret`, string>
+>
 
 export interface ModulePrivateRuntimeConfig extends Secrets {
 	authSecret: string
@@ -202,7 +225,7 @@ export default defineNuxtModule<ModuleOptions>({
 		configKey: "auth"
 	},
 	defaults: {
-		useGlobalMiddleware: true,
+		devBypassAuth: false,
 		providerCookieOpts: {
 			httpOnly: true,
 			path: "/",
@@ -212,13 +235,14 @@ export default defineNuxtModule<ModuleOptions>({
 		sessionExpiresAt: 1000 * 60 * 60 * 24 * 30,
 		sessionCookieOpts: {
 			sameSite: "lax" as const,
-			httpOnly: true,
 			path: "/"
 		},
+		cookiePrefix: "better-auth",
 		enabledProviders: [
 			"google",
 			"github"
-		] as ProviderNames[],
+		],
+		deeplinkSchemes: {},
 		authRoutes: {
 			login: "/auth/login",
 			register: "/auth/register",
@@ -228,19 +252,9 @@ export default defineNuxtModule<ModuleOptions>({
 			deeplink: "/auth/external/callback",
 			mockAuth: "/auth/mock"
 		},
-		authApiRoutes: {
-			base: "/api/auth",
-			usersInfo: "/users/info",
-			externalExchange: "/external/exchange",
-			usersIdAccounts: "/users/:id/accounts",
-			logout: "/logout",
-			login: "/login/:provider",
-			callback: "/callback/:provider",
-			register: "/register",
-			usernameValid: "/users/username/valid"
-		} satisfies Required<ModuleOptions["authApiRoutes"]> as any,
-		onlySaveUnregisteredUserAccountInfo: false,
-		additionalMiddlewarePaths: {}
+		authApiRouteBase: "/api/auth",
+		additionalMiddlewarePaths: {},
+		publicServerUrl: ""
 	} satisfies Required<ModuleOptions>,
 	moduleDependencies: {
 		"@witchcraft/ui": {
@@ -255,6 +269,12 @@ export default defineNuxtModule<ModuleOptions>({
 	async setup(options, nuxt) {
 		const moduleName = "@witchcraft/nuxt-auth"
 		const logger = useLogger(moduleName)
+
+		for (const [name, scheme] of Object.entries(options.deeplinkSchemes ?? {})) {
+			if (scheme.endsWith(":")) {
+				throw new Error(`[${moduleName}] deeplinkSchemes.${name} must not end with a colon, got "${scheme}".`)
+			}
+		}
 
 		const { resolve } = createResolver(import.meta.url)
 		addComponentsDir({
@@ -274,11 +294,14 @@ export default defineNuxtModule<ModuleOptions>({
 		nuxt.options.runtimeConfig.public.auth = defu(
 			nuxt.options.runtimeConfig.public.auth as any,
 			{
-				isSecure: (!!nuxt.options.devServer.https || process.env.mode === "production")
+				isSecure: (!!nuxt.options.devServer.https || !nuxt.options.dev || process.env.mode === "production")
 			},
 			options
 		)
-		delete (nuxt.options.runtimeConfig.public.auth as any).useGlobalMiddleware
+		// a prepare run loads no app config, so nothing could have set this
+		if (!nuxt.options._prepare && !nuxt.options.runtimeConfig.public.auth.publicServerUrl) {
+			throw new Error(`[${moduleName}] publicServerUrl is required, e.g. "http://localhost:3001". The window's session cookie is stored against its origin.`)
+		}
 
 		nuxt.options.alias["#witchcraft-nuxt-auth"] = resolve("runtime")
 
@@ -286,25 +309,14 @@ export default defineNuxtModule<ModuleOptions>({
 		addImportsDir(resolve("runtime/utils"))
 		addServerScanDir(resolve("runtime/server"))
 		addServerImportsDir(resolve("runtime/server/utils"))
-		addServerImports([
-			{
-				name: "getAuthApiRoute",
-				from: resolve("runtime/utils/getAuthApiRoute")
-			}
-		])
 		for (const file of [
 			// "runtime",
 			"runtime/types", // why, if not transpiled import path is wrong :/
-			"runtime/server/utils/Auth",
-			"runtime/server/helpers/getSafeSecretsInfo",
-			"runtime/server/helpers/logSafeRoute",
-			"runtime/server/utils/createAuthHandler",
+			"runtime/server/utils/assertEventWithAuthorizedUser",
+			"runtime/server/utils/getBetterAuthInstance",
 			"runtime/server/utils/createAuthMiddleware",
 			"runtime/server/utils/createAuthSchema",
-			"runtime/utils/getAuthApiRoute",
-			"runtime/core/providers/google",
-			"runtime/core/providers/github",
-			"runtime/utils/createExternalAuthLoginHandler"
+			"runtime/server/utils/createBetterAuth"
 		]) {
 			nuxt.options.build.transpile.push(resolve(file))
 		}
@@ -318,10 +330,14 @@ export default defineNuxtModule<ModuleOptions>({
 		})
 
 		const mockAuth = nuxt.options.runtimeConfig.public.auth.authRoutes.mockAuth
-		if (process.env.NODE_ENV !== "development" && mockAuth) {
+		// server double check as well
+		const mockEnabled = options.devBypassAuth && nuxt.options.dev
+		if (!mockEnabled && mockAuth) {
 			nuxt.hook("pages:extend", (pages: NuxtPage[]) => {
 				const i = pages.findIndex(page => page.path === mockAuth)
-				pages.splice(i, 1)
+				if (i > -1) {
+					pages.splice(i, 1)
+				}
 			})
 		}
 
@@ -333,7 +349,7 @@ export default defineNuxtModule<ModuleOptions>({
 		addRouteMiddleware({
 			name: "authGlobal",
 			path: resolve("runtime/middleware/authGlobal"),
-			global: options.useGlobalMiddleware
+			global: true
 		})
 	}
 })

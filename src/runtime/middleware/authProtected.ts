@@ -23,7 +23,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 			? auth.authRoutes.postRegisteredLogin
 			: isAuthenticated && !isRegistered
 				? auth.authRoutes.register
-				: auth.authRoutes.login
+				: auth.authRoutes.unauthenticated
 
 	const query = typeof from.query === "object" && meta.keepQuery
 		? isArray(meta.keepQuery)
@@ -66,7 +66,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 						|| (meta.only === "authenticated-unregistered" && isAuthenticated && !isRegistered)
 						|| (meta.only === "unauthenticated" && !isAuthenticated)
 
-	const doRedirect = !matchesCondition && to.path !== redirectTo
+	const doRedirect = !matchesCondition && to.path !== redirectTo && !(import.meta.server && meta.disableServerRedirect)
 
 	if (import.meta.client && import.meta.dev) {
 		// eslint-disable-next-line no-console

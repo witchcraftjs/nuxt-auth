@@ -1,19 +1,18 @@
 <template>
 <div class="flex flex-col gap-4">
-	<template v-if="authUri">
+	<template v-if="!initialAccessToken">
 		<div class="text-xl text-center">
 			Authorize
 		</div>
 		<div class="text-lg text-center">
-			If you are not redirected automatically, open following URL and paste the code given:
-			<NuxtLink
-				class="link-like underline"
-				:href="authUri"
-				target="_blank"
-			>
-				{{ authUri }}
-			</NuxtLink>
+			If you were not redirected automatically, click open and paste the code given:
 		</div>
+		<WButton
+			type="button"
+			@click="requestExternalAuth"
+		>
+			Open Browser
+		</WButton>
 		<form
 			class="flex flex-col gap-4"
 			@submit.prevent="authorize(manualAccessToken)"
@@ -60,5 +59,5 @@ import { useAuthExternalCallback } from "../composables/useAuthExternalCallback.
 
 const props = defineProps<ExternalCallbackOptions>()
 
-const { authUri, initialAccessToken, manualAccessToken, error, authorize, cancel } = useAuthExternalCallback(props)
+const { initialAccessToken, manualAccessToken, error, authorize, requestExternalAuth, cancel } = useAuthExternalCallback(props)
 </script>

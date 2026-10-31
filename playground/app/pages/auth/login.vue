@@ -32,13 +32,19 @@
 			flex-1
 			whitespace-nowrap
 			justify-center
+			items-stretch
 			flex
-			[&>div]:max-w-max
+			flex-col
+			gap-4
 		"
 	>
 		<AuthLoginProviderButtons
-			:use-auth-options="{ handleActions }"
 			:provider-styles="providerStyles"
+			@login="provider => login(provider, {
+				devBypass,
+				username: mockUsername,
+				devBypassRegistration: mockBypassRegistration
+			})"
 		>
 			<template #extra="slotProps">
 				<WButton
@@ -61,34 +67,67 @@
 						Small Button
 					</div>
 				</WButton>
+				<LocalUserPicker
+					:users="localUsers"
+					:provider-buttons-slot-props="{ class: slotProps.class, iconClass: slotProps.iconClass }"
+					@create="login('local', { username: $event })"
+					@login="login('local', { username: $event.username })"
+					@delete="remove($event.id)"
+				/>
 			</template>
 		</AuthLoginProviderButtons>
+		<WCheckbox
+			v-if="devBypassAuth"
+			label="Dev Bypass/Mock Auth"
+			v-model="devBypass"
+		/>
+		<AuthMockBypassRegistrationFields
+			v-if="showMockFields"
+			v-model:username="mockUsername"
+			v-model:bypass-registration="mockBypassRegistration"
+		/>
 	</div>
 </div>
 </template>
 
 <script setup lang="ts">
+import type { AuthLocalUser } from "@witchcraft/ui/types"
+
 import { useRuntimeConfig } from "#imports"
 import { providerStyles } from "#witchcraft-nuxt-auth/core/providerStyles"
-import type { ActionHandler } from "#witchcraft-nuxt-auth/types.js"
 
 const appInfo = useRuntimeConfig().public.appInfo
 const appName = appInfo.name
 const appSubName = appInfo.subName
+const devBypassAuth = useRuntimeConfig().public.auth.devBypassAuth
+const devBypass = ref(false)
+const mockUsername = ref("")
+const mockBypassRegistration = ref(false)
+const showMockFields = isElectron() && window.__IS_TEST === true
 
 
 definePageMeta({
 	middleware: ["authProtected"],
 	auth: {
-		only: "unauthenticated"
+	// a user whose session expired is kept, so it counts as authenticated, but it belongs here to sign in again
+		only: (auth: ReturnType<typeof useAuth>) => !auth.isAuthenticated.value
+			|| (import.meta.client && auth.user.value?.type === "external" && auth.isExpired())
 	}
 })
 
-const handleActions: ActionHandler = (_action, _url) => {
-	// if (doCustomAction) {
-	// 	...
-	// 	return true
-	// }
-	return false
+const localUsers = ref<AuthLocalUser[]>([])
+
+const { login, list, delete: remove } = useConfiguredAuth()
+
+
+async function refreshLocalUsers(): Promise<void> {
+	const users: AuthLocalUser[] = []
+	for (const user of await list()) {
+		if (user.type !== "local") continue
+		users.push({ id: user.id, username: user.username, isLocal: true })
+	}
+	localUsers.value = users
 }
+
+onMounted(refreshLocalUsers)
 </script>

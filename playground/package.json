@@ -1,13 +1,31 @@
 {
 	"private": true,
 	"name": "@witchcraft/nuxt-auth-playground",
+	"main": ".dist/electron/build/main.mjs",
 	"type": "module",
 	"scripts": {
-		"dev": "nuxi dev",
+		"dev": "cross-env DISABLE_POSTGRES_ENSURE_ENV=true nuxi dev",
 		"dev:nix": "devenv up",
 		"build": "cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true 'nuxi build'",
-		"db:regenerate": "rm -rf .devenv/state/postgres && rm -rf db/migrations && drizzle-kit generate",
-		"generate": "nuxi generate"
+		"db:regenerate": "cross-env-shell DISABLE_POSTGRES_ENSURE_ENV=true \"rm -rf db/migrations && drizzle-kit generate \"",
+		"generate": "nuxi generate",
+		"======= electron": "=======",
+		"dev:electron": "AUTO_OPEN=electron pnpm dev",
+		"launch:electron": "electron .",
+		"launch:electron:dev": "cross-env OVERRIDE_PUBLIC_SERVER_URL=http://localhost:3001 electron .",
+		"build:electron:no-pack": "cross-env APP_VERSION=0.0.0 SKIP_ELECTRON_PACK=true BUILD_ELECTRON=true nuxi build",
+		"======= tests": "=======",
+		"test": "pnpm test:unit+server",
+		"test:unit": "cross-env DISABLE_POSTGRES_ENSURE_ENV=true NUXT_PORT=$(getPortNuxt) pnpm test:unit+server --tags-filter='!server'",
+		"test:unit+server": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 NUXT_PORT=$(getPortNuxt) vitest",
+		"test:e2e": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 NUXT_PORT=$(getPortNuxt) playwright test --project=web",
+		"test:e2e:full": "concurrently --raw --handle-input --kill-others \"pnpm test:server\" \"pnpm test:e2e\"",
+		"test:electron": "pnpm build:electron:no-pack && pnpm test:electron:only",
+		"test:electron:only": "cross-env TEST=true NUXT_PORT=$(getPortNuxt) playwright test --project=electron",
+		"test:electron:dev": "cross-env TEST_ELECTRON_DEV=1 pnpm test:electron:only",
+		"test:electron:full": "concurrently --raw --handle-input --kill-others \"pnpm test:server\" \"pnpm test:electron\"",
+		"test:server": "cross-env DISABLE_POSTGRES_ENSURE_ENV=true DISABLE_SESSION_REFRESH_FOR_TESTING=true pnpm dev",
+		"test:dev": "concurrently --raw --handle-input --kill-others \"pnpm test:unit+server\" \"pnpm test:server\""
 	},
 	"@comments": {
 		"dependencies": {
@@ -20,17 +38,27 @@
 		"@witchcraft/nuxt-postgres": "catalog:",
 		"@witchcraft/nuxt-utils": "catalog:",
 		"@witchcraft/ui": "catalog:",
-		"arctic": "catalog:",
+		"conf": "catalog:",
 		"cookie-es": "catalog:",
 		"drizzle-orm": "catalog:",
 		"nuxt": "catalog:",
+		"pino": "catalog:",
+		"pino-pretty": "catalog:",
+		"thread-stream": "catalog:",
 		"unplugin-icons": "catalog:",
 		"unplugin-vue-components": "catalog:",
-		"zod": "catalog:",
-		"pino": "catalog:"
+		"zod": "catalog:"
 	},
 	"devDependencies": {
+		"@nuxt/test-utils": "catalog:",
+		"@playwright/test": "catalog:",
+		"@witchcraft/nuxt-electron": "catalog:",
+		"concurrently": "catalog:",
+		"cross-env": "catalog:",
 		"drizzle-kit": "catalog:",
-		"tsx": "catalog:"
+		"electron": "catalog:",
+		"tsx": "catalog:",
+		"unimport": "catalog:",
+		"vitest": "catalog:"
 	}
 }

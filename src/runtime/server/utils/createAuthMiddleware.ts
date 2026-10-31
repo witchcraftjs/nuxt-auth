@@ -1,41 +1,28 @@
-import type { BaseLogger } from "@witchcraft/nuxt-logger/types"
-import { defineEventHandler, getCookie, setCookie } from "h3"
+import type { Auth } from "better-auth"
+import { defineEventHandler } from "h3"
 
-import type { SessionManager } from "./SessionManager.js"
+import type { AuthSession } from "./createAuthSchema.js"
 
-import type { AuthSession, AuthUser } from "../../types.js"
+import type { AuthUser } from "../../types.js"
 
-export function createAuthMiddleware(
-	sessionManager: SessionManager,
-	logger: BaseLogger
-) {
+export function createAuthMiddleware(auth: Auth<any>, logger: any) {
 	return defineEventHandler(async event => {
-		const sessionToken = getCookie(event, sessionManager.options.sessionCookie.name) ?? null
-		if (!sessionToken) {
-			event.context.session = null
+		try {
+			const session = await auth.api.getSession({
+				headers: event.headers
+			})
+			if (session) {
+				event.context.user = session.user as AuthUser
+				event.context.session = session.session as AuthSession
+			} else {
+				event.context.user = null
+				event.context.session = null
+			}
+		} catch (e) {
+			logger?.error?.({ ns: "auth:middleware", error: e })
 			event.context.user = null
-			return
+			event.context.session = null
 		}
-
-		const { session, user, fresh } = await sessionManager.validateSessionToken(sessionToken)
-		logger.debug({
-			ns: "auth:middleware:session",
-			user,
-			fresh,
-			redact: { sessionToken, session }
-		})
-		if (fresh && session) {
-			const cookie = sessionManager.createSessionCookie(sessionToken)
-			setCookie(event, cookie.name, cookie.value, cookie.attributes)
-			// appendHeader(event, "Set-Cookie",)
-		}
-		if (!session) {
-			const cookie = sessionManager.createBlankSessionCookie()
-			setCookie(event, cookie.name, cookie.value, cookie.attributes)
-			// appendHeader(event, "Set-Cookie", sessionManager.createBlankSessionCookie())
-		}
-		event.context.session = session
-		event.context.user = user
 	})
 }
 

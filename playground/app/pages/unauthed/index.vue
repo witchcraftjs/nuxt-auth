@@ -8,7 +8,9 @@
 definePageMeta({
 	middleware: ["authProtected"],
 	auth: {
-		only: "unauthenticated"
+		only: "unauthenticated",
+		// to enable local users
+		disableServerRedirect: true
 	}
 })
 </script>

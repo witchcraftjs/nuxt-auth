@@ -1,34 +1,38 @@
 import { copyToClipboard } from "@alanscodelog/utils/copyToClipboard"
-import { unreachable } from "@alanscodelog/utils/unreachable"
-import { onMounted } from "vue"
+import { computed, onUnmounted, ref } from "vue"
 
 import {
-	navigateTo,
-	useRoute
+	useRuntimeConfig
 } from "#app"
 
-import { zUriComponentCodec } from "../types.js"
+import { useAuth } from "../composables/useAuth.js"
 
 export function useAuthExternalCode() {
-	const query = useRoute().query
-	const accessToken = query.accessToken
-	if (typeof accessToken !== "string") {
-		unreachable("No session_token.")
-	}
-	const deepLinkUrl = zUriComponentCodec.parse(query.deeplinkUri)
+	const config = useRuntimeConfig().public.auth as any
+	const auth = useAuth()
 
-	function copyToken() {
-		copyToClipboard(accessToken as string)
-	}
+	const client = auth.client
 
-	onMounted(() => {
-		if (accessToken) {
-			void navigateTo(deepLinkUrl, { external: true })
-		}
+	const code = ref<string | undefined>(client.electron?.getAuthorizationCode() ?? undefined)
+	let redirectInterval: NodeJS.Timeout | undefined
+	if (import.meta.client) redirectInterval = client.ensureElectronRedirect()
+
+	const deepLinkUrl = computed(() => {
+		const scheme = config.deeplinkSchemes?.electron
+		if (!code.value || !scheme) return undefined
+		return `${scheme}://${config.authRoutes.deeplink.replace(/^\//, "")}#token=${code.value}`
 	})
 
+	onUnmounted(() => {
+		if (redirectInterval) clearInterval(redirectInterval)
+	})
+
+	function copyToken() {
+		copyToClipboard(code.value ?? "")
+	}
+
 	return {
-		accessToken,
+		accessToken: code,
 		deepLinkUrl,
 		copyToken
 	}

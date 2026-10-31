@@ -1,325 +1,118 @@
-import type { EnumLike } from "@alanscodelog/utils"
-import { enumFromArray } from "@alanscodelog/utils/enumFromArray"
-import type { OAuth2Tokens } from "arctic"
-import type { H3Event, Router } from "h3"
-import type { StringValue } from "ms"
+import { createSelectSchema } from "drizzle-zod"
 import type { InjectionKey } from "vue"
 import { z } from "zod"
 
-import type {
-	AuthAccount,
-	AuthSession as DbAuthSession,
-	AuthUserFields as DbAuthUser
-} from "./server/utils/createAuthSchema.js"
-
-import type { ModulePublicRuntimeConfig } from "../module.js"
+import { createAuthUserSchema } from "./server/utils/createAuthSchema.js"
 
 export type * from "./server/utils/createAuthSchema.js"
 
-export const zLoginQuery = z.object({
-	devBypass: z.enum(["true", "false"]).optional(),
-	deeplink: z.string().optional()
+export const authUsersDbSchema = createAuthUserSchema()
+
+/** The db row, what the server sends. */
+const zAuthUserDb = createSelectSchema(authUsersDbSchema)
+
+export type AuthUserFields = typeof authUsersDbSchema.$inferSelect
+
+// makes it easy for end users to re-create the type if they override the base schema
+export const zAdditionalLocalUserProperties = z.object({
+	/**
+	 * Client-side only marker for who resolved the user, never a db column.
+	 *
+	 * `"local"` is written where a local-only user is created (see the local-users client
+	 * plugin). `"external"` is written by electron main when it persists an exchanged user.
+	 * Absent means the app got the user from the server, i.e. a web user.
+	 */
+
+	type: z.enum(["local", "external"]).optional(),
+	createdAt: z.date(),
+	updatedAt: z.date()
 })
 
-export type ExternalExchangeResponse = {
-	sessionToken: string
-	user: AuthUser
-}
-
-export type LogoutResponse = true
-export type LoginResponse = undefined
-export type UserInfoResponse = AuthUser | false
-export type RegisterResponse = true | { redirectUrl: string }
-export type CallbackResponse = undefined
-
-export const zUriComponentCodec = z.codec(z.string(), z.string(), {
-	decode: encodedString => decodeURIComponent(encodedString),
-	encode: decodedString => encodeURIComponent(decodedString)
+export const zAdditionalLocalStoredUserProperties = zAdditionalLocalUserProperties.extend({
+	// because they are saved as ISO strings
+	createdAt: z.string(),
+	updatedAt: z.string()
 })
-export const zExternalCallbackPageQuery = z.object({
-	accessToken: z.string()
-}).or(
-	z.object({
-		authUri: zUriComponentCodec
-	})
-)
+
+const zAuthUserClient = zAuthUserDb.extend(zAdditionalLocalUserProperties.shape)
+
+/** Local-only user. Always has a username, it is the name it was created with. */
+export const zAuthUserLocal = zAuthUserClient.extend({
+	type: z.literal("local"),
+	username: z.string()
+})
+
+/** User the server resolved. Username is optional, better-auth's column is nullable. */
+export const zAuthUserExternal = zAuthUserClient.extend({
+	type: z.optional(z.literal("external")),
+	username: z.string().nullable()
+})
+
+/** Any user the client holds, local or external. */
+export const zAuthUser = z.discriminatedUnion("type", [zAuthUserLocal, zAuthUserExternal])
+
+const zAuthUserStoredBase = zAuthUserDb.partial({
+	image: true,
+	username: true
+}).extend(zAdditionalLocalStoredUserProperties.shape)
+
+export const zAuthUserLocalStored = zAuthUserStoredBase.extend({
+	type: z.literal("local"),
+	username: z.string()
+})
+
+export const zAuthUserExternalStored = zAuthUserStoredBase.extend({
+	type: z.optional(z.literal("external")),
+	username: z.string().nullable()
+})
+
+/** Any user the client holds, as it is stored, i.e. dates are ISO strings. */
+export const zAuthUserStored = z.discriminatedUnion("type", [zAuthUserLocalStored, zAuthUserExternalStored])
 
 
-/**
-	* This is the minimum information providers need to return.
-	*
-	* It is standardized out across all providers since they all use different fields for this.
-	*
-	* @internal
-	*/
-export type InitialAccountInfo = {
-	providerId: string
-	email: string
-	isVerified: boolean
-}
+export type AuthUser = z.infer<typeof zAuthUser>
 
-/** @internal */
-export type ProviderHandlerClass<TProviderName extends ProviderNames = ProviderNames> = new (
-	providerOptions: ProviderHandlerOptions,
-	options?: Partial<ProviderOptions<TProviderName>>
-) => ProviderHandler<any, TProviderName, any>
+export type AuthUserStored = z.infer<typeof zAuthUserStored>
 
-/** @internal */
-export type ProviderHandlerOptions = {
-	clientId: string
-	clientSecret: string
-	redirectUri: string
-}
+export type AuthLocalUser = z.infer<typeof zAuthUserLocal>
 
-// arctic no longer exports these, and the code has been rewritten not to depend on them as much
-// but we still use them to check the TProvider type
-// eslint-disable-next-line @typescript-eslint/naming-convention
-interface OAuth2Provider {
-	createAuthorizationURL(state: string, scopes: string[]): URL
-	validateAuthorizationCode(code: string): Promise<OAuth2Tokens>
-	refreshAccessToken?(refreshToken: string): Promise<OAuth2Tokens>
-}
-// eslint-disable-next-line @typescript-eslint/naming-convention
-interface OAuth2ProviderWithPKCE {
-	createAuthorizationURL(state: string, codeVerifier: string, scopes: string[]): URL
-	validateAuthorizationCode(code: string, codeVerifier: string): Promise<OAuth2Tokens>
-	refreshAccessToken?(refreshToken: string): Promise<OAuth2Tokens>
-}
+export type AuthLocalUserStored = z.infer<typeof zAuthUserLocalStored>
 
-export interface ProviderHandler<
-	TType extends "oauth2" | "oauth2_pcke" = "oauth2" | "oauth2_pcke",
-	TProviderName extends ProviderNames = ProviderNames,
-	TProvider extends
-	TType extends "oauth2" ? OAuth2Provider : TType extends "oauth2_pcke" ? OAuth2ProviderWithPKCE : never = TType extends "oauth2" ? OAuth2Provider : TType extends "oauth2_pcke" ? OAuth2ProviderWithPKCE : never
-> {
-	provider: TProvider
-	type: TType
-	name: TProviderName
-	getAccountInfo: (tokens: OAuth2Tokens) => Promise<Omit<BaseProviderAccountInfo, "userId">>
-	getLoginInfo: (state: string) =>
-	TType extends "oauth2"
-		? OAuth2AuthUrl
-		: TType extends "oauth2_pcke"
-			? OAuth2PkceAuthUrl
-			: never
-
-}
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export type OAuth2AuthUrl = {
-	type: "oauth2"
-	url: URL
-}
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export type OAuth2PkceAuthUrl = {
-	type: "oauth2_pcke"
-	url: URL
-	codeVerifier: string
-}
-
-// note that when we do infer T, we must use object instead of T when there is no T otherwise typescript will simplify the type and cause issues, see this playground (the emitted dts on the return type of useUser as an example)
-
-// https://www.typescriptlang.org/play/?ts=3.3.3#code/KYDwDg9gTgLgBDAnmYcAiAjAggVxgCwFUBnYKOAXjgG8BYAKDjh1KgDsBDAW2AC5iYUAJZsA5gwC+DUJFhwRMMgDMOAY1QAlYKKECyNBpOnho8JCji4CJfVQAUWnXvKhFbACbEalvEVa95NiV9ABU4KXoASAB+ODDXYA8vLVVodwAeAWExABo4DjZEAD4GSJi40siA6giqmgkASjgAMnRsXxsoQ3oZUwRkVAAFKAgUKCs-WzgHbV1FFxA3T28JzoCRYPIw2tj4xcTllLTMwRFRPILiyt3KgIgMACtgVRhSu8fnmCbWzFXWbt6ciUODYLyEEDYzFInTsTTojDgqTYAihZF4fym1FR7G4fDgACIWGRODx8eFSkiUWARmMMVAAsNRmQ6ZRvEScTwAoTWCTgPiIkwoMAYDh2GzWHlqUzxh1WOT6BIgA
-
-export interface Register {
-}
-
-// am having issues doing this via declaration merging :/
-export interface InternalProviders {
-	// google: GoogleUser
-	// github: GithubUser
-}
-
-type InternalProviderObject = {
-	[k in keyof InternalProviders]: InternalProviders[k]
-}
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-type AdditionalProviders = Register extends { AdditionalProviders: infer T }
-	? T extends Record<string, any>
-		? T
-		: never
-	: never
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export type AdditionalAccountInfo = Register extends { AdditionalAccountInfo: infer T } ? T : never
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export type AdditionalApiRoutes = (Register extends { ApiRoutes: infer T }
-	? T extends Record<string, any>
-		? T
-		: object
-	: object)
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export type ApiRoutesParams = (Register extends { ApiRoutesParams: infer T }
-	? T extends Record<string, any>
-		? T
-		: object
-	: object) & {
-		userIdAccounts: Record<"id", string>
-		login: Record<"provider", string>
-		callback: Record<"provider", string>
-		usernameValid: Record<"username", string>
-	}
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export type AuthSession = (Register extends { AuthSession: infer T }
-	? T extends Record<string, any>
-		? T
-		: object
-	: object) & DbAuthSession
-
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export type AuthUser = (Register extends { AuthUser: infer T }
-	? T extends Record<string, any>
-		? T
-		: object
-	: object) & DbAuthUser
-
-
-export type SessionValidationResult
-	= | { session: AuthSession, user: AuthUser, fresh: boolean }
-		| { session: null, user: null, fresh: false }
-
+// camel-case for our two consumers, electron's `session.cookies.set` and better-auth's cookie `attributes`.
+// not better-auth's lowercase `CookieAttributes` (its camel-case twin is not exported).
+// electron must translate `sameSite: "none"` to `"no_restriction"`, see `_cookieSetOpts`.
 export type SessionCookieOptions = {
 	secure?: boolean
 	path?: string
-	domain?: string
 	sameSite?: "lax" | "strict" | "none"
-	httpOnly?: boolean
 	maxAge?: number
 	expires?: Date
+	partitioned?: boolean
 }
 
-export type SessionCookie = {
-	name: string
-	value: string
-	attributes: SessionCookieOptions
-}
+/** Where the window keeps the expiry electron main put on the session cookie, in ms. External users only. */
+export const externalExpiryStorageKey = "auth:external:expiresAt"
 
-export type ProviderAccountInfo = InternalProviderObject | AdditionalProviders
+/** Signed-in user, shared by `useState` and `localStorage`, the two must stay the same string. */
+export const userStorageKey = "auth:user"
 
-export type MockUser = Partial<Omit<BaseProviderAccountInfo, "userId">>
+/** Local-only users list, see the local-users client plugin. */
+export const localOnlyUsersStorageKey = "auth:localOnlyUsers"
 
-export type ProviderOptions<
-	TProviderName extends ProviderNames = ProviderNames,
-	TProviderAccountInfo extends ProviderAccountInfo[TProviderName] = ProviderAccountInfo[TProviderName]
-> = {
-	/**
-	 * This determines what additional account information the provider should return and save to the *accounts* table under the `info` field.
-	 *
-	 * For example, say you also wanted to return the user's avatar to populate a user with on registration.
-	 *
-	 * Each provider defines it in a different way, so you'd need to specify this function for each provider you're interested in.
-	 *
-	 * You can type the return by declaration merging with the `AuthExtendedUserInfo` interface.
-	 *
-	 * This is set only once per provider account creation and the info column can just be cleared after the information is no longer needed.
-	 */
-	getAdditionalAccountInfo?: (user: TProviderAccountInfo) => Promise<AdditionalAccountInfo>
-}
+/** Expired flag, shared by state. */
+export const isExpiredStateKey = "auth:isExpired"
 
-export type AuthOptions = {
-	/** The url for the site (e.g. http:/localhost:3000 during dev), required for the redirectUri. */
-	appUrl?: string
-	runtimeConfig: ModulePublicRuntimeConfig
-	handlers: {
-		[k in ProviderNames]: ProviderHandlerClass<k>
-	}
-	enabledProviders: ProviderNames[]
-} & Partial<Omit<AuthHandlerOptions, "customProviders">>
+/** Fetch gate, shared by state. */
+export const fetchStateKey = "auth:_fetch"
 
-export type AuthHandlerOptions<T = any> = {
+/** Username validation id. */
+export const usernameValidFetchKey = "auth:username:valid"
 
-	/**
-	 * For the short lived access tokens used for external logins.
-	 *
-	 * Uses vercel/ms package to parse durations.
-	 *
-	 * @default 10m
-	 */
-	externalAccessTokenExpiresIn?: StringValue
-
-	/**
-		* Modify the callback redirect url AFTER the provider has redirected to the app and an account has been created / user has been logged in.
-		*
-		* Useful, to, fore example, redirect instead to a special schema / deep link (e.g. from the browser to a desktop app).
-		*/
-	modifyCallbackRedirect: (
-		event: H3Event,
-		/** The url here does not yet have the deeplink query param. This is because it's relative and can get complicated to parse. So it's added afterwards, only if the link wasn't modified. */
-		redirectUrl: string,
-		userId: string,
-		isRegistered: boolean,
-		additionalState: T,
-		deeplink?: string
-	) => string | undefined
-
-	/**
-	 * Store additional state in the callback url.
-	 *
-	 * Is later available in the `modifyCallbackRedirect` option.
-	 */
-	additionalState?: (event: H3Event) => T
-	customProviders?: {
-		[k in ProviderNames]: ProviderHandlerClass<k>
-	}
-	providerOptions?: {
-		[k in ProviderNames]: ProviderOptions<k>
-	}
-	appUrl: string
-	/**
-	 * Is called on user registration. User is guaranteed to be authenticated and not already registered.
-	 *
-	 * Return something and it will be returned as the response.
-	 *
-	 * If you return `false` or `undefined`, the handler will redirect to `authRoutes.postRegisteredLogin`.
-	 */
-	onRegister?: (event: H3Event) => Promise<any>
-	/**
-	 * Extend the router with your own routes.
-	 *
-	 * This is useful for adding custom endpoints like `/api/auth/public/users/:username/valid`.
-	 */
-	extendRouter?: (router: Router) => void
-	// todo readme link
-	/**
-	 * A mapping of deeplink type to a scheme (e.g. electron => `app-name-electron:`).
-	 *
-	 * This is used to generate the redirect url for the external auth handler, see the readme for more info.
-	 */
-	deeplinkSchemes?: Record<string, string>
-	devBypassAuth?: boolean
-	/**
-	 * When bypassing auth, this function is called to create the mock user info. Note that it's called whether the user exists or not. If seeding you database with test users, you should attempt to fetch any existing users here.
-	 *
-	 * Any missing fields will be filled in with the defualt generator. Same thing if you return undefined.
-	 */
-	createMockUser?: (username: string | undefined, id: string | undefined, provider: string) => MockUser | Promise<MockUser> | undefined | Promise<undefined>
-	/** Should return any additional fields non-nullable fields without defaults that are needed to be able to add a user. */
-	generateUser?: () => any
-}
-
-/**
-	* A zod username schema to use for validating usernames.
-	*/
 export const defaultZodUsernameSchema = z.string()
 	.min(3)
 	.max(32)
 	.regex(/^[\w.]+$/, "Username can only contain letters, numbers, underscores, and periods.")
 
-export type ProviderNames = keyof InternalProviders | (AdditionalProviders extends never ? never : keyof AdditionalProviders)
-
-export type Secrets = Partial<
-	Record<`auth${Capitalize<ProviderNames>}ClientId`, string>
-	& Record<`auth${Capitalize<ProviderNames>}ClientSecret`, string>
->
-
-export interface BaseProviderAccountInfo extends AuthAccount, InitialAccountInfo {
-
-}
 
 export type ProviderStyle = {
 	name: string
@@ -327,48 +120,47 @@ export type ProviderStyle = {
 	class?: string
 }
 
-export const providerStylesInjectionKey = Symbol.for("@witchcraft/nuxt-auth:providerStyles") as InjectionKey<Partial<Record<ProviderNames, Partial<ProviderStyle>>>>
+export const providerStylesInjectionKey = Symbol.for("@witchcraft/nuxt-auth:providerStyles") as InjectionKey<Partial<Record<string, Partial<ProviderStyle>>>>
 
-export type UseAuthComposableOptions = {
-	/**
-	 * Handle login and logout actions yourself.
-	 *
-	 * Return `true` to let prevent the handler from handling the action.
-	 *
-	 * To run an async function while returning true you can do:
-	 *
-	 * ```
-	 * setTimeout(() => {
-	 *		void (async function() {})()
-	 * })
-	 * return true
-	 * ```
-	 *
-	 * The reason handlers cna't return a promise is to allow handler chaining (see the docs).
-	 */
-	handleActions?: ActionHandler
+/** An external platform's api, exposed on the auth client by a better-auth client plugin under its `externalApiActionsKey`. */
+export type ExternalPlugin = {
+	/** Should return true when the plugin is on it's platform (e.g. `isElectron()`). `useAuth` uses the first active one. */
+	isActive: () => boolean
+	/** Starts a login outside the app. Should take over the external branch of `login`. */
+	login: (options: {
+		provider?: string
+		/** If a devBypass login was requested you need to handle it. */
+		isDevBypass?: boolean
+		/**
+		 * If a devBypassRegistration login was requested you need to handle it.
+		 *
+		 * Typically the external app should mock the entire browser side flow by bypassing it (see the electron diagram in the readme). Relying on the browser side mock is complicated because the testing app must be installed to be able to handle the deeplink.
+		 *
+		 * So the first approach is easier but it does mean you cannot mock without bypassing registration. This is because the real flow is app => browser (login => register) => app. Registration is a browser page always and should not be included in the app.
+		 *
+		 * If you tried to not handle this you would find yourself including the registration page on the app which is nothing like the real production flow.
+		 */
+		isDevBypassRegistration?: boolean
+		/** The user the mock signs in as. */
+		username?: string
+	}) => Promise<void>
+	/** Records an external profile change in the platform registry. */
+	onUserUpdate: (id: string, patch: {
+		username?: string
+		name?: string
+		image?: string
+	}) => Promise<void> | void
+	/** For overriding how local users are stored/created only when the plugin is active. Absent means the default store handles local users. */
+	local?: {
+		list: () => Promise<AuthUser[]> | AuthUser[]
+		create: (user: { id: string, username: string }) => Promise<void> | void
+		activate: (id: string) => Promise<void> | void
+		update: (id: string, patch: {
+			username?: string
+			name?: string
+			image?: string
+		}) => Promise<void> | void
+		delete: (id: string) => Promise<void> | void
+	}
 }
-
-export type ActionReturnType = undefined | false | true
-
-/**
- * See {@link UseAuthComposableOptions.handleActions}
- */
-export type ActionHandler
-	= ((action: "login", url: string, provider: ProviderNames) => ActionReturnType)
-		& ((action: "logout", url: string) => ActionReturnType)
-
-export const AUTH_ERROR = enumFromArray([
-	"USER_ALREADY_REGISTERED",
-	"UNKNOWN_PROVIDER",
-	"ACCOUNT_ALREADY_LINKED",
-	"FAILED_TO_ADD_PROVIDER_ACCOUNT",
-	"FAILED_TO_CREATE_USER",
-	"INVALID_AUTH_CALLBACK",
-	"INTERNAL_ERROR",
-	"INVALID_DEEPLINK",
-	"INVALID_ACCESS_TOKEN"
-], "AUTH.")
-
-export type AuthError = EnumLike<typeof AUTH_ERROR>
 

@@ -3,7 +3,7 @@
 	:class="($attrs as any)?.class"
 	:providers="enabledProviders"
 	:provider-styles="fullProviderStyles"
-	@login="onLogin"
+	@login="emit('login', $event)"
 >
 	<template #extra="slotProps">
 		<slot
@@ -22,16 +22,15 @@ export default {}
 </script>
 
 <script setup lang="ts">
+import { pick } from "@alanscodelog/utils/pick"
 import WAuth from "@witchcraft/ui/components/WAuth"
 import defu from "defu"
-import { pick } from "@alanscodelog/utils/pick"
 
 import { useRuntimeConfig } from "#app"
 import { computed, useAttrs } from "#imports"
 
-import { useAuth } from "../composables/useAuth.js"
 import { providerStyles as baseProviderStyles } from "../core/providerStyles.js"
-import type { ProviderNames, ProviderStyle, UseAuthComposableOptions } from "../types.js"
+import type { ProviderStyle } from "../types.js"
 
 if (import.meta.dev) {
 	// eslint-disable-next-line no-console
@@ -47,25 +46,19 @@ const config = rc.public.auth
 const enabledProviders = config.enabledProviders
 const $attrs = useAttrs()
 
-const props = withDefaults(defineProps<{
-	providerStyles?: Record<ProviderNames, Partial<ProviderStyle>>
-	useAuthOptions?: UseAuthComposableOptions
-	loginOptions?: Parameters<ReturnType<typeof useAuth>["login"]>[1]
-}>(), {
-	providerStyles: () => ({} as any),
-	useAuthOptions: () => ({}),
-	loginOptions: () => ({})
-})
+const emit = defineEmits<{
+	login: [provider: string]
+}>()
 
-const { login } = useAuth(props.useAuthOptions)
+const props = withDefaults(defineProps<{
+	providerStyles?: Record<string, Partial<ProviderStyle>>
+}>(), {
+	providerStyles: () => ({} as any)
+})
 
 const fullProviderStyles = computed(() =>
 	defu(
 		props.providerStyles,
 		pick(baseProviderStyles, enabledProviders)
-	) as Record<ProviderNames, Partial<ProviderStyle>>)
-
-function onLogin(provider: string) {
-	login(provider as any, props.loginOptions)
-}
+	) as Record<string, Partial<ProviderStyle>>)
 </script>

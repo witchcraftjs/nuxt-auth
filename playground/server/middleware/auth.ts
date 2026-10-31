@@ -1,3 +1,8 @@
-import { sessionManager } from "../auth.js"
+import { createAuthMiddleware } from "@witchcraft/nuxt-auth/server/utils/createAuthMiddleware"
 
-export default createAuthMiddleware(sessionManager, useServerLogger())
+import { useServerLogger } from "#imports"
+
+import { auth } from "../auth.js"
+
+export default createAuthMiddleware(auth, useServerLogger())
+

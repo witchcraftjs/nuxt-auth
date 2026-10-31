@@ -1,0 +1,10 @@
+{
+	"extends": "./.nuxt/tsconfig.app.json",
+	"include": [
+		"test/**/*.ts",
+		"preload-types.d.ts"
+	],
+	"exclude": [
+		"../server/**/*"
+	]
+}

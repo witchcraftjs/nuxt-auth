@@ -54,6 +54,7 @@ import { WAsyncValidatedInput } from "@witchcraft/ui/components"
 
 import { useId } from "#imports"
 
+import type { useAuth } from "../composables/useAuth.js"
 import { useAuthUserRegistration } from "../composables/useAuthUserRegistration.js"
 
 if (import.meta.dev) {
@@ -62,6 +63,8 @@ if (import.meta.dev) {
 }
 
 const props = defineProps<{
+	/** The auth instance to register against, so the app can pass one carrying its platform plugins. */
+	auth?: ReturnType<typeof useAuth>
 	debounce?: number
 	usernameSchema?: StandardSchemaV1<string, string>
 	id?: string
@@ -80,6 +83,7 @@ const {
 	inputValid,
 	isDebouncing
 } = useAuthUserRegistration({
+	auth: props.auth,
 	debounce: props.debounce,
 	usernameSchema: props.usernameSchema,
 	statusTextMap: {

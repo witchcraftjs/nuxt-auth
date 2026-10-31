@@ -14,5 +14,17 @@ export default createConfigForNuxt({
 				"jsdoc/check-tag-names": ["warn", { definedTags: [
 				] }]
 			}
+		},
+		{
+			files: ["playground/app-electron/**/*.ts"],
+			rules: {
+				// the nearest package.json is electron-builder's second one, which only lists what gets packaged
+				"import/no-extraneous-dependencies": ["warn", {
+					devDependencies: ["!src/**/*"],
+					optionalDependencies: true,
+					peerDependencies: true,
+					packageDir: "./playground"
+				}]
+			}
 		}
 	])
