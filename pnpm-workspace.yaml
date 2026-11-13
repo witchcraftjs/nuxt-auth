@@ -57,8 +57,8 @@ catalog:
   ms: ^3.0.0-canary.202508261828
   nuxt: 4.6.1
   nuxt-security: 2.7.0
-  '@playwright/test': =1.60.0
-  'playwright-core': =1.60.0
+  '@playwright/test': =1.65.0
+  'playwright-core': =1.65.0
   pino: ^10.0.0
   pino-pretty: ^11.3.0
   thread-stream: ^3.1.0
@@ -95,6 +95,9 @@ minimumReleaseAge: 20160
 blockExoticSubdeps: true
 minimumReleaseAgeExclude:
   - "@alanscodelog/*"
+  - "@playwright/test"
+  - "playwright"
+  - "playwright-core"
   - "@witchcraft/*"
   - "@better-auth/*"
   - "better-auth"

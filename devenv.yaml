@@ -6,5 +6,4 @@ inputs:
   utils:
     url: github:alanscodelog/nix-devenv-utils
   playwright:
-    # 1.61 is breaking for me
-    url: github:pietdevries94/playwright-web-flake/1.60.0
+    url: github:pietdevries94/playwright-web-flake/1.65.0
