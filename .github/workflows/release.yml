@@ -38,6 +38,8 @@ jobs:
           test_script: "pnpm test:unit"
 
       - name: Start test server
+        env:
+          NUXT_PORT: "3000"
         run: pnpm --dir playground test:server > /tmp/nuxt.log 2>&1 &
 
       - name: Wait for server
