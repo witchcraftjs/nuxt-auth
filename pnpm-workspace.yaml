@@ -7,7 +7,7 @@ allowBuilds:
   '@alanscodelog/tsconfigs': false
   '@parcel/watcher': false
   '@swc/core': false
-  electron: false
+  electron: true
   esbuild: true
   unrs-resolver: false
   vue-demi: false
@@ -86,6 +86,8 @@ overrides:
   "unplugin-icons>vue": "*"
   # force the @visulima/package version that declares the missing @visulima/yaml dep (visulima/visulima#931), safe to remove after 2026-10-28
   "@visulima/package": "5.0.43"
+  # force the yauzl with the Node 24.16+/26.1+ unzip fix, electron's old extract-zip otherwise silently extracts nothing (electron/electron#51619)
+  "yauzl": "^3.3.1"
 
 publicHoistPattern:
   - '*vue*'

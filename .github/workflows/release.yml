@@ -34,23 +34,13 @@ jobs:
 
       - name: Build
         uses: alanscodelog/actions/.github/actions/build@master
+        env:
+          NUXT_PORT: "3000"
         with:
-          test_script: "pnpm test:unit"
-
-      - name: Start test server
-        env:
-          NUXT_PORT: "3000"
-        run: pnpm --dir playground test:server > /tmp/nuxt.log 2>&1 &
-
-      - name: Wait for server
-        run: for i in $(seq 1 60); do curl -sf "http://localhost:3000/api/auth/username/valid?username=ciprobe" && break || sleep 5; done
-
-      - name: Tests with server
-        env:
-          NUXT_PORT: "3000"
-        run: |
-          pnpm --dir playground exec vitest run test/unit
-          pnpm --dir playground exec playwright test --project=web
+          test_script: "pnpm test:ci"
+          server_script: "pnpm --dir playground test:server"
+          server_health_url: "http://localhost:3000/api/health"
+          server_ready_url: "http://localhost:3000/"
 
       - name: Release
         uses: alanscodelog/actions/.github/actions/release@master
