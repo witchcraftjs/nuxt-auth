@@ -2,9 +2,11 @@ import { setup, url } from "@nuxt/test-utils/e2e"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
+import { localhostUrl } from "../../localhostUrl.js"
+
 await setup({
 	rootDir: fileURLToPath(new URL("../..", import.meta.url)),
-	host: `http://localhost:${process.env.NUXT_PORT}`
+	host: localhostUrl()
 })
 
 const tag = Date.now().toString(36)
@@ -16,7 +18,7 @@ async function devBypassCallback(params: Record<string, string>) {
 }
 
 function sessionCookie(res: Response) {
-	const header = res.headers.getSetCookie().find(cookie => cookie.startsWith("better-auth.session_token="))
+	const header = res.headers.getSetCookie().find(cookie => cookie.includes(".session_token="))
 	return header?.split(";")[0] ?? ""
 }
 

@@ -1,13 +1,14 @@
 import { expect, test } from "./fixtures.js"
 import { blockNetwork, mockLogin, windowUrl } from "./utils.js"
 
+import { localhostUrl } from "../../localhostUrl.js"
 import type { PlaygroundWindow } from "../../preload-types.js"
 
 test("app opens its window", async ({ app, page }) => {
 	const url = page.url()
 	const name = await app.evaluate(async ({ app }) => app.getName())
 
-	const expectedPrefix = process.env.TEST_ELECTRON_DEV === "1" ? `http://localhost:${process.env.NUXT_PORT}` : windowUrl
+	const expectedPrefix = process.env.TEST_ELECTRON_DEV === "1" ? localhostUrl() : windowUrl
 	expect(url.startsWith(expectedPrefix)).toBe(true)
 	expect(name).toBeTruthy()
 })

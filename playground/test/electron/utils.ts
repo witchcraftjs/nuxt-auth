@@ -3,6 +3,8 @@ import { existsSync } from "node:fs"
 import { rm } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 
+import { localhostUrl } from "../../localhostUrl.js"
+
 const playgroundDir = fileURLToPath(new URL("../..", import.meta.url))
 /** One profile for every launch, in the repo (gitignored) so it can be inspected. */
 const userDataDir = fileURLToPath(new URL("../../../.user-data-dir", import.meta.url))
@@ -25,9 +27,7 @@ export async function launchApp({ env }: { env?: Record<string, string> } = {}):
 	if (process.env.TEST_ELECTRON_DEV && !process.env.NUXT_PORT) {
 		throw new Error("NUXT_PORT is not set, the test server port must be known to point the app at it.")
 	}
-	const serverUrl = process.env.LOCALHOST_KEY_PEM && process.env.LOCALHOST_PEM
-		? `https://localhost:${process.env.NUXT_PORT}`
-		: `http://localhost:${process.env.NUXT_PORT}`
+	const serverUrl = localhostUrl()
 	await rm(userDataDir, { recursive: true, force: true })
 	// no SUID sandbox helper on nix
 	const app = await electron.launch({
@@ -104,7 +104,7 @@ export async function expireActiveSession(app: ElectronApplication, page: Page):
 	const cookie = `${found.name}=${found.value}`
 
 	const expiresAt = Date.now() - 1000
-	const baseUrl = `http://localhost:${process.env.NUXT_PORT}`
+	const baseUrl = localhostUrl()
 	const response = await fetch(`${baseUrl}/api/auth/dev/mock/session`, {
 		method: "POST",
 		headers: { "content-type": "application/json", cookie, origin: baseUrl },

@@ -1,7 +1,9 @@
+import { localhostCerts, localhostUrl } from "./localhostUrl.js"
+
 import { genAuthSecretKeys } from "../src/runtime/build/genAuthSecretKeys.js"
 
 // the server the app talks to, baked at build time. it is always the local server here but a real app would return its own site url instead, usually gated on an environment variable for production builds
-const publicServerUrl = `http://localhost:${process.env.NUXT_PORT ?? 3001}`
+const publicServerUrl = localhostUrl()
 
 export default defineNuxtConfig({
 	modules: [
@@ -36,6 +38,9 @@ export default defineNuxtConfig({
 					"/auth/external/callback": { ssr: false }
 				}
 			: {})
+	},
+	devServer: {
+		https: localhostCerts
 	},
 	watchers: {
 		chokidar: {

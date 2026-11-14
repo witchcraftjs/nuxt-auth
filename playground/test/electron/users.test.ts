@@ -4,9 +4,10 @@ import { fileURLToPath } from "node:url"
 import { expect, type Page, test } from "./fixtures.js"
 import { getWindowCookies, mockLogin } from "./utils.js"
 
+import { localhostUrl } from "../../localhostUrl.js"
 import { logoutAndWaitForReload, readStoredUser, selectLocalUser } from "../utils.js"
 
-const publicServerUrl = `http://localhost:${process.env.NUXT_PORT}`
+const publicServerUrl = localhostUrl()
 const USERNAME = "localuser"
 
 /** Switches user by id and returns the recreated window. */

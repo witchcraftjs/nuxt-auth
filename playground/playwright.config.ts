@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test"
 
+import { localhostUrl } from "./localhostUrl.js"
+
 // < 1.59 has paralization / caching issues
 const timeoutMultipler = 3
 
@@ -29,7 +31,7 @@ export default defineConfig({
 	workers: 4,
 	use: {
 		...devices["Desktop Chrome"],
-		baseURL: `http://localhost:${process.env.NUXT_PORT}`,
+		baseURL: localhostUrl(),
 		screenshot: "only-on-failure",
 		trace: "on",
 		ignoreHTTPSErrors: true,

@@ -5,8 +5,10 @@
 import { expect, test } from "./fixtures.js"
 import { mockLogin, windowUrl } from "./utils.js"
 
+import { localhostUrl } from "../../localhostUrl.js"
+
 // in dev mode the window lives on the server origin, which has its own storage, so stay on it
-const baseUrl = process.env.TEST_ELECTRON_DEV === "1" ? `http://localhost:${process.env.NUXT_PORT}/` : windowUrl
+const baseUrl = process.env.TEST_ELECTRON_DEV === "1" ? `${localhostUrl()}/` : windowUrl
 const someoneElsesPage = `${baseUrl}users/someone`
 
 test("signed out visitor is sent to login", async ({ page }) => {

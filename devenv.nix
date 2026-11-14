@@ -23,6 +23,7 @@ in
   custom.js.pnpm.package = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.pnpm;
   custom.js.setupPlaywright = true;
   custom.js.playwrightDriverPackage = pkgs.playwright-driver;
+  custom.base.loadSelfSignedCerts = true;
   custom.electron.enabled = true;
   custom.electron.package = pkgs.unstable.electron_42-bin;
 
@@ -39,7 +40,7 @@ in
 
   processes.nuxt = {
     ports.http.allocate = 3001;
-    exec = ''NODE_OPTIONS="--max-old-space-size=8192" NUXT_PORT=${toString config.processes.nuxt.ports.http.value} pnpm test:server --port ${toString config.processes.nuxt.ports.http.value}'';
+    exec = ''NODE_OPTIONS="--max-old-space-size=8192" NODE_TLS_REJECT_UNAUTHORIZED=0 NUXT_PORT=${toString config.processes.nuxt.ports.http.value} pnpm test:server --port ${toString config.processes.nuxt.ports.http.value}'';
   };
 
   scripts = {

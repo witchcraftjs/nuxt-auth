@@ -1,7 +1,10 @@
+import { localhostUrl } from "../localhostUrl.js"
+
 /**
  * Fails before any test starts when the server is not answering, or answers with an error.
  */
-export async function assertServerHealthy(endpoint: string): Promise<void> {
+export async function assertServerHealthy(path = "/api/health"): Promise<void> {
+	const endpoint = `${localhostUrl()}${path}`
 	const response = await fetch(endpoint)
 		.then(res => res)
 		.catch((error: unknown) => {
