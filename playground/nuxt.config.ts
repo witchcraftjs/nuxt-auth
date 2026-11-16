@@ -12,6 +12,7 @@ export default defineNuxtConfig({
 		"@witchcraft/ui/nuxt",
 		"@witchcraft/nuxt-postgres",
 		"@witchcraft/nuxt-logger",
+		"nuxt-security",
 		"../src/module"
 	],
 	devtools: { enabled: true },
@@ -124,5 +125,13 @@ export default defineNuxtConfig({
 		// serverPostgresjsOptions: {
 		// 	ssl: false
 		// }
+	},
+	security: {
+		// the suites make far more requests than a person does, so they run without the limiter
+		rateLimiter: process.env.DISABLE_RATE_LIMIT_FOR_TESTING === "true"
+			? false
+			: { tokensPerInterval: 300, interval: 300_000, throwError: true },
+		removeLoggers: process.env.NODE_ENV === "production",
+		ssg: { hashScripts: false }
 	}
 })
