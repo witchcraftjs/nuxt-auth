@@ -40,7 +40,11 @@ export default defineNuxtRouteMiddleware(async (_to, _from) => {
 	const stored = import.meta.client
 		? jsonSafeParse(localStorage.getItem(userStorageKey) ?? "null")
 		: undefined
-	const storedUser = stored?.isOk && stored.value ? deserializeAuthLocalUser(stored.value as AuthUserStored) : undefined
+	let storedUser = stored?.isOk && stored.value ? deserializeAuthLocalUser(stored.value as AuthUserStored) : undefined
+	if (import.meta.client && storedUser?.type === "local" && userData.value && userData.value.type !== "local") {
+		localStorage.removeItem(userStorageKey)
+		storedUser = undefined
+	}
 
 	if (doFetch.value) {
 		doFetch.value = false
