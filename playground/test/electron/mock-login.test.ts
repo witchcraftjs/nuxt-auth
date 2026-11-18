@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page, test } from "./fixtures.js"
-import { blockNetwork, expireActiveSession, getWindowCookies, mockLogin, unblockNetwork } from "./utils.js"
+import { expireActiveSession, mockLogin } from "./utils.js"
 
 import { readAuthStorage, readStoredUser } from "../utils.js"
 
@@ -14,21 +14,21 @@ test("mock sign-in => code redeemed => no token in address bar", async ({ page }
 	await expect(page).not.toHaveURL(/access_token=/)
 })
 
-test("sign-in (mocked) => user marked external, expiry matches cookie", async ({ app, page }) => {
+test("sign-in (mocked) => user marked external, expiry matches cookie", async ({ page, getWindowCookies }) => {
 	await mockLogin(page)
 
 	const stored = await readStoredUser(page)
 	const { externalExpiresAt } = await readAuthStorage(page)
-	const cookieExpiry = (await getWindowCookies(app)).find(cookie => cookie.name.endsWith(".session_token"))?.expirationDate
+	const cookieExpiry = (await getWindowCookies(page)).find(cookie => cookie.name.endsWith(".session_token"))?.expirationDate
 
 	expect(stored.type).toBe("external")
 	// the key holds ms, the cookie whole seconds, so they are compared at that resolution
 	expect(Math.floor(Number(externalExpiresAt) / 1000)).toBe(cookieExpiry)
 })
 
-test("session (expired) keeps user => warns on page change => checks disagree => re-auth goes to login", async ({ app, page }) => {
+test("session (expired) keeps user => warns on page change => checks disagree => re-auth goes to login", async ({ page, getWindowCookies }) => {
 	await mockLogin(page)
-	await expireActiveSession(app, page)
+	await expireActiveSession(page, getWindowCookies)
 
 	// a real link to a different page, so the middleware runs. The login lands on /authed, so
 	// clicking that route again would be a no-op. A reload would work too but checks less.
@@ -65,9 +65,9 @@ test("session (expired) keeps user => warns on page change => checks disagree =>
 	await expect(authedTableResult(page, "Check server")).toHaveText("signed in")
 })
 
-test("session (alive) + network blocked => check server fails => the app still navigates", async ({ app, page }) => {
+test("session (alive) + network blocked => check server fails => the app still navigates", async ({ page, blockNetwork, unblockNetwork }) => {
 	await mockLogin(page)
-	await blockNetwork(app)
+	await blockNetwork(page)
 
 	await page.getByRole("button", { name: "Check server" }).click()
 
@@ -82,7 +82,7 @@ test("session (alive) + network blocked => check server fails => the app still n
 
 	await expect(page).toHaveURL(/\/authed$/)
 
-	await unblockNetwork(app)
+	await unblockNetwork(page)
 	await page.getByRole("button", { name: "Check server" }).click()
 
 	await expect(authedTableResult(page, "Check server")).toHaveText("signed in")

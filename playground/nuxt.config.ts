@@ -132,6 +132,6 @@ export default defineNuxtConfig({
 			? false
 			: { tokensPerInterval: 300, interval: 300_000, throwError: true },
 		removeLoggers: process.env.NODE_ENV === "production",
-		ssg: { hashScripts: false }
+		ssg: { hashScripts: true }
 	}
 })

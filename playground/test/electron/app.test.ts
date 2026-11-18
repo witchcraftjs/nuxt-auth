@@ -1,5 +1,5 @@
 import { expect, test } from "./fixtures.js"
-import { blockNetwork, mockLogin, windowUrl } from "./utils.js"
+import { mockLogin, windowUrl } from "./utils.js"
 
 import { localhostUrl } from "../../localhostUrl.js"
 import type { PlaygroundWindow } from "../../preload-types.js"
@@ -105,11 +105,11 @@ test("window can call server routes", async ({ page }) => {
  * error box. `setOffline` only affects the window's own network stack, so the session's network
  * service cancels the request instead, and nothing about the client is faked.
  */
-test("call (network blocked) => fails with a fetch error", async ({ app, page }) => {
+test("call (network blocked) => fails with a fetch error", async ({ page, blockNetwork }) => {
 	await mockLogin(page)
 	// cancelling in the session's network service fails the proxied call without faking the
 	// client, which is as close to "the server is unreachable" as a test can get
-	await blockNetwork(app)
+	await blockNetwork(page)
 
 	await page.getByRole("button", { name: "Update name" }).click()
 

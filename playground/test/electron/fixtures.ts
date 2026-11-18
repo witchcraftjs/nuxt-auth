@@ -1,45 +1,30 @@
-import { type ElectronApplication, expect, type Page, test as base } from "@playwright/test"
+import { launchElectron } from "@witchcraft/nuxt-electron/electron/test"
+import { existsSync } from "node:fs"
+import { fileURLToPath } from "node:url"
 
-import { launchApp } from "./utils.js"
+import { localhostUrl } from "../../localhostUrl.js"
 
-export const test = base.extend<{
-	app: ElectronApplication
-	page: Page
-	getPageFromWindow: () => Promise<Page>
-}>({
-	// eslint-disable-next-line no-empty-pattern
-	app: async ({}, use) => {
-		const { app, close } = await launchApp()
-		await use(app)
-		await close()
-	},
-	page: async ({ app }, use) => {
-		await use(await app.firstWindow())
-	},
-	getPageFromWindow: async ({ app }, use) => {
-		// the first window is not a reopen, and its event has already fired by the time this runs
-		const first = await app.firstWindow()
-		const pending: Page[] = []
-		const waiting: (() => void)[] = []
-		app.on("window", window => {
-			if (window === first) return
-			pending.push(window)
-			waiting.shift()?.()
-		})
+const playgroundDir = fileURLToPath(new URL("../..", import.meta.url))
+/** One profile for every launch, in the repo (gitignored) so it can be inspected. */
+const userDataDir = fileURLToPath(new URL("../../.user-data-dir", import.meta.url))
+/** The production build of the playground app, made with `pnpm build:electron:no-pack`. */
+const mainEntry = fileURLToPath(new URL("../../.dist/electron/build/main.mjs", import.meta.url))
 
-		await use(async () => {
-			// the event can have fired before the caller asks, so the queue is the only source, never waitForEvent
-			if (pending.length === 0) await new Promise<void>(resolve => waiting.push(resolve))
-			const next = pending.shift()!
-			await next.waitForLoadState()
+if (!existsSync(mainEntry)) {
+	throw new Error(`Missing ${mainEntry}, run \`pnpm build:electron:no-pack\` in playground first.`)
+}
+if (process.env.TEST_ELECTRON_DEV && !process.env.NUXT_PORT) {
+	throw new Error("NUXT_PORT is not set, the test server port must be known to point the app at it.")
+}
 
-			// the app closes the old window asynchronously, so it can still be listed while the new one loads
-			await expect.poll(() => app.evaluate(electron => electron.BrowserWindow.getAllWindows().length)).toBe(1)
 
-			return next
-		})
-	}
+export const test = launchElectron({
+	appDir: playgroundDir,
+	userDataDir,
+	serverUrl: localhostUrl(),
+	bundlePrefix: "app://bundle/",
+	useDevMode: process.env.TEST_ELECTRON_DEV === "1"
 })
 
-export { expect }
+export { expect } from "@playwright/test"
 export type { ElectronApplication, Locator, Page } from "@playwright/test"

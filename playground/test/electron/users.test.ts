@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 
 import { expect, type Page, test } from "./fixtures.js"
-import { getWindowCookies, mockLogin } from "./utils.js"
+import { mockLogin } from "./utils.js"
 
 import { localhostUrl } from "../../localhostUrl.js"
 import { logoutAndWaitForReload, readStoredUser, selectLocalUser } from "../utils.js"
@@ -43,7 +43,7 @@ async function createLocalUser(page: Page, username: string, getPageFromWindow: 
 	return getPageFromWindow()
 }
 
-test("user switch keeps cookies apart", async ({ app, page, getPageFromWindow }) => {
+test("user switch keeps cookies apart", async ({ app, page, getPageFromWindow, getWindowCookies }) => {
 	const aliceId = crypto.randomUUID()
 	const bobId = crypto.randomUUID()
 
@@ -53,13 +53,13 @@ test("user switch keeps cookies apart", async ({ app, page, getPageFromWindow })
 		await win!.webContents.session.cookies.set({ url, name: "user", value: "alice" })
 	}, publicServerUrl)
 
-	const aliceCookies = (await getWindowCookies(app, "user")).map(cookie => cookie.value)
+	const aliceCookies = (await getWindowCookies(alice, "user")).map(cookie => cookie.value)
 	const bob = await createUser(alice, bobId, "bob", getPageFromWindow)
-	const bobCookies = (await getWindowCookies(app, "user")).map(cookie => cookie.value)
+	const bobCookies = (await getWindowCookies(bob, "user")).map(cookie => cookie.value)
 
-	await switchTo(bob, aliceId, getPageFromWindow)
+	const aliceAgainPage = await switchTo(bob, aliceId, getPageFromWindow)
 
-	const aliceAgain = (await getWindowCookies(app, "user")).map(cookie => cookie.value)
+	const aliceAgain = (await getWindowCookies(aliceAgainPage, "user")).map(cookie => cookie.value)
 
 	expect(aliceCookies).toEqual(["alice"])
 	expect(bobCookies).toEqual([])
@@ -122,6 +122,6 @@ test("external user => username rename => registry label and data dir follow by 
 
 	expect(after).toEqual([expect.objectContaining({ id: before[0].id, username })])
 
-	const label = await readFile(fileURLToPath(new URL(`../../../.user-data-dir/users/${before[0].directory}/username`, import.meta.url)), "utf8")
+	const label = await readFile(fileURLToPath(new URL(`../../.user-data-dir/users/${before[0].directory}/username`, import.meta.url)), "utf8")
 	expect(label).toBe(username)
 })
